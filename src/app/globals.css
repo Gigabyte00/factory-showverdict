@@ -1,0 +1,239 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Professional Slate palette - light mode */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Primary - site-specific, default to professional blue */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 43%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 50.5%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
+    --radius: 0.5rem;
+
+    /* Legacy support - map to new system */
+    --color-primary: hsl(var(--primary));
+    --color-accent: hsl(var(--accent));
+    --font-sans: 'Inter', system-ui, sans-serif;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+
+    /* Legacy support */
+    --color-primary: hsl(var(--primary));
+    --color-accent: hsl(var(--accent));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Affiliate link disclosure styling */
+.affiliate-disclosure {
+  @apply text-sm text-muted-foreground italic my-4 p-3 bg-muted rounded-lg border-l-4 border-primary;
+}
+
+/* Post content styling - extends typography plugin */
+.prose {
+  @apply max-w-none;
+}
+
+/* Fluid typography — smooth scaling instead of breakpoint jumps */
+h1, .text-hero { font-size: clamp(2.25rem, 5vw, 3.75rem); }
+h2, .text-section { font-size: clamp(1.75rem, 3.5vw, 2.5rem); }
+
+.prose h1,
+h1, h2, h3 {
+  font-family: var(--font-heading, var(--font-sans));
+}
+
+.prose h1 {
+  @apply text-3xl font-bold mb-4 mt-8 text-foreground;
+}
+
+.prose h2 {
+  @apply text-2xl font-semibold mb-3 mt-6 text-foreground;
+}
+
+.prose h3 {
+  @apply text-xl font-medium mb-2 mt-4 text-foreground;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed text-foreground;
+}
+
+.prose ul,
+.prose ol {
+  @apply mb-4 pl-6;
+}
+
+.prose li {
+  @apply mb-2;
+}
+
+.prose a {
+  @apply text-primary underline hover:opacity-80;
+}
+
+.prose img {
+  @apply rounded-lg my-4;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary pl-4 italic my-4 text-muted-foreground;
+}
+
+.prose code {
+  @apply bg-muted px-1 py-0.5 rounded text-sm;
+}
+
+.prose pre {
+  @apply bg-card text-card-foreground p-4 rounded-lg overflow-x-auto my-4 border;
+}
+
+/* Legacy utility classes for backwards compatibility */
+.text-primary {
+  color: hsl(var(--primary));
+}
+
+.bg-primary {
+  background-color: hsl(var(--primary));
+}
+
+.border-primary {
+  border-color: hsl(var(--primary));
+}
+
+/* Site secondary color — set via SITE_SECONDARY_COLOR env var */
+.text-site-secondary { color: hsl(var(--site-secondary, var(--primary))); }
+.bg-site-secondary { background-color: hsl(var(--site-secondary, var(--primary))); }
+.border-site-secondary { border-color: hsl(var(--site-secondary, var(--primary))); }
+
+/* Animations for shadcn components */
+@keyframes enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0)
+      scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1))
+      rotate(var(--tw-enter-rotate, 0));
+  }
+}
+
+@keyframes exit {
+  to {
+    opacity: var(--tw-exit-opacity, 1);
+    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0)
+      scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1))
+      rotate(var(--tw-exit-rotate, 0));
+  }
+}
+
+/* ── Scroll-driven fade-in (CSS only, progressive enhancement) ── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chrome/Edge: scroll-driven animation. Safari/Firefox: static (graceful degradation) */
+@supports (animation-timeline: view()) {
+  .animate-on-scroll {
+    animation: fade-in-up 0.6s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 30%;
+  }
+}
+
+/* Stagger children in grids */
+@supports (animation-timeline: view()) {
+  .stagger-children > * {
+    animation: fade-in-up 0.5s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 25%;
+  }
+  .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-children > *:nth-child(3) { animation-delay: 0.2s; }
+  .stagger-children > *:nth-child(4) { animation-delay: 0.3s; }
+  .stagger-children > *:nth-child(5) { animation-delay: 0.4s; }
+  .stagger-children > *:nth-child(6) { animation-delay: 0.5s; }
+}
+
+/* ── Hero-to-content wave divider ── */
+.section-divider-wave {
+  position: relative;
+  margin-top: -1px;
+}
+.section-divider-wave::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(to bottom, rgb(31 41 55), transparent);
+}

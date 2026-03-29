@@ -1,0 +1,49 @@
+{
+  "name": "factory-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Factory-generated affiliate/blog site - standalone Next.js 15 template",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "build:analyze": "ANALYZE=true next build"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-progress": "^1.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.47.10",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "next": "15.1.11",
+    "next-themes": "^0.4.6",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
+    "resend": "^4.1.2",
+    "tailwind-merge": "^3.4.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@next/bundle-analyzer": "^15.1.11",
+    "@tailwindcss/typography": "^0.5.15",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

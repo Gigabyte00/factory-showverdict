@@ -1,0 +1,9 @@
+export { Prose } from './Prose';
+export { Callout } from './Callout';
+export { ComparisonTable } from './ComparisonTable';
+export { SpeakableSection, generateSpeakableSpec } from './SpeakableSection';
+export { KeyTakeaways, takeawaysToText } from './KeyTakeaways';
+export { LastUpdated } from './LastUpdated';
+export { ProductCallout } from './ProductCallout';
+export { InlineOptIn } from './InlineOptIn';
+export { LeadMagnetCTA } from './LeadMagnetCTA';

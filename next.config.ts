@@ -22,10 +22,18 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      { protocol: 'https', hostname: 'm.media-amazon.com' },
     ],
   },
 
   // Enable ISR revalidation via API
+
+  // Proxy Supabase storage through /cdn/ to hide project ref from page source.
+  async rewrites() {
+    const base = process.env.SUPABASE_CDN_BASE;
+    if (!base) return [];
+    return [{ source: '/cdn/:path*', destination: `${base}/:path*` }];
+  },
   experimental: {
     // Enable PPR for faster initial loads
   },

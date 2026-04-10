@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps) {
   }
 
   return {
-    title: `${post.title} | ${site.name}`,
+    title: post.title,
     description: post.excerpt || `Read ${post.title} on ${site.name}`,
     openGraph: {
       title: post.title,

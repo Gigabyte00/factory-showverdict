@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
 import type { Category } from '@/types';

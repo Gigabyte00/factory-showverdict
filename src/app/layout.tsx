@@ -91,8 +91,8 @@ export default function RootLayout({
     <html lang="en" className={fontClasses} suppressHydrationWarning>
       <body style={{ ...themeVars as React.CSSProperties }}>
         {/* Site-wide JSON-LD: WebSite + Organization structured data */}
-        <Script id="jsonld-website" type="application/ld+json" strategy="afterInteractive">
-          {JSON.stringify({
+        {/* Site-wide JSON-LD: WebSite + Organization structured data — server-rendered for instant crawling */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@graph': [
               {
@@ -117,8 +117,7 @@ export default function RootLayout({
                 logo: site.theme_config?.logoUrl || undefined,
               },
             ].filter(item => item.name),
-          })}
-        </Script>
+        }) }} />
         {ga4Id && (
           <>
             <Script

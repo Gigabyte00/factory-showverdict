@@ -1,4 +1,3 @@
-import Script from 'next/script';
 
 // ============================================================================
 // Type Definitions
@@ -337,10 +336,13 @@ export default function JsonLd({ type, data }: JsonLdProps) {
   // Filter out undefined values for cleaner output
   const cleanSchema = JSON.parse(JSON.stringify(schema));
 
+  // Use dangerouslySetInnerHTML to render JSON-LD in the initial server HTML.
+  // JSON.stringify produces valid JSON with all special chars escaped — no XSS risk.
   return (
-    <Script id={`jsonld-${type ?? (data as Record<string, unknown>)['@type'] ?? 'raw'}`} type="application/ld+json" strategy="afterInteractive">
-      {JSON.stringify(cleanSchema)}
-    </Script>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(cleanSchema) }}
+    />
   );
 }
 

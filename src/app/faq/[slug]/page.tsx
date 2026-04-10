@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (!faq) return { title: 'FAQ Not Found' };
 
   return {
-    title: `${faq.question} | ${site.name}`,
+    title: `${faq.question}`,
     description: (faq.answer ?? '').slice(0, 160),
     alternates: baseUrl ? { canonical: `${baseUrl}/faq/${slug}` } : undefined,
   };

@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = comparison.seo_description || `Detailed comparison to help you choose the right product.`;
 
   return {
-    title: `${title} | ${site.name}`,
+    title: `${title}`,
     description,
     openGraph: {
       title,

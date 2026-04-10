@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (!data) return { title: 'Author Not Found' };
 
   return {
-    title: `${data.name} | ${site.name}`,
+    title: `${data.name}`,
     description: data.bio ? data.bio.slice(0, 155) : `Articles by ${data.name} on ${site.name}.`,
     alternates: baseUrl ? { canonical: `${baseUrl}/authors/${slug}` } : undefined,
     openGraph: {

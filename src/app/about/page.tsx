@@ -5,7 +5,7 @@ import Link from 'next/link';
 export async function generateMetadata(): Promise<Metadata> {
   const site = getSiteConfig();
   return {
-    title: `About Us - ${site.name}`,
+    title: `About Us`,
     description: `Learn about ${site.name}. Our mission, values, and commitment to providing honest, well-researched content.`,
     alternates: { canonical: `${site.domain}/about` },
   };

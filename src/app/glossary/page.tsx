@@ -11,7 +11,7 @@ export async function generateMetadata() {
   const site = getSiteConfig();
   const baseUrl = site.domain ? `https://${site.domain}` : '';
   return {
-    title: `${site.niche || site.name} Glossary | ${site.name}`,
+    title: `${site.niche || site.name} Glossary`,
     description: `Key terms and definitions for ${site.niche || site.name}. An authoritative reference for understanding the most important concepts.`,
     alternates: baseUrl ? { canonical: `${baseUrl}/glossary` } : undefined,
   };

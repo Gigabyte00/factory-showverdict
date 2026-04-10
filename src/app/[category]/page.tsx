@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!category) return { title: 'Category Not Found' };
 
   return {
-    title: `${category.name} | ${site.name}`,
+    title: `${category.name}`,
     description: category.description || `Browse ${category.name} articles on ${site.name}`,
   };
 }

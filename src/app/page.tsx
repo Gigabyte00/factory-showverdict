@@ -1,4 +1,7 @@
 import { getSiteConfig, getHeroConfig, getTestimonials, getCTAConfig, getHomepageSections } from '@/lib/site-config';
+import type { Metadata } from 'next';
+export const metadata: Metadata = { alternates: { canonical: '/' } };
+
 import { createServerClient } from '@/lib/supabase';
 import type { Post, Category, Offer } from '@/types';
 

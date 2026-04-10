@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   return {
     title: `${faq.question} | ${site.name}`,
-    description: faq.answer.slice(0, 160),
+    description: (faq.answer ?? '').slice(0, 160),
     alternates: baseUrl ? { canonical: `${baseUrl}/faq/${slug}` } : undefined,
   };
 }

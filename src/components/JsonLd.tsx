@@ -125,7 +125,7 @@ function generateArticleSchema(data: ArticleData) {
     dateModified: data.dateModified || data.datePublished || undefined,
     author: data.author
       ? {
-          '@type': 'Organization',
+          '@type': 'Person',
           name: data.author,
         }
       : undefined,

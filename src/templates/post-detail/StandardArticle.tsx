@@ -15,6 +15,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ShareButtons from '@/components/ShareButtons';
+import { TableOfContents } from '@/components/content/table-of-contents';
+import type { TocItem } from '@/components/content/table-of-contents';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -45,6 +47,21 @@ function affiliateLinkComponents(slug: string) {
   };
 }
 
+/** Slugify heading text for TOC anchor IDs. */
+function makeHeadingId(children: React.ReactNode): string {
+  return String(children).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+/** ReactMarkdown components: affiliate links + heading IDs for TOC scroll tracking. */
+function articleComponents(slug: string) {
+  return {
+    ...affiliateLinkComponents(slug),
+    h2: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => <h2 id={makeHeadingId(children)} {...props}>{children}</h2>,
+    h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => <h3 id={makeHeadingId(children)} {...props}>{children}</h3>,
+    h4: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => <h4 id={makeHeadingId(children)} {...props}>{children}</h4>,
+  };
+}
+
 export default function StandardArticle({
   post,
   category,
@@ -57,6 +74,17 @@ export default function StandardArticle({
   showRelatedPosts = true,
 }: PostDetailTemplateProps) {
   const siteId = (site as any).id as string;
+
+  // Extract headings from markdown for TOC
+  const tocItems: TocItem[] = (post.content || '')
+    .split('\n')
+    .filter((line) => /^#{1,3}\s/.test(line))
+    .map((line) => {
+      const level = (line.match(/^#+/) ?? [''])[0].length;
+      const text = line.replace(/^#+\s+/, '').trim();
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      return { id, text, level };
+    });
   const [contentBefore, contentAfter] = splitMarkdown(post.content || '', 4);
   // Structured data for SEO
   const structuredData = {
@@ -195,9 +223,16 @@ export default function StandardArticle({
                   </p>
                 )}
 
+                {/* Table of Contents */}
+                {showTOC && tocItems.length > 2 && (
+                  <div className="mb-8">
+                    <TableOfContents items={tocItems} />
+                  </div>
+                )}
+
                 {/* Content — split with inline opt-in after paragraph 4 */}
                 <Prose>
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={affiliateLinkComponents(post.slug)}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={articleComponents(post.slug)}>
                     {contentBefore}
                   </ReactMarkdown>
                 </Prose>
@@ -205,7 +240,7 @@ export default function StandardArticle({
                   <>
                     <InlineOptIn siteId={siteId} niche={site.niche} />
                     <Prose>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={affiliateLinkComponents(post.slug)}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={articleComponents(post.slug)}>
                         {contentAfter}
                       </ReactMarkdown>
                     </Prose>

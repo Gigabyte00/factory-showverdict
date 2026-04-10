@@ -36,6 +36,9 @@ export async function generateMetadata({ params }: PageProps) {
       description: post.excerpt || undefined,
       images: post.featured_image_url ? [post.featured_image_url] : undefined,
     },
+    alternates: {
+      canonical: site.domain ? `https://${site.domain}/blog/${slug}` : `/blog/${slug}`,
+    },
   };
 }
 

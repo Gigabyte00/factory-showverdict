@@ -4,8 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ChevronRight, ExternalLink } from 'lucide-react';
-import Script from 'next/script';
 import JsonLd from '@/components/JsonLd';
+import { TrustBadges } from '@/components/content/TrustBadges';
 
 export const revalidate = 3600;
 
@@ -19,9 +19,13 @@ interface Author {
   slug: string;
   bio: string | null;
   credentials: string | null;
+  title: string | null;
   expertise: string[] | null;
   avatar_url: string | null;
   social_links: Record<string, string> | null;
+  reviews_count: number | null;
+  twitter_url: string | null;
+  website_url: string | null;
 }
 
 interface Post {
@@ -41,20 +45,24 @@ export async function generateMetadata({ params }: PageProps) {
 
   const { data } = await supabase
     .from('authors')
-    .select('name, bio, avatar_url')
+    .select('name, bio, avatar_url, title')
     .eq('site_id', site.id)
     .eq('slug', slug)
     .single();
 
   if (!data) return { title: 'Author Not Found' };
 
+  const desc = data.bio
+    ? data.bio.slice(0, 155)
+    : `${data.title ? data.title + ' at ' : ''}${site.name}. Read ${data.name}'s expert reviews.`;
+
   return {
-    title: `${data.name}`,
-    description: data.bio ? data.bio.slice(0, 155) : `Articles by ${data.name} on ${site.name}.`,
+    title: `${data.name} — ${data.title ?? 'Author'} | ${site.name}`,
+    description: desc,
     alternates: baseUrl ? { canonical: `${baseUrl}/authors/${slug}` } : undefined,
     openGraph: {
       title: data.name,
-      description: data.bio ? data.bio.slice(0, 155) : undefined,
+      description: desc,
       images: data.avatar_url ? [data.avatar_url] : undefined,
     },
   };
@@ -68,7 +76,9 @@ export default async function AuthorPage({ params }: PageProps) {
 
   const { data: authorData, error } = await supabase
     .from('authors')
-    .select('id, name, slug, bio, credentials, expertise, avatar_url, social_links')
+    .select(
+      'id, name, slug, bio, credentials, title, expertise, avatar_url, social_links, reviews_count, twitter_url, website_url'
+    )
     .eq('site_id', site.id)
     .eq('slug', slug)
     .single();
@@ -77,7 +87,6 @@ export default async function AuthorPage({ params }: PageProps) {
 
   const author = authorData as Author;
 
-  // Fetch their published posts
   const { data: postsData } = await supabase
     .from('posts')
     .select('id, slug, title, excerpt, published_at, featured_image_url')
@@ -95,23 +104,25 @@ export default async function AuthorPage({ params }: PageProps) {
     { name: author.name, url: `${baseUrl}/authors/${slug}` },
   ];
 
-  // Build social profile links array for sameAs
-  const socialLinks = author.social_links ?? {};
+  const socialLinks: Record<string, string> = { ...(author.social_links ?? {}) };
+  if (author.twitter_url) socialLinks['twitter'] = author.twitter_url;
+  if (author.website_url) socialLinks['website'] = author.website_url;
   const sameAsUrls = Object.values(socialLinks).filter(Boolean) as string[];
 
-  // Person schema for E-E-A-T
-  const personSchema = {
+  // Person schema — server-rendered for E-E-A-T. JSON.stringify escapes all special chars.
+  const personSchemaStr = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: author.name,
     url: `${baseUrl}/authors/${slug}`,
+    ...(author.title && { jobTitle: author.title }),
     ...(author.avatar_url && { image: author.avatar_url }),
     ...(author.bio && { description: author.bio }),
     ...(author.credentials && { honorificSuffix: author.credentials }),
     ...(author.expertise?.length && { knowsAbout: author.expertise }),
     ...(sameAsUrls.length && { sameAs: sameAsUrls }),
     worksFor: { '@type': 'Organization', name: site.name, url: baseUrl || undefined },
-  };
+  });
 
   const SOCIAL_LABELS: Record<string, string> = {
     twitter: 'Twitter / X',
@@ -125,12 +136,10 @@ export default async function AuthorPage({ params }: PageProps) {
   return (
     <>
       <JsonLd type="breadcrumb" data={{ items: breadcrumbItems }} />
-      <Script id="jsonld-author" type="application/ld+json" strategy="afterInteractive">
-        {JSON.stringify(personSchema)}
-      </Script>
+      {/* Person schema server-rendered — JSON.stringify output is always XSS-safe */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personSchemaStr }} />
 
       <div className="container mx-auto px-4 py-12 max-w-4xl">
-        {/* Breadcrumb */}
         <nav className="flex items-center text-sm text-muted-foreground mb-8">
           <Link href="/" className="hover:text-foreground transition">Home</Link>
           <ChevronRight className="h-3.5 w-3.5 mx-1" />
@@ -140,7 +149,7 @@ export default async function AuthorPage({ params }: PageProps) {
         </nav>
 
         {/* Author header */}
-        <div className="flex flex-col sm:flex-row gap-6 items-start mb-10">
+        <div className="flex flex-col sm:flex-row gap-6 items-start mb-6">
           {author.avatar_url ? (
             <Image
               src={author.avatar_url}
@@ -158,7 +167,10 @@ export default async function AuthorPage({ params }: PageProps) {
           )}
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-3xl font-bold mb-1">{author.name}</h1>
+            <h1 className="text-3xl font-bold mb-0.5">{author.name}</h1>
+            {author.title && (
+              <p className="text-primary font-medium mb-1">{author.title}</p>
+            )}
             {author.credentials && (
               <p className="text-sm text-muted-foreground mb-3">{author.credentials}</p>
             )}
@@ -166,7 +178,6 @@ export default async function AuthorPage({ params }: PageProps) {
               <p className="text-muted-foreground leading-relaxed mb-4">{author.bio}</p>
             )}
 
-            {/* Expertise tags */}
             {author.expertise && author.expertise.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {author.expertise.map((area) => (
@@ -180,7 +191,6 @@ export default async function AuthorPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Social links */}
             {Object.keys(socialLinks).length > 0 && (
               <div className="flex flex-wrap gap-3">
                 {Object.entries(socialLinks).map(([platform, url]) =>
@@ -202,7 +212,12 @@ export default async function AuthorPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Posts by this author */}
+        {/* Trust badges row */}
+        <TrustBadges
+          reviewCount={author.reviews_count ?? posts.length}
+          className="mb-10"
+        />
+
         {posts.length > 0 && (
           <section>
             <h2 className="text-xl font-bold mb-5">

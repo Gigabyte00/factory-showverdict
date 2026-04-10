@@ -7,3 +7,7 @@ export { LastUpdated } from './LastUpdated';
 export { ProductCallout } from './ProductCallout';
 export { InlineOptIn } from './InlineOptIn';
 export { LeadMagnetCTA } from './LeadMagnetCTA';
+export { AuthorCard } from './AuthorCard';
+export { AuthorBio } from './AuthorBio';
+export { TrustBadges } from './TrustBadges';
+export { ExpertQuote } from './ExpertQuote';

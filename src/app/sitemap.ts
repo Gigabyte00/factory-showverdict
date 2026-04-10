@@ -260,8 +260,104 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     })) || [];
 
+  // ============================================================
+  // E-E-A-T / Trust pages
+  // ============================================================
+  const trustStaticPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/methodology`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/authors`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/faq`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/glossary`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/topics`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+  ];
+
+  // Author profile pages
+  const { data: authors } = await supabase
+    .from('authors')
+    .select('slug, updated_at')
+    .eq('site_id', site.id);
+
+  const authorUrls: MetadataRoute.Sitemap =
+    authors?.map((author) => ({
+      url: `${baseUrl}/authors/${author.slug}`,
+      lastModified: new Date(author.updated_at || new Date()),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })) || [];
+
+  // FAQ detail pages
+  const { data: faqs } = await supabase
+    .from('faq_items')
+    .select('slug, updated_at')
+    .eq('site_id', site.id)
+    .eq('status', 'published');
+
+  const faqUrls: MetadataRoute.Sitemap =
+    faqs?.map((faq) => ({
+      url: `${baseUrl}/faq/${faq.slug}`,
+      lastModified: new Date(faq.updated_at || new Date()),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    })) || [];
+
+  // Glossary term pages
+  const { data: terms } = await supabase
+    .from('glossary_terms')
+    .select('slug, updated_at')
+    .eq('site_id', site.id)
+    .eq('status', 'published');
+
+  const glossaryUrls: MetadataRoute.Sitemap =
+    terms?.map((term) => ({
+      url: `${baseUrl}/glossary/${term.slug}`,
+      lastModified: new Date(term.updated_at || new Date()),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    })) || [];
+
+  // Topic cluster pages
+  const { data: topicClusters } = await supabase
+    .from('topic_clusters')
+    .select('slug, updated_at')
+    .eq('site_id', site.id)
+    .eq('status', 'published');
+
+  const topicUrls: MetadataRoute.Sitemap =
+    topicClusters?.map((topic) => ({
+      url: `${baseUrl}/topics/${topic.slug}`,
+      lastModified: new Date(topic.updated_at || new Date()),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })) || [];
+
   return [
     ...staticPages,
+    ...trustStaticPages,
     ...postUrls,
     ...categoryUrls,
     ...offerUrls,
@@ -270,5 +366,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...priceTierUrls,
     ...calculatorUrls,
     ...quizUrls,
+    ...authorUrls,
+    ...faqUrls,
+    ...glossaryUrls,
+    ...topicUrls,
   ];
 }

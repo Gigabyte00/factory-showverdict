@@ -137,7 +137,7 @@ export async function generateMetadata({ params }: CategoryPageProps) {
   }
 
   return {
-    title: `${category.name} - ${site.name}`,
+    title: category.name,
     description: category.description || `Browse ${category.name} content at ${site.name}`,
   };
 }

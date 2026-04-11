@@ -141,6 +141,33 @@ export const LEAD_MAGNETS: Record<string, LeadMagnet> = {
     ctaText: 'Download Free Guide',
     downloadLabel: 'Payment Gateway Guide (PDF)',
   },
+  'skincare-routine-builder': {
+    slug: 'skincare-routine-builder',
+    title: 'Skincare Routine Builder Worksheet',
+    description: 'Customizable worksheet to build your AM + PM skincare routine: skin-type quiz, ingredient compatibility checker, product layering order guide, and 4-week results tracker.',
+    subline: 'Trusted by 4,000+ skincare enthusiasts',
+    icon: '✨',
+    ctaText: 'Get Free Worksheet',
+    downloadLabel: 'Skincare Routine Builder (PDF)',
+  },
+  'streaming-cost-optimizer': {
+    slug: 'streaming-cost-optimizer',
+    title: 'Streaming Service Cost Optimizer',
+    description: 'Google Sheet template that calculates your true cost-per-hour watched across Netflix, Hulu, HBO Max, Disney+, and more. Find which services are actually worth keeping.',
+    subline: 'Average user saves $23/month',
+    icon: '📺',
+    ctaText: 'Get Free Optimizer',
+    downloadLabel: 'Streaming Cost Optimizer (Google Sheet)',
+  },
+  'audiobook-platform-guide': {
+    slug: 'audiobook-platform-guide',
+    title: 'Audiobook Platform Comparison Guide',
+    description: "Side-by-side comparison of Audible, Libro.fm, Scribd, and 6 other audiobook platforms: credit systems, catalog size, offline playback, and which is best for your listening habits.",
+    subline: 'Find the right platform in 5 minutes',
+    icon: '🎧',
+    ctaText: 'Download Free Guide',
+    downloadLabel: 'Audiobook Platform Guide (PDF)',
+  },
 };
 
 /** Get a lead magnet by slug, falling back to env-var config or null */

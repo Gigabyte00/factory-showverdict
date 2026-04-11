@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (!data) return { title: 'Term Not Found' };
 
   return {
-    title: `${data.term}: Definition & Explanation`,
+    title: `${data.term}: Definition & Explanation | ${site.name}`,
     description: (data.definition ?? '').slice(0, 160),
     alternates: baseUrl ? { canonical: `${baseUrl}/glossary/${termSlug}` } : undefined,
   };

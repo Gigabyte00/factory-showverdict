@@ -10,6 +10,7 @@ import JsonLd from '@/components/JsonLd';
 import type { FAQData } from '@/components/JsonLd';
 import JsonLdTyped from '@/components/JsonLd';
 import { Prose, Callout, LastUpdated, ProductCallout, LeadMagnetCTA } from '@/components/content';
+import { ReadingProgress } from '@/components/content/ReadingProgress';
 import { InlineOptIn } from '@/components/content/InlineOptIn';
 import { NewsletterSignup } from '@/components/home/NewsletterSignup';
 import { Card, CardContent } from '@/components/ui/card';
@@ -94,6 +95,7 @@ export default function LongformArticle({
 
   return (
     <div className="min-h-screen">
+      <ReadingProgress />
       {/* JSON-LD Structured Data */}
       <JsonLd data={structuredData} />
 

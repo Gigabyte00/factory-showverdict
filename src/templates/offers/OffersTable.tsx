@@ -9,7 +9,8 @@ import type { OffersTemplateProps } from '@/lib/templates/config';
 import type { Offer } from '@/types';
 import JsonLd from '@/components/JsonLd';
 import { Card } from '@/components/ui/card';
-import { Callout } from '@/components/content';
+import { Button } from '@/components/ui/button';
+import { StarRating } from '@/components/ui/star-rating';
 import { OfferLink } from '@/components/offers/offer-link';
 
 export default function OffersTable({
@@ -108,11 +109,11 @@ export default function OffersTable({
                               {offer.name}
                             </h3>
 
-                            {/* Rating (text only) */}
+                            {/* Rating */}
                             {offer.rating && (
-                              <p className="text-sm text-muted-foreground">
-                                {offer.rating.toFixed(1)}/5
-                              </p>
+                              <div className="flex justify-center mt-1">
+                                <StarRating rating={offer.rating} maxRating={5} size="sm" />
+                              </div>
                             )}
                           </div>
                         </th>
@@ -181,15 +182,16 @@ export default function OffersTable({
                       </td>
                       {topOffers.map((offer) => (
                         <td key={offer.id} className="p-4 text-center">
-                          <OfferLink
-                            offerId={offer.id}
-                            siteId={site.id}
-                            affiliateUrl={offer.affiliate_url}
-                            source="offers_table"
-                            className="text-sm"
-                          >
-                            Visit {offer.name}
-                          </OfferLink>
+                          <Button asChild size="sm" className="w-full">
+                            <OfferLink
+                              offerId={offer.id}
+                              siteId={site.id}
+                              affiliateUrl={offer.affiliate_url}
+                              source="offers_table"
+                            >
+                              View Deal
+                            </OfferLink>
+                          </Button>
                         </td>
                       ))}
                     </tr>
@@ -209,9 +211,7 @@ export default function OffersTable({
                     <div className="mb-4">
                       <h3 className="font-semibold text-lg mb-2">{offer.name}</h3>
                       {offer.rating && (
-                        <p className="text-sm text-muted-foreground">
-                          Rating: {offer.rating.toFixed(1)}/5
-                        </p>
+                        <StarRating rating={offer.rating} maxRating={5} size="sm" />
                       )}
                     </div>
                     {offer.short_description && (
@@ -219,15 +219,16 @@ export default function OffersTable({
                         {offer.short_description}
                       </p>
                     )}
-                    <OfferLink
-                      offerId={offer.id}
-                      siteId={site.id}
-                      affiliateUrl={offer.affiliate_url}
-                      source="offers_table_additional"
-                      className="text-sm"
-                    >
-                      Visit {offer.name}
-                    </OfferLink>
+                    <Button asChild size="sm" className="w-full">
+                      <OfferLink
+                        offerId={offer.id}
+                        siteId={site.id}
+                        affiliateUrl={offer.affiliate_url}
+                        source="offers_table_additional"
+                      >
+                        View Deal
+                      </OfferLink>
+                    </Button>
                   </Card>
                 ))}
               </div>

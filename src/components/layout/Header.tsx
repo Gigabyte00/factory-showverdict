@@ -23,7 +23,7 @@ export async function Header() {
   const staticLinks: Array<{ name: string; href: string }> =
     (navData as any).staticLinks ?? (navData as any).mainLinks ?? [];
   const categories: Array<{ name: string; href: string }> =
-    ((navData as any).categories ?? []).map((c: any) => ({ name: c.name, href: c.href ?? `/${c.slug}` }));
+    ((navData as any).categories ?? []).map((c: any) => ({ name: c.name, href: c.href ?? `/category/${c.slug}` }));
 
   const allLinks = [...staticLinks, ...categories.slice(0, 4)].slice(0, 6); // Cap at 6 total to prevent overflow
 

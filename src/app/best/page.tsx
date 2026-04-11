@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
 
   return {
-    title: `Best Picks by Budget`,
+    title: `Best Picks by Budget | ${site.name}`,
     description: `Find quality products at every price point. Budget-friendly recommendations without sacrificing quality.`,
   };
 }

@@ -1,6 +1,8 @@
 export { Prose } from './Prose';
 export { Callout } from './Callout';
 export { ComparisonTable } from './ComparisonTable';
+export { ComparisonMatrix } from './ComparisonMatrix';
+export type { MatrixProduct, MatrixCriteria } from './ComparisonMatrix';
 export { SpeakableSection, generateSpeakableSpec } from './SpeakableSection';
 export { KeyTakeaways, takeawaysToText } from './KeyTakeaways';
 export { LastUpdated } from './LastUpdated';
@@ -11,3 +13,8 @@ export { AuthorCard } from './AuthorCard';
 export { AuthorBio } from './AuthorBio';
 export { TrustBadges } from './TrustBadges';
 export { ExpertQuote } from './ExpertQuote';
+export { BestForWidget } from './BestForWidget';
+export type { QuizQuestion, QuizRecommendation } from './BestForWidget';
+export { SocialProof } from './SocialProof';
+export { ArticleSidebar } from './ArticleSidebar';
+export { ReadingProgress } from './ReadingProgress';

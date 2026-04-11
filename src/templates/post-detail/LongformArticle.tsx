@@ -11,6 +11,7 @@ import type { FAQData } from '@/components/JsonLd';
 import JsonLdTyped from '@/components/JsonLd';
 import { Prose, Callout, LastUpdated, ProductCallout, LeadMagnetCTA } from '@/components/content';
 import { ReadingProgress } from '@/components/content/ReadingProgress';
+import { ArticleSidebar } from '@/components/content/ArticleSidebar';
 import { InlineOptIn } from '@/components/content/InlineOptIn';
 import { NewsletterSignup } from '@/components/home/NewsletterSignup';
 import { Card, CardContent } from '@/components/ui/card';
@@ -99,7 +100,8 @@ export default function LongformArticle({
       {/* JSON-LD Structured Data */}
       <JsonLd data={structuredData} />
 
-      <div className="container max-w-4xl mx-auto py-8">
+      <div className="container max-w-6xl mx-auto py-8">
+        <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-8">
           <article>
             {/* Breadcrumbs */}
             <nav className="flex items-center text-sm text-muted-foreground mb-4">
@@ -330,6 +332,8 @@ export default function LongformArticle({
               </section>
             )}
           </article>
+          <ArticleSidebar articleSelector="article" siteId={siteId} niche={(site as any).niche} />
+        </div>
       </div>
     </div>
   );

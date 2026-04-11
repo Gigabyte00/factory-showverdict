@@ -15,6 +15,7 @@ import { getSiteConfig, getSiteThemeVars } from '@/lib/site-config';
 import { Header, Footer } from '@/components/layout';
 import { ThemeProvider } from '@/components/providers';
 import { ExitIntentPopup } from '@/components/ExitIntentPopup';
+import { BackToTop } from '@/components/ui/back-to-top';
 import { NewsletterSignup } from '@/components/home/NewsletterSignup';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -154,6 +155,8 @@ export default function RootLayout({
           <NewsletterSignup siteId={site.id} niche={site.niche} variant="sticky" />
           {/* Exit intent popup — 30s minimum, 48h cookie suppression */}
           <ExitIntentPopup niche={site.niche} siteId={site.id} />
+          {/* Back to top — appears after 400px scroll */}
+          <BackToTop />
         </ThemeProvider>
         <SpeedInsights />
       </body>

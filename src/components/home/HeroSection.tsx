@@ -98,8 +98,8 @@ function HeroDark({
 }: HeroContentProps) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20 lg:py-28">
-      {/* Decorative blur orbs */}
-      <div className="absolute inset-0 -z-0 overflow-hidden" aria-hidden="true">
+      {/* Decorative blur orbs — hidden on mobile to reduce GPU load */}
+      <div className="hidden sm:block absolute inset-0 -z-0 overflow-hidden" aria-hidden="true">
         <div
           className="absolute -top-24 -left-24 w-96 h-96 rounded-full blur-3xl opacity-20"
           style={{ backgroundColor: 'hsl(var(--primary))' }}

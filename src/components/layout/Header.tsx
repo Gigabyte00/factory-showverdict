@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { getSiteConfig } from '@/lib/site-config';
 import { getNavLinks } from '@/lib/queries';
 import { MobileNav } from './MobileNav';
+import { DesktopNav } from './DesktopNav';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Search } from 'lucide-react';
 
 /**
  * Site header with navigation
@@ -37,19 +39,9 @@ export async function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {allLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
+        <DesktopNav links={allLinks} />
 
-        {/* CTA Button + Theme Toggle + Mobile Navigation */}
+        {/* CTA Button + Search + Theme Toggle + Mobile Navigation */}
         <div className="flex items-center gap-2">
           {process.env.SITE_HEADER_CTA_TEXT && process.env.SITE_HEADER_CTA_URL && (
             <Link
@@ -59,6 +51,13 @@ export async function Header() {
               {process.env.SITE_HEADER_CTA_TEXT}
             </Link>
           )}
+          <Link
+            href="/search"
+            aria-label="Search"
+            className="hidden md:inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Search className="h-4 w-4" aria-hidden="true" />
+          </Link>
           <ThemeToggle />
           <MobileNav
             siteName={site.name}

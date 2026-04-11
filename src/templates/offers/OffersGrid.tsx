@@ -9,6 +9,8 @@ import type { OffersTemplateProps } from '@/lib/templates/config';
 import type { Offer, Category } from '@/types';
 import JsonLd from '@/components/JsonLd';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { StarRating } from '@/components/ui/star-rating';
 import { Callout } from '@/components/content';
 import { OfferLink } from '@/components/offers/offer-link';
 import Link from 'next/link';
@@ -190,11 +192,22 @@ function OfferCard({ offer, categoryMap, siteId, featured }: OfferCardProps) {
         {/* Title */}
         <h3 className="font-semibold text-xl mb-2">{offer.name}</h3>
 
-        {/* Category & Rating (text only) */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
-          {category && <span>{category.name}</span>}
-          {offer.rating && <span>Rating: {offer.rating.toFixed(1)}/5</span>}
+        {/* Category + Rating row */}
+        <div className="flex items-center justify-between mb-3">
+          {category && (
+            <span className="text-xs text-muted-foreground">{category.name}</span>
+          )}
+          {offer.rating && (
+            <StarRating rating={offer.rating} maxRating={5} size="sm" />
+          )}
         </div>
+
+        {/* Price */}
+        {(offer as any).price_usd && (
+          <div className="text-lg font-bold text-foreground mb-2">
+            ${(offer as any).price_usd}
+          </div>
+        )}
 
         {/* Description */}
         {offer.short_description && (
@@ -203,7 +216,7 @@ function OfferCard({ offer, categoryMap, siteId, featured }: OfferCardProps) {
           </p>
         )}
 
-        {/* Pros/Cons (text list, no icons) */}
+        {/* Pros/Cons */}
         {(offer.pros?.length || offer.cons?.length) && (
           <div className="text-sm mb-4 space-y-1 text-muted-foreground">
             {offer.pros?.slice(0, 2).map((pro, i) => (
@@ -215,25 +228,25 @@ function OfferCard({ offer, categoryMap, siteId, featured }: OfferCardProps) {
           </div>
         )}
 
-        {/* Inline affiliate link */}
-        <p className="text-sm mb-2">
-          <OfferLink
-            offerId={offer.id}
-            siteId={siteId}
-            affiliateUrl={offer.affiliate_url}
-            source="offers_page"
+        {/* Primary CTA + review link */}
+        <div className="flex flex-col gap-2 mt-4">
+          <Button asChild size="sm" className="w-full">
+            <OfferLink
+              offerId={offer.id}
+              siteId={siteId}
+              affiliateUrl={offer.affiliate_url}
+              source="offers_page"
+            >
+              View Deal
+            </OfferLink>
+          </Button>
+          <Link
+            href={`/offers/${offer.slug}`}
+            className="text-xs text-center text-muted-foreground hover:text-foreground hover:underline"
           >
-            Visit {offer.name}
-          </OfferLink>
-        </p>
-
-        {/* Review link */}
-        <Link
-          href={`/offers/${offer.slug}`}
-          className="text-sm hover:underline"
-        >
-          Read detailed review
-        </Link>
+            Read detailed review
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

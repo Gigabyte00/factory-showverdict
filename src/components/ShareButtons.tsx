@@ -1,5 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import { Check, Link2 } from 'lucide-react';
+
 interface ShareButtonsProps {
   url: string;
   title: string;
@@ -9,6 +12,8 @@ interface ShareButtonsProps {
  * Social sharing buttons for content pages
  */
 export default function ShareButtons({ url, title }: ShareButtonsProps) {
+  const [copied, setCopied] = useState(false);
+
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 
@@ -48,7 +53,6 @@ export default function ShareButtons({ url, title }: ShareButtonsProps) {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      alert('Link copied to clipboard!');
     } catch {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
@@ -57,8 +61,9 @@ export default function ShareButtons({ url, title }: ShareButtonsProps) {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert('Link copied to clipboard!');
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -81,18 +86,21 @@ export default function ShareButtons({ url, title }: ShareButtonsProps) {
 
       <button
         onClick={handleCopyLink}
-        className="inline-flex items-center justify-center rounded-full bg-muted p-2 text-muted-foreground transition-colors hover:bg-muted/80"
-        title="Copy link"
+        className="inline-flex items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/80 active:scale-95"
+        title={copied ? 'Copied!' : 'Copy link'}
+        aria-label={copied ? 'Link copied' : 'Copy link'}
       >
-        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-          />
-        </svg>
-        <span className="sr-only">Copy link</span>
+        {copied ? (
+          <>
+            <Check className="h-3.5 w-3.5 text-green-500" />
+            <span className="text-xs font-medium text-green-600">Copied!</span>
+          </>
+        ) : (
+          <>
+            <Link2 className="h-3.5 w-3.5" />
+            <span className="sr-only">Copy link</span>
+          </>
+        )}
       </button>
     </div>
   );

@@ -94,6 +94,13 @@ export async function Footer() {
                     </Link>
                   </li>
                 ))}
+                {categories.length > 5 && (
+                  <li className="pt-1">
+                    <Link href="/blog" className="text-sm text-primary hover:underline font-medium">
+                      View all →
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
           )}

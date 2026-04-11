@@ -28,6 +28,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChevronRight } from 'lucide-react';
 import JsonLdTyped from '@/components/JsonLd';
+import { ReadingProgress } from '@/components/content/ReadingProgress';
 
 /** Split markdown content at the Nth paragraph break. Returns [before, after]. */
 function splitMarkdown(content: string, paragraphIndex: number): [string, string] {
@@ -130,6 +131,7 @@ export default async function StandardArticle({
 
   return (
     <div className="min-h-screen">
+      <ReadingProgress />
       <JsonLd data={articleSchema} />
 
       <div className="container max-w-4xl mx-auto py-8">

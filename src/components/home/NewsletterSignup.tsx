@@ -219,12 +219,20 @@ function StickyNewsletter({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Auto-dismiss 3 seconds after successful subscription
+  useEffect(() => {
+    if (status === 'success') {
+      const timer = setTimeout(() => dismiss(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   const dismiss = () => {
     setDismissed(true);
     sessionStorage.setItem('newsletter_sticky_dismissed', '1');
   };
 
-  if (!visible || dismissed || status === 'success') return null;
+  if (!visible || dismissed) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-primary/20 bg-background/95 shadow-lg backdrop-blur-sm">
@@ -237,20 +245,27 @@ function StickyNewsletter({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <form onSubmit={onSubmit} className="flex gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="w-48 rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                disabled={status === 'loading'}
-                required
-              />
-              <Button type="submit" size="sm" disabled={status === 'loading'}>
-                {status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Subscribe'}
-              </Button>
-            </form>
+            {status === 'success' ? (
+              <span className="flex items-center gap-2 text-sm font-medium text-green-600">
+                <CheckCircle2 className="h-4 w-4" />
+                {message || 'You\'re subscribed!'}
+              </span>
+            ) : (
+              <form onSubmit={onSubmit} className="flex gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-48 rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  disabled={status === 'loading'}
+                  required
+                />
+                <Button type="submit" size="sm" disabled={status === 'loading'}>
+                  {status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Subscribe'}
+                </Button>
+              </form>
+            )}
             <button
               onClick={dismiss}
               aria-label="Dismiss"

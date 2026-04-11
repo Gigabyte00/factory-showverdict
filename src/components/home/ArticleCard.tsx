@@ -47,11 +47,14 @@ export function ArticleCard({ post, category, variant = 'default', href }: Artic
       <Link href={postUrl} className="block relative aspect-video overflow-hidden">
         {post.featured_image_url ? (
           <>
-            <img
-              src={post.featured_image_url}
-              alt={post.featured_image_alt || post.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
+            <div className="relative w-full h-full bg-muted animate-pulse">
+              <img
+                src={post.featured_image_url}
+                alt={post.featured_image_alt || post.title}
+                loading="lazy"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
           </>
         ) : (
@@ -128,6 +131,7 @@ function FeaturedArticleCard({
             <img
               src={post.featured_image_url}
               alt={post.featured_image_alt || post.title}
+              loading="lazy"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 md:min-h-[280px]"
             />
           ) : (
@@ -205,6 +209,7 @@ function CompactArticleCard({
           <img
             src={post.featured_image_url}
             alt={post.title}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         ) : (

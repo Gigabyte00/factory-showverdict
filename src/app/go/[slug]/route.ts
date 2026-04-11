@@ -11,11 +11,13 @@ const supabase = createClient(
 /**
  * Link Cloaking Route - /go/[slug]
  *
- * Redirects pretty slugs to affiliate URLs while tracking clicks.
- * Uses 307 (Temporary Redirect) so search engines treat this as a
- * non-permanent redirect and don't pass link equity to the destination.
+ * Logs clicks server-side and returns an HTML relay page that:
+ * 1. Sets __fattr attribution cookie via Set-Cookie header (server-set = ITP-immune, 365-day)
+ * 2. Writes localStorage backup before navigating (survives cookie deletion)
+ * 3. JS-redirects immediately to affiliate URL (<50ms perceived delay)
  *
- * Example: /go/rad-rover-6-plus → https://example.com/affiliate?id=123
+ * Server-set cookies bypass Safari ITP's 7-day cap on JS-written cookies.
+ * The relay page also prevents referrer leakage to the affiliate destination.
  */
 export async function GET(
   req: NextRequest,
@@ -62,7 +64,7 @@ export async function GET(
       );
     }
 
-    // Log click to offer_clicks table — fire-and-forget, don't block the redirect
+    // Log click to offer_clicks table — fire-and-forget, don't block the relay response
     const referrer = req.headers.get('referer') ?? '';
     const userAgent = req.headers.get('user-agent') ?? '';
     const url = new URL(req.url);
@@ -96,11 +98,61 @@ export async function GET(
         });
     }
 
-    return NextResponse.redirect(offer.affiliate_url, {
-      status: 307,
+    // Validate URL before embedding in HTML
+    const affiliateUrl = offer.affiliate_url?.trim();
+    if (!affiliateUrl || affiliateUrl === '#' || !affiliateUrl.startsWith('http')) {
+      return new Response(
+        `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Coming Soon</title>
+<style>body{font-family:system-ui,-apple-system,sans-serif;max-width:600px;margin:100px auto;padding:20px;text-align:center}h1{color:#8b5cf6}p{color:#6b7280}a{color:#3b82f6;text-decoration:none}a:hover{text-decoration:underline}</style>
+</head><body><h1>Coming Soon</h1><p>The link for <strong>${offer.name}</strong> is being set up. Please check back shortly.</p><p><a href="/offers">Browse all offers</a></p></body></html>`,
+        { status: 200, headers: { 'Content-Type': 'text/html' } }
+      );
+    }
+
+    // Build attribution cookie: JSON encoded as base64url
+    // Server-set first-party cookies are NOT subject to Safari ITP's 7-day JS-cookie cap.
+    const attrPayload = JSON.stringify({
+      offer_id: offer.id,
+      offer_slug: slug,
+      offer_name: offer.name,
+      clicked_at: new Date().toISOString(),
+    });
+    const attrCookieValue = Buffer.from(attrPayload).toString('base64url');
+
+    // Safe JS string: JSON.stringify escapes quotes, newlines, and special chars
+    const safeDestUrl = JSON.stringify(affiliateUrl);
+    const safeAttrPayload = JSON.stringify(attrPayload);
+
+    // HTML relay page: sets cookie server-side, writes localStorage, JS-redirects instantly
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="refresh" content="0;url=${affiliateUrl.replace(/"/g, '&quot;')}">
+<title>Redirecting...</title>
+</head>
+<body>
+<script>
+(function(){
+  try { localStorage.setItem('__fattr', ${safeAttrPayload}); } catch(e) {}
+  window.location.replace(${safeDestUrl});
+})();
+</script>
+<p style="font-family:system-ui;text-align:center;margin-top:20vh;color:#6b7280">
+  Redirecting... <a href="${affiliateUrl.replace(/"/g, '&quot;')}">Click here if not redirected</a>
+</p>
+</body>
+</html>`;
+
+    return new NextResponse(html, {
+      status: 200,
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
         'X-Robots-Tag': 'noindex, nofollow',
+        // Server-set cookie: bypasses Safari ITP's JS-cookie 7-day restriction
+        'Set-Cookie': `__fattr=${attrCookieValue}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`,
       },
     });
   } catch (err) {

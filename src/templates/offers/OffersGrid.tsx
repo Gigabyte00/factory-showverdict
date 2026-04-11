@@ -176,7 +176,16 @@ function OfferCard({ offer, categoryMap, siteId, featured }: OfferCardProps) {
   const category = offer.category_id ? categoryMap[offer.category_id] : null;
 
   return (
-    <Card className="border">
+    <Card className="border overflow-hidden">
+      {offer.featured_image_url && (
+        <div className="h-44 overflow-hidden">
+          <img
+            src={offer.featured_image_url}
+            alt={offer.name}
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          />
+        </div>
+      )}
       <CardContent className="p-6">
         {/* Title */}
         <h3 className="font-semibold text-xl mb-2">{offer.name}</h3>

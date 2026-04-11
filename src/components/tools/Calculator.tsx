@@ -118,6 +118,270 @@ function safeCalculate(
       break;
     }
 
+    // eBike Range Calculator (ebikerevolt)
+    case 'ebike_range': {
+      const { battery_wh = 500, motor_wattage = 250, rider_weight = 175, terrain = 1.0, speed_mph = 15 } = inputs;
+      const efficiency_wh_per_mile = (motor_wattage / speed_mph) * terrain * (rider_weight / 150);
+      const range_miles = battery_wh / efficiency_wh_per_mile;
+      const range_km = range_miles * 1.609;
+      results.range_miles = Math.round(range_miles * 10) / 10;
+      results.range_km = Math.round(range_km * 10) / 10;
+      results.efficiency_wh_per_mile = Math.round(efficiency_wh_per_mile * 10) / 10;
+      break;
+    }
+
+    // eBike vs Car Cost Comparison (ebikerevolt)
+    case 'ebike_vs_car': {
+      const { miles_per_week = 100, gas_price = 3.50, mpg = 28, ebike_price = 1500, car_insurance_monthly = 150 } = inputs;
+      const annual_miles = miles_per_week * 52;
+      const annual_gas_cost = (annual_miles / mpg) * gas_price;
+      const annual_car_cost = annual_gas_cost + car_insurance_monthly * 12;
+      const annual_ebike_electricity = (annual_miles / 20) * 0.013; // ~13 cents per kWh, 20 miles/kWh
+      const annual_ebike_maintenance = 100;
+      const annual_ebike_cost = annual_ebike_electricity + annual_ebike_maintenance;
+      const annual_savings = annual_car_cost - annual_ebike_cost;
+      const payback_months = annual_savings > 0 ? Math.ceil((ebike_price / annual_savings) * 12) : 0;
+      results.annual_car_cost = Math.round(annual_car_cost);
+      results.annual_ebike_cost = Math.round(annual_ebike_cost);
+      results.annual_savings = Math.round(annual_savings);
+      results.payback_months = payback_months;
+      results.five_year_savings = Math.round(annual_savings * 5 - ebike_price);
+      break;
+    }
+
+    // Life Insurance Needs Calculator (termhaven)
+    case 'life_insurance_needs': {
+      const { annual_income = 75000, years_income = 10, debts = 50000, dependents = 2, existing_coverage = 0 } = inputs;
+      const income_replacement = annual_income * years_income;
+      const child_education = dependents * 50000;
+      const total_needed = income_replacement + debts + child_education;
+      const recommended_coverage = Math.max(0, total_needed - existing_coverage);
+      results.income_replacement = income_replacement;
+      results.total_needed = total_needed;
+      results.recommended_coverage = recommended_coverage;
+      results.coverage_gap = recommended_coverage;
+      break;
+    }
+
+    // Term vs Whole Life Cost Comparison (termhaven)
+    case 'term_vs_whole': {
+      const { age = 35, coverage = 500000, term_years = 20, health_rating = 1 } = inputs;
+      // Approximate monthly premiums (rough industry averages, adjusted by health)
+      const base_term_rate = (age < 40 ? 0.14 : age < 50 ? 0.26 : 0.55) * health_rating;
+      const term_monthly = (coverage / 1000) * base_term_rate;
+      const whole_monthly = term_monthly * 12; // Whole life ~12x term on average
+      const term_total_20yr = term_monthly * 12 * term_years;
+      const whole_total_20yr = whole_monthly * 12 * term_years;
+      const whole_cash_value_20yr = whole_total_20yr * 0.3; // ~30% cash value accumulation
+      results.term_monthly = Math.round(term_monthly * 100) / 100;
+      results.whole_monthly = Math.round(whole_monthly * 100) / 100;
+      results.term_total_20yr = Math.round(term_total_20yr);
+      results.whole_total_20yr = Math.round(whole_total_20yr);
+      results.whole_cash_value_20yr = Math.round(whole_cash_value_20yr);
+      results.cost_difference_20yr = Math.round(whole_total_20yr - term_total_20yr);
+      break;
+    }
+
+    // Debt Payoff Optimizer (mypersonalfi)
+    case 'debt_payoff': {
+      const { debt_balance = 10000, interest_rate = 19.99, monthly_payment = 300 } = inputs;
+      const monthly_rate = interest_rate / 100 / 12;
+      // Months to payoff
+      let months = 0;
+      let balance = debt_balance;
+      let total_interest = 0;
+      if (monthly_rate > 0 && monthly_payment > balance * monthly_rate) {
+        while (balance > 0 && months < 600) {
+          const interest = balance * monthly_rate;
+          total_interest += interest;
+          balance = balance + interest - monthly_payment;
+          if (balance < 0) balance = 0;
+          months++;
+        }
+      }
+      results.months_to_payoff = months;
+      results.years_to_payoff = Math.round((months / 12) * 10) / 10;
+      results.total_interest_paid = Math.round(total_interest);
+      results.total_paid = Math.round(debt_balance + total_interest);
+      // Avalanche: same calc but shows interest saved vs minimum payment
+      const min_payment = debt_balance * monthly_rate * 1.05;
+      results.vs_minimum_months_saved = Math.max(0, 360 - months); // rough estimate
+      break;
+    }
+
+    // Emergency Fund Calculator (mypersonalfi)
+    case 'emergency_fund': {
+      const { monthly_expenses = 3500, months_coverage = 6, current_savings = 500, monthly_contribution = 300 } = inputs;
+      const target_fund = monthly_expenses * months_coverage;
+      const funding_gap = Math.max(0, target_fund - current_savings);
+      const months_to_goal = monthly_contribution > 0 ? Math.ceil(funding_gap / monthly_contribution) : 0;
+      results.target_fund = target_fund;
+      results.funding_gap = funding_gap;
+      results.months_to_goal = months_to_goal;
+      results.percent_funded = Math.min(100, Math.round((current_savings / target_fund) * 100));
+      break;
+    }
+
+    // Self-Employment Tax Estimator (refundatlas / taxsite)
+    case 'self_employment_tax': {
+      const { net_income = 60000, other_income = 0, deductions = 12950 } = inputs;
+      const se_tax = net_income * 0.9235 * 0.153; // SE tax on 92.35% of net income
+      const se_deduction = se_tax / 2;
+      const agi = net_income + other_income - se_deduction;
+      const taxable_income = Math.max(0, agi - deductions);
+      // Simplified 2024 tax brackets (single)
+      let federal_tax = 0;
+      if (taxable_income > 578125) federal_tax = 174238 + (taxable_income - 578125) * 0.37;
+      else if (taxable_income > 231250) federal_tax = 52832 + (taxable_income - 231250) * 0.35;
+      else if (taxable_income > 100525) federal_tax = 17168 + (taxable_income - 100525) * 0.24;
+      else if (taxable_income > 47150) federal_tax = 5147 + (taxable_income - 47150) * 0.22;
+      else if (taxable_income > 11600) federal_tax = 1160 + (taxable_income - 11600) * 0.12;
+      else federal_tax = taxable_income * 0.10;
+      const total_tax = se_tax + federal_tax;
+      const quarterly_payment = total_tax / 4;
+      results.se_tax = Math.round(se_tax);
+      results.federal_income_tax = Math.round(federal_tax);
+      results.total_tax = Math.round(total_tax);
+      results.quarterly_payment = Math.round(quarterly_payment);
+      results.effective_rate = Math.round((total_tax / net_income) * 100 * 10) / 10;
+      break;
+    }
+
+    // ABV Calculator (homebrewexpert)
+    case 'abv': {
+      const { og = 1.050, fg = 1.010 } = inputs;
+      // Standard ABW formula, then convert to ABV
+      const abv = (og - fg) * 131.25;
+      const calories_per_12oz = abv * 2.5 * 12; // ~2.5 cal per oz per %ABV
+      results.abv = Math.round(abv * 100) / 100;
+      results.calories_per_12oz = Math.round(calories_per_12oz);
+      results.attenuation = Math.round(((og - fg) / (og - 1)) * 100);
+      break;
+    }
+
+    // Brew Recipe Scaler (homebrewexpert)
+    case 'brew_recipe': {
+      const { original_batch_gallons = 5, new_batch_gallons = 3, grain_lbs = 10, hops_oz = 2, yeast_packets = 1 } = inputs;
+      const scale = new_batch_gallons / original_batch_gallons;
+      results.scaled_grain_lbs = Math.round(grain_lbs * scale * 100) / 100;
+      results.scaled_hops_oz = Math.round(hops_oz * scale * 100) / 100;
+      results.scaled_yeast_packets = Math.round(yeast_packets * scale * 10) / 10;
+      results.scale_factor = Math.round(scale * 100) / 100;
+      break;
+    }
+
+    // Coffee Dose Calculator (homebrewexpert)
+    case 'coffee_dose': {
+      const { brew_method = 1, water_ml = 300, ratio_preference = 1 } = inputs;
+      // Golden ratios: 1=standard (1:15), 2=strong (1:12), 3=light (1:17)
+      const ratios: Record<number, number> = { 1: 15, 2: 12, 3: 17 };
+      const base_ratio = ratios[Math.round(brew_method)] || 15;
+      const adjusted_ratio = base_ratio * ratio_preference;
+      const coffee_grams = water_ml / adjusted_ratio;
+      results.coffee_grams = Math.round(coffee_grams * 10) / 10;
+      results.coffee_tbsp = Math.round((coffee_grams / 7) * 10) / 10; // ~7g per tbsp
+      results.ratio = Math.round(adjusted_ratio);
+      results.water_ml = water_ml;
+      break;
+    }
+
+    // Recipe Scaler (dubaichocolate)
+    case 'recipe_scaler': {
+      const { original_servings = 4, desired_servings = 8, ingredient_1 = 100, ingredient_2 = 50, ingredient_3 = 25 } = inputs;
+      const scale = desired_servings / original_servings;
+      results.scale_factor = Math.round(scale * 100) / 100;
+      results.scaled_ingredient_1 = Math.round(ingredient_1 * scale * 10) / 10;
+      results.scaled_ingredient_2 = Math.round(ingredient_2 * scale * 10) / 10;
+      results.scaled_ingredient_3 = Math.round(ingredient_3 * scale * 10) / 10;
+      break;
+    }
+
+    // Streaming Cost Optimizer (showverdict)
+    case 'streaming_cost': {
+      const { num_services = 3, avg_monthly_cost = 15, hours_watched_weekly = 10, content_overlap = 30 } = inputs;
+      const total_monthly = num_services * avg_monthly_cost;
+      const effective_services = num_services - (content_overlap / 100) * (num_services - 1);
+      const cost_per_hour = total_monthly / (hours_watched_weekly * 4);
+      const potential_savings = (content_overlap / 100) * avg_monthly_cost * Math.floor(num_services / 2);
+      results.total_monthly = Math.round(total_monthly * 100) / 100;
+      results.total_annual = Math.round(total_monthly * 12 * 100) / 100;
+      results.cost_per_hour = Math.round(cost_per_hour * 100) / 100;
+      results.potential_monthly_savings = Math.round(potential_savings * 100) / 100;
+      results.effective_unique_services = Math.round(effective_services * 10) / 10;
+      break;
+    }
+
+    // Audiobook Platform Comparison (bookstackreviews)
+    case 'audiobook_platform': {
+      const { books_per_month = 3, avg_book_price = 15, podcast_hours_weekly = 5 } = inputs;
+      // Compare: Audible ($14.99/mo = 1 credit), Scribd ($11.99 unlimited), Libro.fm ($14.99 = 1 credit)
+      const audible_monthly = 14.99 + Math.max(0, books_per_month - 1) * avg_book_price;
+      const scribd_monthly = 11.99; // unlimited
+      const libro_monthly = 14.99 + Math.max(0, books_per_month - 1) * avg_book_price;
+      const buy_direct_monthly = books_per_month * avg_book_price;
+      results.audible_monthly = Math.round(audible_monthly * 100) / 100;
+      results.scribd_monthly = scribd_monthly;
+      results.buy_direct_monthly = buy_direct_monthly;
+      results.best_value_index = audible_monthly < scribd_monthly ? 1 : 2; // 1=Audible, 2=Scribd
+      results.annual_scribd_vs_buy = Math.round((buy_direct_monthly - scribd_monthly) * 12 * 100) / 100;
+      break;
+    }
+
+    // Business Loan Payment Calculator (capitalready)
+    case 'business_loan_payment': {
+      const { loan_amount = 100000, annual_rate = 7.5, term_years = 5 } = inputs;
+      const monthly_rate = annual_rate / 100 / 12;
+      const num_payments = term_years * 12;
+      const monthly_payment = loan_amount * (monthly_rate * Math.pow(1 + monthly_rate, num_payments)) /
+        (Math.pow(1 + monthly_rate, num_payments) - 1);
+      const total_paid = monthly_payment * num_payments;
+      const total_interest = total_paid - loan_amount;
+      results.monthly_payment = Math.round(monthly_payment * 100) / 100;
+      results.total_paid = Math.round(total_paid);
+      results.total_interest = Math.round(total_interest);
+      results.interest_rate_monthly = Math.round(monthly_rate * 10000) / 100;
+      break;
+    }
+
+    // ERP ROI Calculator (quickbookstoerp)
+    case 'erp_roi': {
+      const { current_software_cost = 500, erp_monthly_cost = 2000, employees = 20, hours_saved_per_employee = 3 } = inputs;
+      const hourly_rate = 25; // avg admin hourly rate
+      const monthly_hours_saved = employees * hours_saved_per_employee * 4; // weeks
+      const monthly_value_saved = monthly_hours_saved * hourly_rate;
+      const error_reduction_savings = employees * 50; // $50/employee/month in reduced errors
+      const total_monthly_benefit = monthly_value_saved + error_reduction_savings;
+      const net_monthly_roi = total_monthly_benefit - (erp_monthly_cost - current_software_cost);
+      const payback_months = net_monthly_roi > 0 ? Math.ceil((erp_monthly_cost * 3) / net_monthly_roi) : 0; // 3mo setup cost
+      results.monthly_hours_saved = monthly_hours_saved;
+      results.monthly_value_saved = Math.round(monthly_value_saved);
+      results.total_monthly_benefit = Math.round(total_monthly_benefit);
+      results.net_monthly_roi = Math.round(net_monthly_roi);
+      results.annual_roi = Math.round(net_monthly_roi * 12);
+      results.payback_months = payback_months;
+      break;
+    }
+
+    // Payment Processing Fee Calculator (goflowpay)
+    case 'payment_processing_fees': {
+      const { monthly_volume = 50000, avg_transaction = 150, card_type = 1 } = inputs;
+      const num_transactions = monthly_volume / avg_transaction;
+      // card_type: 1=credit, 2=debit, 3=high-risk
+      const rates: Record<number, { rate: number; per_tx: number }> = {
+        1: { rate: 0.029, per_tx: 0.30 },  // Standard credit: 2.9% + $0.30
+        2: { rate: 0.015, per_tx: 0.10 },  // Debit: 1.5% + $0.10
+        3: { rate: 0.045, per_tx: 0.50 },  // High-risk: 4.5% + $0.50
+      };
+      const { rate, per_tx } = rates[Math.round(card_type)] || rates[1];
+      const monthly_fees = monthly_volume * rate + num_transactions * per_tx;
+      const annual_fees = monthly_fees * 12;
+      results.monthly_fees = Math.round(monthly_fees * 100) / 100;
+      results.annual_fees = Math.round(annual_fees * 100) / 100;
+      results.effective_rate = Math.round((monthly_fees / monthly_volume) * 10000) / 100;
+      results.num_transactions = Math.round(num_transactions);
+      break;
+    }
+
     // Default: pass through inputs as results
     default:
       Object.assign(results, inputs);

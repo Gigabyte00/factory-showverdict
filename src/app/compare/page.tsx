@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 3600;
 
@@ -9,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
 
   return {
-    title: `Product Comparisons`,
+    title: `Product Comparisons | ${site.name}`,
     description: `Side-by-side product comparisons to help you make informed buying decisions. Detailed analysis of features, pros, cons, and recommendations.`,
   };
 }
@@ -25,8 +26,14 @@ export default async function ComparisonsIndexPage() {
     .eq('status', 'published')
     .order('published_at', { ascending: false });
 
+  const baseUrl = site.domain ? `https://${site.domain}` : '';
+
   return (
     <div className="container mx-auto px-4 py-8">
+      <JsonLd type="breadcrumb" data={{ items: [
+        { name: 'Home', url: baseUrl || '/' },
+        { name: 'Compare', url: `${baseUrl}/compare` },
+      ]}} />
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-4 text-4xl font-bold">Product Comparisons</h1>

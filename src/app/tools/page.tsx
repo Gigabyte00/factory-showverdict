@@ -3,6 +3,7 @@ import { createServerClient } from '@/lib/supabase';
 import type { CalculatorTemplate, QuizTemplate } from '@/types';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 3600; // Revalidate every hour
 
@@ -10,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = getSiteConfig();
 
   return {
-    title: `Free Tools & Calculators`,
+    title: `Free Tools & Calculators | ${site.name}`,
     description: `Use our free ${site.niche?.toLowerCase() || ''} calculators and quizzes to make smarter decisions. Interactive tools designed to help you.`,
     openGraph: {
       title: `Free Tools & Calculators | ${site.name}`,
@@ -94,8 +95,14 @@ export default async function ToolsPage() {
 
   const hasTools = calculatorList.length > 0 || quizList.length > 0;
 
+  const baseUrl = site.domain ? `https://${site.domain}` : '';
+
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <JsonLd type="breadcrumb" data={{ items: [
+        { name: 'Home', url: baseUrl || '/' },
+        { name: 'Tools', url: `${baseUrl}/tools` },
+      ]}} />
       <ToolsJsonLd
         calculators={calculatorList}
         quizzes={quizList}

@@ -5,6 +5,7 @@ import type { CalculatorTemplate } from '@/types';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 3600;
 
@@ -120,8 +121,15 @@ export default async function CalculatorPage({ params }: PageProps) {
   // Cast through unknown since DB Row types use generic Json for JSONB columns
   const typedCalculator = calculator as unknown as CalculatorTemplate;
 
+  const baseUrl = site.domain ? `https://${site.domain}` : '';
+
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <JsonLd type="breadcrumb" data={{ items: [
+        { name: 'Home', url: baseUrl || '/' },
+        { name: 'Tools', url: `${baseUrl}/tools` },
+        { name: typedCalculator.name, url: `${baseUrl}/tools/calculators/${typedCalculator.slug}` },
+      ]}} />
       <CalculatorJsonLd
         calculator={typedCalculator}
         siteName={site.name}

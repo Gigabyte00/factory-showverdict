@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = comparison.seo_description || `Detailed comparison to help you choose the right product.`;
 
   return {
-    title: `${title}`,
+    title: `${title} | ${site.name}`,
     description,
     openGraph: {
       title,
@@ -112,6 +112,11 @@ export default async function ComparisonPage({ params }: Props) {
           author: site.name,
         }}
       />
+      <JsonLd type="breadcrumb" data={{ items: [
+        { name: 'Home', url: site.domain ? `https://${site.domain}` : '/' },
+        { name: 'Compare', url: site.domain ? `https://${site.domain}/compare` : '/compare' },
+        { name: comparison.title, url: site.domain ? `https://${site.domain}/compare/${slug}` : `/compare/${slug}` },
+      ]}} />
 
       <article className="container mx-auto px-4 py-8">
         <Breadcrumbs

@@ -88,7 +88,41 @@ export function ExitIntentPopup({ niche, siteId }: ExitIntentPopupProps) {
 
   if (!show) return null;
 
-  const nicheLabel = niche ? niche.toLowerCase() : 'product';
+  // Per-niche copy: headline + body + CTA button text
+  const nicheKey = (niche || '').toLowerCase();
+  const nicheCopy: { headline: string; body: string; cta: string } = (() => {
+    if (nicheKey.includes('electric bike') || nicheKey.includes('ebike'))
+      return { headline: 'Before you go — grab our free eBike Buyers Checklist', body: '47 questions to ask before you spend a dollar. Avoid the #1 mistake new riders make.', cta: 'Get the Free Checklist' };
+    if (nicheKey.includes('life insurance'))
+      return { headline: 'Get a free life insurance needs estimate', body: 'Takes 2 minutes. No spam, no sales calls — just a clear number to aim for.', cta: 'Estimate My Coverage' };
+    if (nicheKey.includes('tax'))
+      return { headline: 'Which tax software is right for you?', body: 'Take our 60-second quiz and we\'ll match you to the best option for your situation.', cta: 'Take the Quiz' };
+    if (nicheKey.includes('sports betting') || nicheKey.includes('gambling'))
+      return { headline: 'Before you bet — download our Bankroll Calculator', body: 'The free spreadsheet that keeps professional bettors profitable long-term.', cta: 'Get the Calculator' };
+    if (nicheKey.includes('trading') || nicheKey.includes('broker'))
+      return { headline: 'Which broker is right for your trading style?', body: 'Get our free broker comparison worksheet — 15 factors, side-by-side.', cta: 'Get the Worksheet' };
+    if (nicheKey.includes('business') || nicheKey.includes('lending') || nicheKey.includes('loan'))
+      return { headline: 'Is your business funding-ready?', body: 'Get our free SBA Loan Application Checklist and know exactly where you stand.', cta: 'Get the Checklist' };
+    if (nicheKey.includes('personal finance') || nicheKey.includes('budget'))
+      return { headline: 'Take control of your finances — free template', body: 'Our Personal Finance Dashboard template has helped thousands get out of debt faster.', cta: 'Get the Template' };
+    if (nicheKey.includes('ai') || nicheKey.includes('coding') || nicheKey.includes('developer'))
+      return { headline: 'Which AI coding tool is right for you?', body: 'Our free AI Tools Evaluation Matrix compares Copilot, Cursor, Tabnine and more.', cta: 'Get the Matrix' };
+    if (nicheKey.includes('skincare') || nicheKey.includes('beauty'))
+      return { headline: 'What\'s your skin type? Get a free routine', body: 'Take our 2-minute skin type quiz and get a custom routine matched to your needs.', cta: 'Take the Quiz' };
+    if (nicheKey.includes('payment') || nicheKey.includes('merchant') || nicheKey.includes('fintech'))
+      return { headline: 'How much are you overpaying in processing fees?', body: 'Our free calculator shows you exactly — and the cheaper alternatives.', cta: 'Calculate My Fees' };
+    if (nicheKey.includes('coffee') || nicheKey.includes('brew'))
+      return { headline: 'Before you go — get our free Brew Recipe Log', body: 'Track your recipes, dial in your grind, and never forget a great cup again.', cta: 'Get the Template' };
+    if (nicheKey.includes('chocolate') || nicheKey.includes('recipe'))
+      return { headline: 'Free: 12 Dubai Chocolate Recipes PDF', body: 'Our most popular recipes — including the viral pistachio stuffed bar — in one download.', cta: 'Get the Recipes' };
+    if (nicheKey.includes('streaming') || nicheKey.includes('show') || nicheKey.includes('book') || nicheKey.includes('audio'))
+      return { headline: 'Which streaming service is worth your money?', body: 'Get our free cost optimizer — enter your viewing habits, see exactly what to cut.', cta: 'Compare Services' };
+    if (nicheKey.includes('erp') || nicheKey.includes('ecommerce') || nicheKey.includes('saas'))
+      return { headline: 'Not sure which ERP is right for your business?', body: 'Get our free vendor comparison guide — built specifically for e-commerce brands.', cta: 'Get the Guide' };
+    // Generic fallback
+    const label = niche ? niche.toLowerCase() : 'our niche';
+    return { headline: `Don't miss our best ${label} picks`, body: `Get expert reviews and top deals on ${label} — straight to your inbox, free.`, cta: 'Get Free Picks & Deals' };
+  })();
 
   return (
     <div
@@ -111,10 +145,10 @@ export function ExitIntentPopup({ niche, siteId }: ExitIntentPopupProps) {
           Wait — before you go
         </div>
         <h2 className="text-2xl font-bold text-foreground mb-2">
-          Don't miss our best {nicheLabel} picks
+          {nicheCopy.headline}
         </h2>
         <p className="text-muted-foreground mb-5 text-sm">
-          Get our expert {nicheLabel} reviews and top deals — straight to your inbox, free.
+          {nicheCopy.body}
         </p>
 
         {subStatus === 'success' ? (
@@ -142,7 +176,7 @@ export function ExitIntentPopup({ niche, siteId }: ExitIntentPopupProps) {
                 {subStatus === 'loading' ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Subscribing...</>
                 ) : (
-                  'Get Free Picks & Deals'
+                  nicheCopy.cta
                 )}
               </button>
             </form>

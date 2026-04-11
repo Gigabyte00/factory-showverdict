@@ -64,12 +64,11 @@ export default async function MethodologyPage() {
   const baseUrl = site.domain ? `https://${site.domain}` : '';
 
   const { data: methodology } = await supabase
-    .from('site_methodologies')
-    .select('title, summary, content, version, updated_at')
+    .from('site_pages')
+    .select('title, meta_description, content, last_updated_at')
     .eq('site_id', site.id)
-    .eq('is_active', true)
-    .order('updated_at', { ascending: false })
-    .limit(1)
+    .eq('slug', 'methodology')
+    .eq('status', 'published')
     .single();
 
   const { count: reviewCount } = await supabase
@@ -85,11 +84,11 @@ export default async function MethodologyPage() {
 
   const pageTitle = methodology?.title ?? `How We Review ${site.niche ?? 'Products'}`;
   const pageSummary =
-    methodology?.summary ??
+    methodology?.meta_description ??
     `Our transparent process for researching and evaluating ${(site.niche ?? 'products').toLowerCase()}.`;
   const pageContent =
     methodology?.content ?? FALLBACK_METHODOLOGY(site.name, site.niche ?? 'products');
-  const lastUpdated = methodology?.updated_at ?? new Date().toISOString();
+  const lastUpdated = methodology?.last_updated_at ?? new Date().toISOString();
 
   // JSON.stringify produces valid, safely-escaped JSON — no XSS risk
   const webPageSchemaJson = JSON.stringify({
@@ -148,16 +147,14 @@ export default async function MethodologyPage() {
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{pageContent}</ReactMarkdown>
         </Prose>
 
-        {methodology?.version && (
-          <p className="text-xs text-muted-foreground mt-8 border-t pt-4">
-            Methodology version {methodology.version} · Last updated{' '}
-            {new Date(lastUpdated).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground mt-8 border-t pt-4">
+          Last updated{' '}
+          {new Date(lastUpdated).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </p>
       </div>
     </>
   );

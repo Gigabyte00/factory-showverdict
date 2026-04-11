@@ -5,6 +5,28 @@ import { notFound } from 'next/navigation';
 import { getTemplate, getDefaultVariant } from '@/lib/templates/registry';
 import JsonLd from '@/components/JsonLd';
 
+/** Extract FAQ Q&A pairs from markdown content (detects ## FAQ / ## Frequently Asked Questions sections). */
+function extractFaqs(content: string): Array<{ question: string; answer: string }> {
+  // Find the start of an FAQ section
+  const faqMatch = content.match(/^##\s+(frequently\s+asked\s+questions|faq|common\s+questions|faqs)/im);
+  if (!faqMatch || faqMatch.index === undefined) return [];
+  const faqSection = content.slice(faqMatch.index);
+
+  // Parse H3 questions + the text between them as answers
+  const blocks = faqSection.split(/^###\s+/m).slice(1); // split on H3, drop pre-FAQ content
+  const faqs: Array<{ question: string; answer: string }> = [];
+  for (const block of blocks) {
+    const lines = block.split('\n');
+    const question = lines[0].trim().replace(/\?$/, '').trim() + '?';
+    const answer = lines.slice(1).join('\n').trim()
+      .replace(/\*\*/g, '')   // strip bold markers
+      .replace(/\n{2,}/g, ' ') // collapse paragraph breaks
+      .slice(0, 600);
+    if (question && answer) faqs.push({ question, answer });
+  }
+  return faqs;
+}
+
 export const revalidate = 3600; // Revalidate every hour
 
 interface PageProps {
@@ -35,9 +57,6 @@ export async function generateMetadata({ params }: PageProps) {
       title: post.title,
       description: post.excerpt || undefined,
       images: post.featured_image_url ? [post.featured_image_url] : undefined,
-    },
-    alternates: {
-      canonical: site.domain ? `https://${site.domain}/blog/${slug}` : `/blog/${slug}`,
     },
   };
 }
@@ -111,6 +130,8 @@ export default async function BlogPostPage({ params }: PageProps) {
     { name: post.title, url: `${baseUrl}/blog/${slug}` },
   ];
 
+  const faqs = post.content ? extractFaqs(post.content) : [];
+
   // Fallback to default if variant not found
   if (!Template) {
     const defaultVariant = getDefaultVariant('post-detail');
@@ -123,6 +144,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     return (
       <>
         <JsonLd type="breadcrumb" data={{ items: breadcrumbItems }} />
+        {faqs.length >= 3 && <JsonLd type="faq" data={{ faqs }} />}
         <DefaultTemplate
           post={post}
           category={category}
@@ -136,6 +158,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   return (
     <>
       <JsonLd type="breadcrumb" data={{ items: breadcrumbItems }} />
+      {faqs.length >= 3 && <JsonLd type="faq" data={{ faqs }} />}
       <Template
         post={post}
         category={category}

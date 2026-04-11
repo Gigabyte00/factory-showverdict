@@ -38,10 +38,10 @@ function hexToHSL(hex: string): string {
  * not from database lookup. This makes each deployment independent.
  */
 export const getSiteConfig = cache((): SiteContext => {
-  // Required env vars
-  const id = process.env.SITE_ID;
-  const slug = process.env.SITE_SLUG;
-  const name = process.env.SITE_NAME;
+  // Required env vars (trimmed to guard against trailing-newline issues in env var values)
+  const id = process.env.SITE_ID?.trim();
+  const slug = process.env.SITE_SLUG?.trim();
+  const name = process.env.SITE_NAME?.trim();
 
   if (!id || !slug || !name) {
     throw new Error(
@@ -97,9 +97,9 @@ export const getSiteConfig = cache((): SiteContext => {
     id,
     slug,
     name,
-    description: process.env.SITE_DESCRIPTION || null,
-    domain: process.env.SITE_DOMAIN || null,
-    niche: process.env.SITE_NICHE || null,
+    description: process.env.SITE_DESCRIPTION?.trim() || null,
+    domain: process.env.SITE_DOMAIN?.trim() || null,
+    niche: process.env.SITE_NICHE?.trim() || null,
     theme_config,
     settings,
     is_active: true, // If deployed, it's active
@@ -134,16 +134,17 @@ export function getHeroConfig(site: SiteContext) {
  * Get CTA configuration from env vars
  */
 export function getCTAConfig() {
+  const trim = (v: string | undefined) => v?.trim() || undefined;
   return {
-    primaryText: process.env.SITE_CTA_PRIMARY_TEXT || undefined,
-    primaryUrl: process.env.SITE_CTA_PRIMARY_URL || undefined,
-    secondaryText: process.env.SITE_CTA_SECONDARY_TEXT || undefined,
-    secondaryUrl: process.env.SITE_CTA_SECONDARY_URL || undefined,
-    categoriesTitle: process.env.SITE_CATEGORIES_TITLE || 'Explore by Topic',
-    articlesTitle: process.env.SITE_ARTICLES_TITLE || 'Latest Articles',
-    articlesLabel: process.env.SITE_ARTICLES_LABEL || 'Latest Insights',
-    finalCtaHeading: process.env.SITE_FINAL_CTA_HEADING || undefined,
-    finalCtaSubtext: process.env.SITE_FINAL_CTA_SUBTEXT || undefined,
+    primaryText: trim(process.env.SITE_CTA_PRIMARY_TEXT),
+    primaryUrl: trim(process.env.SITE_CTA_PRIMARY_URL),
+    secondaryText: trim(process.env.SITE_CTA_SECONDARY_TEXT),
+    secondaryUrl: trim(process.env.SITE_CTA_SECONDARY_URL),
+    categoriesTitle: trim(process.env.SITE_CATEGORIES_TITLE) || 'Explore by Topic',
+    articlesTitle: trim(process.env.SITE_ARTICLES_TITLE) || 'Latest Articles',
+    articlesLabel: trim(process.env.SITE_ARTICLES_LABEL) || 'Latest Insights',
+    finalCtaHeading: trim(process.env.SITE_FINAL_CTA_HEADING),
+    finalCtaSubtext: trim(process.env.SITE_FINAL_CTA_SUBTEXT),
   };
 }
 

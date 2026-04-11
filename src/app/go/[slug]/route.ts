@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { getSiteConfig } from '@/lib/site-config';
 
 // Service role client for both reads (bypasses RLS site scoping) and click logging
 const supabase = createClient(
@@ -24,6 +25,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
+  const site = getSiteConfig();
 
   try {
     // Lookup offer by slug, fall back to pretty_slug for backwards compat
@@ -31,6 +33,7 @@ export async function GET(
       .from('offers')
       .select('id, affiliate_url, site_id, name, is_active')
       .eq('slug', slug)
+      .eq('site_id', site.id)
       .single();
 
     if (error || !offer) {

@@ -92,6 +92,12 @@ export default function RootLayout({
 
   return (
     <html lang="en" className={fontClasses} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://vwcznzzpfywbehtjitzi.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://plausible.io" />
+      </head>
       <body style={{ ...themeVars as React.CSSProperties }}>
         {/* Site-wide JSON-LD: WebSite + Organization structured data — server-rendered for instant crawling */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({

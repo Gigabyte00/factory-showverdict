@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: offer } = await supabase
     .from('offers')
-    .select('name, description, image_url, rating')
+    .select('name, description, featured_image_url, logo_url, rating')
     .eq('site_id', site.id)
     .eq('slug', slug)
     .eq('is_active', true)
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: offer.description?.slice(0, 160) || `Read our in-depth review of ${offer.name}.`,
     openGraph: {
       title,
-      images: offer.image_url ? [offer.image_url] : undefined,
+      images: (offer.featured_image_url || offer.logo_url) ? [(offer.featured_image_url || offer.logo_url)!] : undefined,
     },
   };
 }
@@ -101,7 +101,7 @@ export default async function OfferDetailPage({ params }: PageProps) {
 
   const { data: relatedOffers } = await supabase
     .from('offers')
-    .select('id, name, slug, image_url, rating, description, award')
+    .select('id, name, slug, featured_image_url, logo_url, rating, description, award')
     .eq('site_id', site.id)
     .eq('is_active', true)
     .neq('id', offer.id)
@@ -128,7 +128,7 @@ export default async function OfferDetailPage({ params }: PageProps) {
     '@type': 'Product',
     name: offer.name,
     description: offer.description,
-    image: offer.image_url,
+    image: offer.featured_image_url ?? offer.logo_url,
     brand: { '@type': 'Organization', name: offer.name },
     aggregateRating: {
       '@type': 'AggregateRating',
@@ -170,10 +170,10 @@ export default async function OfferDetailPage({ params }: PageProps) {
             <Card className="overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row gap-6">
-                  {offer.image_url && (
+                  {(offer.featured_image_url ?? offer.logo_url) && (
                     <div className="shrink-0 flex items-center justify-center rounded-xl border bg-muted/30 p-3 w-full sm:w-32 h-32">
                       <Image
-                        src={offer.image_url}
+                        src={(offer.featured_image_url ?? offer.logo_url)!}
                         alt={offer.name}
                         width={100}
                         height={100}
@@ -354,9 +354,9 @@ export default async function OfferDetailPage({ params }: PageProps) {
               {relatedOffers.map((alt) => (
                 <Card key={alt.id} className="hover:shadow-md transition">
                   <CardContent className="p-4">
-                    {alt.image_url && (
+                    {(alt.featured_image_url ?? alt.logo_url) && (
                       <Image
-                        src={alt.image_url}
+                        src={(alt.featured_image_url ?? alt.logo_url)!}
                         alt={alt.name}
                         width={60}
                         height={60}

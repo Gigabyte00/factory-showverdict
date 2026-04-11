@@ -6,6 +6,7 @@
  */
 
 import type { PostDetailTemplateProps } from '@/lib/templates/config';
+import { ReadingProgress } from '@/components/content/ReadingProgress';
 import JsonLd from '@/components/JsonLd';
 import type { FAQData } from '@/components/JsonLd';
 import JsonLdTyped from '@/components/JsonLd';
@@ -112,6 +113,7 @@ export default function ReviewArticle({
 
   return (
     <div className="min-h-screen">
+      <ReadingProgress />
       {/* JSON-LD Structured Data */}
       <JsonLd data={structuredData} />
 

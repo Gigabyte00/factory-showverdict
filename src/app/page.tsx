@@ -7,6 +7,7 @@ import type { Post, Category, Offer } from '@/types';
 
 // Homepage components
 import { HeroSection } from '@/components/home/HeroSection';
+import { ShowVerdictHero } from '@/components/home/ShowVerdictHero';
 import { HowItWorks } from '@/components/home/HowItWorks';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
 import { ArticleCard } from '@/components/home/ArticleCard';
@@ -74,22 +75,7 @@ export default async function HomePage() {
 
   // Section map — each key maps to a rendered section (or null if data is empty)
   const sectionMap: Record<string, React.ReactNode> = {
-    'hero': (
-      <HeroSection
-        key="hero"
-        site={site}
-        categoryCount={categories.length}
-        postCount={totalPosts || posts.length}
-        tagline={hero.tagline}
-        subtitle={hero.subtitle}
-        accentWord={hero.accentWord}
-        variant={hero.variant}
-        ctaPrimaryText={cta.primaryText}
-        ctaPrimaryUrl={cta.primaryUrl}
-        ctaSecondaryText={cta.secondaryText}
-        ctaSecondaryUrl={cta.secondaryUrl}
-      />
-    ),
+    'hero': <ShowVerdictHero key="hero" />,
 
     'how-it-works': (
       <div key="how-it-works" className="animate-on-scroll">

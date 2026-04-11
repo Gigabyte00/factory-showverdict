@@ -88,35 +88,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch all published blog posts with category info
   const { data: posts } = await supabase
     .from('posts')
-    .select('slug, category_id, published_at, updated_at')
+    .select('slug, published_at, updated_at')
     .eq('site_id', site.id)
     .eq('status', 'published')
     .order('published_at', { ascending: false });
 
-  // Get category slugs for posts
-  const postCategoryIds = [...new Set(posts?.map((p) => p.category_id).filter(Boolean) || [])];
-  let postCategoryMap = new Map<string, string>();
-
-  if (postCategoryIds.length > 0) {
-    const { data: postCats } = await supabase
-      .from('categories')
-      .select('id, slug')
-      .in('id', postCategoryIds as string[]);
-    postCategoryMap = new Map(postCats?.map((c) => [c.id, c.slug]) || []);
-  }
-
   const postUrls: MetadataRoute.Sitemap =
-    posts?.map((post) => {
-      const categorySlug = post.category_id
-        ? postCategoryMap.get(post.category_id) || 'blog'
-        : 'blog';
-      return {
-        url: `${baseUrl}/${categorySlug}/${post.slug}`,
-        lastModified: new Date(post.updated_at || post.published_at || new Date()),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      };
-    }) || [];
+    posts?.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.updated_at || post.published_at || new Date()),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    })) || [];
 
   // Fetch all categories
   const { data: categories } = await supabase

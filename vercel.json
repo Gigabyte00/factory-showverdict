@@ -39,12 +39,5 @@
         }
       ]
     }
-  ],
-  "redirects": [
-    {
-      "source": "/offers/:slug",
-      "destination": "/go/:slug",
-      "permanent": false
-    }
   ]
 }

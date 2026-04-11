@@ -76,7 +76,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     .eq('site_id', site.id)
     .in('id', ids);
 
-  if (!data?.length) return { title: `Compare Offers | ${site.name}` };
+  if (!data?.length) return { title: 'Compare Offers' };
 
   const names = data.map((o) => o.name);
   const vsTitle =
@@ -85,7 +85,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       : `${names.slice(0, -1).join(', ')} vs ${names[names.length - 1]}`;
 
   return {
-    title: `${vsTitle} | ${site.name}`,
+    // Don't append site.name — root layout title template adds it automatically
+    title: vsTitle,
     description: `Side-by-side comparison of ${names.join(', ')}. See features, ratings, and which is right for you.`,
   };
 }

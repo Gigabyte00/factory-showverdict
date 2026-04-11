@@ -18,9 +18,14 @@ import { Search } from 'lucide-react';
  */
 export async function Header() {
   const site = getSiteConfig();
-  const { categories, staticLinks } = await getNavLinks();
+  const navData = await getNavLinks();
+  // Support both `staticLinks` (template) and `mainLinks` (some older site queries.ts)
+  const staticLinks: Array<{ name: string; href: string }> =
+    (navData as any).staticLinks ?? (navData as any).mainLinks ?? [];
+  const categories: Array<{ name: string; href: string }> =
+    ((navData as any).categories ?? []).map((c: any) => ({ name: c.name, href: c.href ?? `/${c.slug}` }));
 
-  const allLinks = [...staticLinks, ...categories.slice(0, 4)]; // Limit nav to 4 categories + static
+  const allLinks = [...staticLinks, ...categories.slice(0, 4)].slice(0, 6); // Cap at 6 total to prevent overflow
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

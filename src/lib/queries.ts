@@ -49,7 +49,7 @@ export const getNavLinks = cache(async () => {
   return {
     categories: categories.map((cat) => ({
       name: cat.name,
-      href: `/${cat.slug}`,
+      href: `/category/${cat.slug}`,
     })),
     staticLinks: [
       { name: 'Blog', href: '/blog' },

@@ -14,7 +14,14 @@ export function middleware(request: NextRequest) {
   // Security headers
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // Affiliate redirect routes need permissive referrer policy so Amazon/partners
+  // can see the referrer and properly attribute the click for commission tracking.
+  if (request.nextUrl.pathname.startsWith('/go/')) {
+    response.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
+  } else {
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  }
 
   return response;
 }

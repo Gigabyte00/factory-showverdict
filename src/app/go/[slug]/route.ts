@@ -10,15 +10,13 @@ const supabase = createClient(
 );
 
 /**
- * Link Cloaking Route - /go/[slug]
+ * Affiliate Redirect Route - /go/[slug]
  *
- * Logs clicks server-side and returns an HTML relay page that:
- * 1. Sets __fattr attribution cookie via Set-Cookie header (server-set = ITP-immune, 365-day)
- * 2. Writes localStorage backup before navigating (survives cookie deletion)
- * 3. JS-redirects immediately to affiliate URL (<50ms perceived delay)
+ * Logs clicks server-side and issues a proper HTTP 302 redirect to the affiliate URL.
+ * Sets __fattr attribution cookie via Set-Cookie header (server-set = ITP-immune, 365-day).
  *
- * Server-set cookies bypass Safari ITP's 7-day cap on JS-written cookies.
- * The relay page also prevents referrer leakage to the affiliate destination.
+ * Uses HTTP 302 (not 200+JS redirect) so Amazon Associates and other affiliate programs
+ * can properly track the referral and set attribution cookies.
  */
 export async function GET(
   req: NextRequest,
@@ -28,7 +26,7 @@ export async function GET(
   const site = getSiteConfig();
 
   try {
-    // Lookup offer by slug, fall back to pretty_slug for backwards compat
+    // Lookup offer by slug scoped to this site (prevents multi-row error when slug exists on multiple sites)
     let { data: offer, error } = await supabase
       .from('offers')
       .select('id, affiliate_url, site_id, name, is_active')
@@ -41,6 +39,7 @@ export async function GET(
         .from('offers')
         .select('id, affiliate_url, site_id, name, is_active')
         .eq('pretty_slug', slug)
+        .eq('site_id', site.id)
         .single();
 
       if (!fallback.error && fallback.data) {
@@ -101,7 +100,7 @@ export async function GET(
         });
     }
 
-    // Validate URL before embedding in HTML
+    // Validate URL before redirecting
     const affiliateUrl = offer.affiliate_url?.trim();
     if (!affiliateUrl || affiliateUrl === '#' || !affiliateUrl.startsWith('http')) {
       return new Response(
@@ -122,42 +121,15 @@ export async function GET(
     });
     const attrCookieValue = Buffer.from(attrPayload).toString('base64url');
 
-    // Safe JS string: JSON.stringify escapes quotes, newlines, and special chars
-    const safeDestUrl = JSON.stringify(affiliateUrl);
-    const safeAttrPayload = JSON.stringify(attrPayload);
-
-    // HTML relay page: sets cookie server-side, writes localStorage, JS-redirects instantly
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="robots" content="noindex,nofollow">
-<meta http-equiv="refresh" content="0;url=${affiliateUrl.replace(/"/g, '&quot;')}">
-<title>Redirecting...</title>
-</head>
-<body>
-<script>
-(function(){
-  try { localStorage.setItem('__fattr', ${safeAttrPayload}); } catch(e) {}
-  window.location.replace(${safeDestUrl});
-})();
-</script>
-<p style="font-family:system-ui;text-align:center;margin-top:20vh;color:#6b7280">
-  Redirecting... <a href="${affiliateUrl.replace(/"/g, '&quot;')}">Click here if not redirected</a>
-</p>
-</body>
-</html>`;
-
-    return new NextResponse(html, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'X-Robots-Tag': 'noindex, nofollow',
-        // Server-set cookie: bypasses Safari ITP's JS-cookie 7-day restriction
-        'Set-Cookie': `__fattr=${attrCookieValue}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`,
-      },
-    });
+    // HTTP 302 redirect — proper server-side redirect that Amazon Associates can track.
+    // Browsers follow 302s with the Location header, preserving referrer context
+    // and allowing Amazon to set its affiliate attribution cookie.
+    const response = NextResponse.redirect(affiliateUrl, 302);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    response.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
+    response.headers.set('Set-Cookie', `__fattr=${attrCookieValue}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`);
+    return response;
   } catch (err) {
     console.error('Link cloaking error:', err);
     return new Response(

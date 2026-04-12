@@ -38,9 +38,17 @@ export async function generateMetadata({ params }: PageProps) {
 
   if (!faq) return { title: 'FAQ Not Found' };
 
+  // Truncate description at first sentence boundary (before char 155)
+  const answer = faq.answer ?? '';
+  const firstPeriod = answer.indexOf('.', 0);
+  const description =
+    firstPeriod > 0 && firstPeriod < 155
+      ? answer.slice(0, firstPeriod + 1)
+      : answer.slice(0, 155).replace(/\s+\S*$/, '') + '…';
+
   return {
-    title: `${faq.question} | ${site.name}`,
-    description: (faq.answer ?? '').slice(0, 160),
+    title: faq.question,
+    description,
     alternates: baseUrl ? { canonical: `${baseUrl}/faq/${slug}` } : undefined,
   };
 }

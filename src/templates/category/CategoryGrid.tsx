@@ -14,9 +14,28 @@ import JsonLd from '@/components/JsonLd';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, Calendar, Tag } from 'lucide-react';
+import { Star, Calendar, Tag, RefreshCw } from 'lucide-react';
 import { OfferButton } from '@/components/offers/offer-button';
+import { BookmarkButton } from '@/components/ui/bookmark-button';
 import Link from 'next/link';
+import Image from 'next/image';
+
+/** Returns true when updated_at is more than 14 days newer than published_at — worth a "Recently updated" badge. */
+function isRecentlyUpdated(publishedAt: string | null | undefined, updatedAt: string | null | undefined): boolean {
+  if (!updatedAt || !publishedAt) return false;
+  const gap = new Date(updatedAt).getTime() - new Date(publishedAt).getTime();
+  return gap > 14 * 24 * 60 * 60 * 1000;
+}
+
+/** Short relative time for card badges — "2d ago", "3w ago", etc. */
+function shortRelative(iso: string): string {
+  const diffDays = Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 1) return 'today';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
+  return `${Math.floor(diffDays / 365)}y ago`;
+}
 
 type ContentFilter = 'all' | 'posts' | 'offers';
 
@@ -160,34 +179,62 @@ interface PostCardProps {
 }
 
 function PostCard({ post, site }: PostCardProps) {
+  const recentlyUpdated = isRecentlyUpdated(post.published_at, post.updated_at);
   return (
-    <Link href={`/blog/${post.slug}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition h-full">
-        {post.featured_image_url && (
-          <img
-            src={post.featured_image_url}
-            alt={post.title}
-            className="w-full h-48 object-cover"
-          />
-        )}
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <time dateTime={post.published_at || post.created_at || ''}>
-              {new Date(post.published_at || post.created_at || Date.now()).toLocaleDateString()}
-            </time>
-          </div>
-          <h3 className="font-semibold text-xl mb-2 line-clamp-2">
-            {post.title}
-          </h3>
-          {post.excerpt && (
-            <p className="text-muted-foreground text-sm line-clamp-3">
-              {post.excerpt}
-            </p>
+    <div className="relative group">
+      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <BookmarkButton
+          bookmark={{
+            id: `post-${post.slug}`,
+            type: 'post',
+            title: post.title,
+            url: `/blog/${post.slug}`,
+            image: post.featured_image_url ?? undefined,
+            excerpt: post.excerpt ?? undefined,
+          }}
+        />
+      </div>
+      <Link href={`/blog/${post.slug}`}>
+        <Card className="overflow-hidden hover:shadow-lg transition h-full">
+          {post.featured_image_url && (
+            <div className="relative w-full h-48">
+              <Image
+                src={post.featured_image_url}
+                alt={post.title}
+                fill
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
           )}
-        </CardContent>
-      </Card>
-    </Link>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground flex-wrap">
+              {recentlyUpdated && post.updated_at ? (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                  <RefreshCw className="h-3 w-3" aria-hidden="true" />
+                  Updated {shortRelative(post.updated_at)}
+                </span>
+              ) : (
+                <>
+                  <Calendar className="h-4 w-4" />
+                  <time dateTime={post.published_at || post.created_at || ''}>
+                    {new Date(post.published_at || post.created_at || Date.now()).toLocaleDateString()}
+                  </time>
+                </>
+              )}
+            </div>
+            <h3 className="font-semibold text-xl mb-2 line-clamp-2">
+              {post.title}
+            </h3>
+            {post.excerpt && (
+              <p className="text-muted-foreground text-sm line-clamp-3">
+                {post.excerpt}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
+    </div>
   );
 }
 
@@ -200,17 +247,23 @@ function OfferCard({ offer, siteId }: OfferCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition h-full">
       {offer.featured_image_url ? (
-        <img
-          src={offer.featured_image_url}
-          alt={offer.name}
-          className="w-full h-48 object-cover"
-        />
+        <div className="relative w-full h-48">
+          <Image
+            src={offer.featured_image_url}
+            alt={offer.name}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
+          />
+        </div>
       ) : offer.logo_url ? (
-        <div className="w-full h-48 bg-muted flex items-center justify-center p-8">
-          <img
+        <div className="relative w-full h-48 bg-muted flex items-center justify-center p-8">
+          <Image
             src={offer.logo_url}
             alt={offer.name}
-            className="max-h-full max-w-full object-contain"
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-contain p-6"
           />
         </div>
       ) : (

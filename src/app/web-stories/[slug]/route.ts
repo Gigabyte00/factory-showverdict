@@ -193,7 +193,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     .then(() => {});
 
   // Generate AMP HTML
-  const html = generateAMPStoryHTML(story as WebStory, site);
+  const html = generateAMPStoryHTML(story as unknown as WebStory, site);
 
   return new NextResponse(html, {
     headers: {

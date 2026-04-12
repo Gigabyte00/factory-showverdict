@@ -134,12 +134,16 @@ function OfferCard({ offer, categoryMap, siteId }: OfferCardProps) {
           )}
         </div>
 
-        {/* Price */}
-        {(offer as any).price_usd && (
-          <div className="text-lg font-bold text-foreground mb-2">
-            ${(offer as any).price_usd}
-          </div>
-        )}
+        {/* Price — action-oriented fallback when price isn't in our DB yet */}
+        <div className="mb-2">
+          {(offer as any).price_usd ? (
+            <span className="text-lg font-bold text-foreground">
+              ${(offer as any).price_usd}
+            </span>
+          ) : (
+            <span className="text-sm text-muted-foreground italic">Check current price</span>
+          )}
+        </div>
 
         {/* Description */}
         {offer.short_description && (

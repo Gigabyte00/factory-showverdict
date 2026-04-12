@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getSiteConfig } from '@/lib/site-config';
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { data: post } = await supabase
     .from('posts')
-    .select('title, excerpt, featured_image_url, published_at, updated_at')
+    .select('title, meta_title, meta_description, excerpt, featured_image_url, published_at, updated_at')
     .eq('slug', slug)
     .eq('site_id', site.id)
     .single();
@@ -31,11 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: 'Post Not Found' };
 
   return {
-    title: `${post.title}`,
-    description: post.excerpt || 'Read more on our blog',
+    title: post.meta_title || post.title,
+    description: post.meta_description || post.excerpt || 'Read more on our blog',
     openGraph: {
-      title: post.title,
-      description: post.excerpt || undefined,
+      title: post.meta_title || post.title,
+      description: post.meta_description || post.excerpt || undefined,
       type: 'article',
       publishedTime: post.published_at || undefined,
       modifiedTime: post.updated_at || undefined,
@@ -187,11 +188,14 @@ export default async function PostPage({ params }: Props) {
 
         {/* Featured Image */}
         {post.featured_image_url && (
-          <div className="mb-8 overflow-hidden rounded-lg">
-            <img
+          <div className="relative mb-8 overflow-hidden rounded-lg aspect-[16/9]">
+            <Image
               src={post.featured_image_url}
               alt={post.title}
-              className="h-auto w-full object-cover"
+              fill
+              sizes="(min-width: 1024px) 896px, 100vw"
+              className="object-cover"
+              priority
             />
           </div>
         )}
@@ -219,11 +223,15 @@ export default async function PostPage({ params }: Props) {
                   className="flex flex-col overflow-hidden rounded-lg border bg-card transition-shadow hover:shadow-lg"
                 >
                   {offer.featured_image_url && (
-                    <img
-                      src={offer.featured_image_url}
-                      alt={offer.name}
-                      className="h-48 w-full object-cover"
-                    />
+                    <div className="relative h-48 w-full">
+                      <Image
+                        src={offer.featured_image_url}
+                        alt={offer.name}
+                        fill
+                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                        className="object-cover"
+                      />
+                    </div>
                   )}
                   <div className="flex flex-1 flex-col p-4">
                     <h3 className="mb-2 text-lg font-semibold">{offer.name}</h3>
@@ -276,11 +284,15 @@ export default async function PostPage({ params }: Props) {
                   className="group overflow-hidden rounded-lg border bg-card transition-shadow hover:shadow-lg"
                 >
                   {relPost.featured_image_url && (
-                    <img
-                      src={relPost.featured_image_url}
-                      alt={relPost.title}
-                      className="h-48 w-full object-cover transition-transform group-hover:scale-105"
-                    />
+                    <div className="relative h-48 w-full overflow-hidden">
+                      <Image
+                        src={relPost.featured_image_url}
+                        alt={relPost.title}
+                        fill
+                        sizes="(min-width: 768px) 33vw, 100vw"
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                    </div>
                   )}
                   <div className="p-4">
                     <h3 className="mb-2 font-semibold group-hover:text-primary">{relPost.title}</h3>

@@ -37,9 +37,23 @@ export default async function ComparisonsIndexPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-4 text-4xl font-bold">Product Comparisons</h1>
-        <p className="text-xl text-muted-foreground">
+        <p className="text-xl text-muted-foreground mb-6">
           Head-to-head comparisons to help you choose the right product. We analyze features, performance, and value.
         </p>
+        <div className="rounded-lg border bg-muted/30 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p className="font-semibold">Don&apos;t see what you&apos;re looking for?</p>
+            <p className="text-sm text-muted-foreground">
+              Build your own side-by-side comparison from any 2–4 products in our catalogue.
+            </p>
+          </div>
+          <Link
+            href="/compare/builder"
+            className="inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors whitespace-nowrap"
+          >
+            Build a comparison →
+          </Link>
+        </div>
       </div>
 
       {/* Comparison Grid */}

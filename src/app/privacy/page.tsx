@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 export async function generateMetadata(): Promise<Metadata> {
   const site = getSiteConfig();
   return {
-    title: `Privacy Policy`,
+    title: `Privacy Policy - ${site.name}`,
     description: `Privacy policy for ${site.name}. How we collect, use, and protect your information.`,
     alternates: { canonical: `${site.domain}/privacy` },
   };

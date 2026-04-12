@@ -4,6 +4,7 @@ import type { CalculatorTemplate, QuizTemplate } from '@/types';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import JsonLd from '@/components/JsonLd';
+import { ToolsBrowser, type ToolItem } from './ToolsBrowser';
 
 export const revalidate = 3600; // Revalidate every hour
 
@@ -93,7 +94,69 @@ export default async function ToolsPage() {
   const calculatorList = (calculators || []) as Pick<CalculatorTemplate, 'id' | 'slug' | 'name' | 'description' | 'calculator_type' | 'usage_count'>[];
   const quizList = (quizzes || []) as Pick<QuizTemplate, 'id' | 'slug' | 'name' | 'description' | 'quiz_type' | 'completion_count'>[];
 
-  const hasTools = calculatorList.length > 0 || quizList.length > 0;
+  // Pull a sampling of FAQ + glossary entries so they appear in the "Reference"
+  // filter. The dedicated pages at /faq and /glossary remain the real entry
+  // points — this is a discovery surface.
+  const [{ data: faqItems }, { data: glossaryCount }] = await Promise.all([
+    supabase
+      .from('faq_items')
+      .select('id, question', { count: 'exact', head: false })
+      .eq('site_id', site.id)
+      .eq('status', 'published')
+      .limit(0),
+    supabase
+      .from('glossary_terms')
+      .select('id', { count: 'exact', head: true })
+      .eq('site_id', site.id)
+      .eq('status', 'published'),
+  ]);
+  const faqCount = faqItems?.length ?? 0;
+  const glossaryTotal = (glossaryCount as any)?.count ?? 0;
+
+  // Assemble unified tool list for the client browser.
+  const tools: ToolItem[] = [
+    ...calculatorList.map((calc) => ({
+      id: `calc-${calc.id}`,
+      name: calc.name,
+      description: calc.description,
+      href: `/tools/calculators/${calc.slug}`,
+      kind: 'calculator' as const,
+      metrics: calc.usage_count > 0 ? { label: 'uses', value: calc.usage_count.toLocaleString() } : null,
+    })),
+    ...quizList.map((quiz) => ({
+      id: `quiz-${quiz.id}`,
+      name: quiz.name,
+      description: quiz.description,
+      href: `/tools/quizzes/${quiz.slug}`,
+      kind: 'quiz' as const,
+      metrics: quiz.completion_count > 0 ? { label: 'completions', value: quiz.completion_count.toLocaleString() } : null,
+    })),
+  ];
+
+  // Surface the knowledge-base entry points as "reference tools" so the
+  // filter gains a populated third tab when the site has KB content.
+  if (faqCount > 0) {
+    tools.push({
+      id: 'ref-faq',
+      name: 'FAQ — Frequently Asked Questions',
+      description: `Quick answers to the most common ${site.niche || ''} questions we get.`,
+      href: '/faq',
+      kind: 'reference',
+      metrics: { label: 'answers', value: `${faqCount}+` },
+    });
+  }
+  if (glossaryTotal > 0) {
+    tools.push({
+      id: 'ref-glossary',
+      name: 'Glossary',
+      description: `Plain-English definitions of every ${site.niche || ''} term you\u2019ll encounter.`,
+      href: '/glossary',
+      kind: 'reference',
+      metrics: { label: 'terms', value: String(glossaryTotal) },
+    });
+  }
+
+  const hasTools = tools.length > 0;
 
   const baseUrl = site.domain ? `https://${site.domain}` : '';
 
@@ -132,77 +195,17 @@ export default async function ToolsPage() {
             <p className="text-gray-500 dark:text-gray-400">
               We are building helpful calculators and quizzes. Check back soon!
             </p>
+            <div className="mt-6">
+              <Link
+                href="/compare/builder"
+                className="inline-flex items-center gap-1 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Build a product comparison instead →
+              </Link>
+            </div>
           </div>
         ) : (
-          <div className="space-y-12">
-            {/* Calculators Section */}
-            {calculatorList.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                  <span>📊</span> Calculators
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {calculatorList.map((calc) => (
-                    <Link
-                      key={calc.id}
-                      href={`/tools/calculators/${calc.slug}`}
-                      className="group block bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 border border-gray-200 dark:border-gray-700"
-                    >
-                      <div className="flex items-start justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-                          {calc.name}
-                        </h3>
-                        <span className="text-2xl">🧮</span>
-                      </div>
-                      <p className="mt-2 text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
-                        {calc.description}
-                      </p>
-                      {calc.usage_count > 0 && (
-                        <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                          Used {calc.usage_count.toLocaleString()} times
-                        </p>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Quizzes Section */}
-            {quizList.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                  <span>📝</span> Quizzes
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {quizList.map((quiz) => (
-                    <Link
-                      key={quiz.id}
-                      href={`/tools/quizzes/${quiz.slug}`}
-                      className="group block bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 border border-gray-200 dark:border-gray-700"
-                    >
-                      <div className="flex items-start justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-                          {quiz.name}
-                        </h3>
-                        <span className="text-2xl">
-                          {quiz.quiz_type === 'assessment' ? '📋' : quiz.quiz_type === 'personality' ? '🎭' : '🎯'}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
-                        {quiz.description}
-                      </p>
-                      {quiz.completion_count > 0 && (
-                        <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                          Completed {quiz.completion_count.toLocaleString()} times
-                        </p>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
+          <ToolsBrowser tools={tools} niche={site.niche} />
         )}
       </div>
     </main>

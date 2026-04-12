@@ -14,6 +14,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Check, X, Minus, Star, ChevronDown, ChevronUp, ChevronsUpDown, ExternalLink, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -187,9 +188,11 @@ export function ComparisonMatrix({
                     </span>
                   )}
                   {product.image && (
-                    <img
+                    <Image
                       src={product.image}
                       alt={product.name}
+                      width={60}
+                      height={40}
                       className="h-10 w-auto object-contain mx-auto mb-1"
                     />
                   )}

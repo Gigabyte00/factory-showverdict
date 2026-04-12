@@ -29,7 +29,7 @@ export async function GET(
     // Lookup offer by slug scoped to this site (prevents multi-row error when slug exists on multiple sites)
     let { data: offer, error } = await supabase
       .from('offers')
-      .select('id, affiliate_url, site_id, name, is_active')
+      .select('id, affiliate_url, site_id, name, is_active, price_usd')
       .eq('slug', slug)
       .eq('site_id', site.id)
       .single();
@@ -37,7 +37,7 @@ export async function GET(
     if (error || !offer) {
       const fallback = await supabase
         .from('offers')
-        .select('id, affiliate_url, site_id, name, is_active')
+        .select('id, affiliate_url, site_id, name, is_active, price_usd')
         .eq('pretty_slug', slug)
         .eq('site_id', site.id)
         .single();
@@ -98,6 +98,26 @@ export async function GET(
         .then(({ error: insertError }) => {
           if (insertError) console.error('offer_clicks insert failed:', insertError.message);
         });
+
+      // Record a price observation in the offer_price_history time-series.
+      // Fire-and-forget; duplicates are acceptable since the reader API
+      // deduplicates to one row per day per offer at query time.
+      // The offers table stores price as numeric `price_usd`; we serialize
+      // to a short string for the history table (which is text-typed).
+      const priceUsd = (offer as any).price_usd as number | null | undefined;
+      if (priceUsd != null && Number.isFinite(priceUsd)) {
+        (supabase as any)
+          .from('offer_price_history')
+          .insert({
+            offer_id: offer.id,
+            site_id: offer.site_id,
+            price: `$${priceUsd}`,
+            source: 'click',
+          })
+          .then(({ error: phErr }: { error: { message: string } | null }) => {
+            if (phErr) console.error('offer_price_history insert failed:', phErr.message);
+          });
+      }
     }
 
     // Validate URL before redirecting

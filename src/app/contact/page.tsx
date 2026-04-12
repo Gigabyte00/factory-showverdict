@@ -6,7 +6,7 @@ import ContactForm from '@/components/ContactForm';
 export function generateMetadata(): Metadata {
   const site = getSiteConfig();
   return {
-    title: `Contact Us`,
+    title: `Contact Us - ${site.name}`,
     description: `Get in touch with ${site.name}. Questions, review requests, or feedback? We respond within 48 hours.`,
     alternates: { canonical: `https://${site.domain}/contact` },
   };

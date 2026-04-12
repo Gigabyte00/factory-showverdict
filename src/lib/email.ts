@@ -3,7 +3,7 @@
 
 import { Resend } from 'resend';
 import { getSiteConfig } from './site-config';
-import { buildNewsletterWelcomeHtml, buildDripEmail2Html, buildDripEmail3Html } from './email-templates';
+import { buildNewsletterWelcomeHtml, buildDripEmail2Html, buildDripEmail3Html, buildSequenceStepHtml } from './email-templates';
 
 function getFromEmail(): string {
   const senderEmail = process.env.SENDER_EMAIL;
@@ -58,6 +58,39 @@ export function sendNewsletterWelcome(email: string, name?: string): void {
     subject: `Welcome to ${site.name}`,
     html: buildNewsletterWelcomeHtml(email, name),
   });
+}
+
+/** Send a single sequence step email. Returns true on success. */
+export async function sendSequenceStepEmail(
+  email: string,
+  subject: string,
+  bodyTemplate: string
+): Promise<boolean> {
+  const client = getResend();
+  if (!client) return false;
+  const site = getSiteConfig();
+  const domain = (site as any).domain || `${(site as any).slug}.vercel.app`;
+  const html = buildSequenceStepHtml(subject, bodyTemplate, {
+    site_url: `https://${domain}`,
+    site_name: site.name,
+    email,
+  });
+  try {
+    const { error } = await client.emails.send({
+      from: getFromEmail(),
+      to: email,
+      subject,
+      html,
+    });
+    if (error) {
+      console.error('[email] Sequence step send failed:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[email] Sequence step error:', err);
+    return false;
+  }
 }
 
 const DRIP_SUBJECTS: Record<number, (siteName: string, niche: string) => string> = {

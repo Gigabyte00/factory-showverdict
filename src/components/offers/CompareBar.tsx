@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { X, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -195,12 +196,13 @@ function CompareCard({ offer, categoryMap, siteId, checked, onToggle, disabled }
       </label>
 
       {offer.featured_image_url && (
-        <div className="h-44 overflow-hidden">
-          <img
+        <div className="relative h-44 overflow-hidden">
+          <Image
             src={offer.featured_image_url}
             alt={offer.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
+            className="object-cover transition-transform duration-500 hover:scale-105"
           />
         </div>
       )}
@@ -217,11 +219,15 @@ function CompareCard({ offer, categoryMap, siteId, checked, onToggle, disabled }
           )}
         </div>
 
-        {(offer as any).price_usd && (
-          <div className="mb-2 text-lg font-bold text-foreground">
-            ${(offer as any).price_usd}
-          </div>
-        )}
+        <div className="mb-2">
+          {(offer as any).price_usd ? (
+            <span className="text-lg font-bold text-foreground">
+              ${(offer as any).price_usd}
+            </span>
+          ) : (
+            <span className="text-sm text-muted-foreground italic">Check current price</span>
+          )}
+        </div>
 
         {offer.short_description && (
           <p className="mb-4 text-sm text-muted-foreground">{offer.short_description}</p>

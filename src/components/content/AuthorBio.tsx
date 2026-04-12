@@ -58,7 +58,7 @@ export function AuthorBio({
           ) : (
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-xl font-bold text-primary">
-                {name.charAt(0).toUpperCase()}
+                {name?.charAt(0)?.toUpperCase() ?? '?'}
               </span>
             </div>
           )}

@@ -42,6 +42,10 @@ export const getCategories = cache(async (): Promise<NavCategory[]> => {
 
 /**
  * Get navigation links (categories + static pages)
+ *
+ * `staticLinks` appear in the primary header nav (capped at 6 total with categories).
+ * `resourceLinks` are knowledge-base / trust pages — consumed by the footer and mobile
+ * nav drawer but kept out of the primary header to avoid overflow.
  */
 export const getNavLinks = cache(async () => {
   const categories = await getCategories();
@@ -54,6 +58,18 @@ export const getNavLinks = cache(async () => {
     staticLinks: [
       { name: 'Blog', href: '/blog' },
       { name: 'Offers', href: '/offers' },
+      { name: 'Tools', href: '/tools' },
+    ],
+    resourceLinks: [
+      { name: 'FAQ', href: '/faq' },
+      { name: 'Glossary', href: '/glossary' },
+      { name: 'Topics', href: '/topics' },
+    ],
+    trustLinks: [
+      { name: 'Methodology', href: '/methodology' },
+      { name: 'Authors', href: '/authors' },
+      { name: 'Editorial Standards', href: '/methodology#standards' },
+      { name: 'About', href: '/about' },
     ],
   };
 });

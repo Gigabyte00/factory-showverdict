@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getSiteConfig } from '@/lib/site-config';
 import { getNavLinks } from '@/lib/queries';
 import { MobileNav } from './MobileNav';
@@ -24,6 +25,8 @@ export async function Header() {
     (navData as any).staticLinks ?? (navData as any).mainLinks ?? [];
   const categories: Array<{ name: string; href: string }> =
     ((navData as any).categories ?? []).map((c: any) => ({ name: c.name, href: c.href ?? `/category/${c.slug}` }));
+  const resourceLinks: Array<{ name: string; href: string }> = (navData as any).resourceLinks ?? [];
+  const trustLinks: Array<{ name: string; href: string }> = (navData as any).trustLinks ?? [];
 
   const allLinks = [...staticLinks, ...categories.slice(0, 4)].slice(0, 6); // Cap at 6 total to prevent overflow
 
@@ -33,9 +36,12 @@ export async function Header() {
         {/* Logo / Site Name */}
         <Link href="/" className="flex items-center space-x-2">
           {site.theme_config?.logoUrl ? (
-            <img
+            <Image
               src={site.theme_config.logoUrl}
               alt={site.name}
+              width={160}
+              height={32}
+              priority
               className="h-8 w-auto"
             />
           ) : (
@@ -49,12 +55,23 @@ export async function Header() {
         {/* CTA Button + Search + Theme Toggle + Mobile Navigation */}
         <div className="flex items-center gap-2">
           {process.env.SITE_HEADER_CTA_TEXT && process.env.SITE_HEADER_CTA_URL && (
-            <Link
-              href={process.env.SITE_HEADER_CTA_URL}
-              className="hidden md:inline-flex items-center px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-            >
-              {process.env.SITE_HEADER_CTA_TEXT}
-            </Link>
+            <>
+              {/* Desktop CTA — full-width pill */}
+              <Link
+                href={process.env.SITE_HEADER_CTA_URL}
+                className="hidden md:inline-flex items-center px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                {process.env.SITE_HEADER_CTA_TEXT}
+              </Link>
+              {/* Mobile CTA — compact pill so the primary action is visible above-the-fold on phones */}
+              <Link
+                href={process.env.SITE_HEADER_CTA_URL}
+                className="inline-flex md:hidden items-center px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors whitespace-nowrap max-w-[120px] truncate"
+                aria-label={process.env.SITE_HEADER_CTA_TEXT}
+              >
+                {process.env.SITE_HEADER_CTA_TEXT}
+              </Link>
+            </>
           )}
           <Link
             href="/search"
@@ -68,6 +85,8 @@ export async function Header() {
             siteName={site.name}
             links={allLinks}
             categories={categories}
+            resourceLinks={resourceLinks}
+            trustLinks={trustLinks}
           />
         </div>
       </div>

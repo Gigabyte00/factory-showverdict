@@ -87,6 +87,20 @@
     font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Global focus ring — covers all interactive elements for keyboard users */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 /* Affiliate link disclosure styling */
@@ -235,52 +249,78 @@ h1, h2, h3 {
   display: block;
   width: 100%;
   height: 48px;
-  background: linear-gradient(to bottom, rgb(31 41 55), transparent);
-}
-
-/* ──────────────────────────────────────────────────────────
-   WAVE 8 ADDITIONS — focus rings, reduced-motion, print CSS
-   ────────────────────────────────────────────────────────── */
-
-/* Smooth scroll */
-html { scroll-behavior: smooth; }
-
-/* Focus rings — WCAG 2.1 AA (keyboard nav only) */
-:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
-}
-:focus:not(:focus-visible) { outline: none; }
-
-/* Reduced motion — WCAG compliance */
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .animate-on-scroll, .stagger-children > * {
-    animation: none !important; opacity: 1 !important; transform: none !important;
-  }
-}
-
-/* Scroll animation fallback: always visible in non-Chrome */
-.animate-on-scroll { opacity: 1; }
-@supports (animation-timeline: view()) { .animate-on-scroll { opacity: 0; } }
-
-/* Fix wave divider */
-.section-divider-wave::before {
   background: linear-gradient(to bottom, hsl(var(--foreground) / 0.12), transparent);
 }
 
-/* Print stylesheet */
+/* ── Scroll animation Safari/Firefox fallback ── */
+/* Content is always visible in browsers without animation-timeline support */
+.animate-on-scroll {
+  opacity: 1;
+}
+@supports (animation-timeline: view()) {
+  .animate-on-scroll {
+    opacity: 0; /* Chrome/Edge: starts hidden, scroll animation reveals it */
+  }
+}
+
+/* ── Reduced motion — WCAG 2.1 AA compliance ── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-on-scroll,
+  .stagger-children > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Page load fade-in (progressive enhancement, Chrome 117+) ── */
+@supports (animation-timeline: scroll()) {
+  main {
+    animation: fade-in-up 0.3s ease-out both;
+  }
+}
+
+/* ── Print stylesheet ── */
 @media print {
-  header, footer, nav, .sticky, aside, button:not([data-print]),
-  .newsletter-signup, [class*="sticky"] { display: none !important; }
-  body { background: white; color: black; font-size: 12pt; }
-  a::after { content: " (" attr(href) ")"; font-size: 0.8em; }
-  .prose { max-width: 100%; }
-  img { max-width: 100%; page-break-inside: avoid; }
-  h2, h3 { page-break-after: avoid; }
+  header,
+  footer,
+  nav,
+  .sticky,
+  aside,
+  button:not([data-print]),
+  .newsletter-signup,
+  [class*="sticky"] {
+    display: none !important;
+  }
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+  a::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+  .prose {
+    max-width: 100%;
+  }
+  img {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
 }

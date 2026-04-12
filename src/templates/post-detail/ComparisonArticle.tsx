@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ShareButtons from '@/components/ShareButtons';
 import Link from 'next/link';
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
@@ -242,11 +243,15 @@ export default function ComparisonArticle({
 
                             {/* Product Image */}
                             {product.image && (
-                              <img
-                                src={product.image}
-                                alt={product.name}
-                                className="h-24 w-24 rounded object-cover"
-                              />
+                              <div className="relative h-24 w-24 rounded overflow-hidden">
+                                <Image
+                                  src={product.image}
+                                  alt={product.name}
+                                  fill
+                                  sizes="96px"
+                                  className="object-cover"
+                                />
+                              </div>
                             )}
 
                             {/* Product Name */}
@@ -445,11 +450,15 @@ export default function ComparisonArticle({
                   <Card className="overflow-hidden transition-shadow hover:shadow-lg">
                     <CardContent className="p-4">
                       {relatedPost.featured_image_url && (
-                        <img
-                          src={relatedPost.featured_image_url}
-                          alt={relatedPost.title}
-                          className="mb-3 h-32 w-full rounded object-cover"
-                        />
+                        <div className="relative mb-3 h-32 w-full rounded overflow-hidden">
+                          <Image
+                            src={relatedPost.featured_image_url}
+                            alt={relatedPost.title}
+                            fill
+                            sizes="(min-width: 1024px) 280px, (min-width: 768px) 50vw, 100vw"
+                            className="object-cover"
+                          />
+                        </div>
                       )}
                       <h3 className="line-clamp-2 font-semibold transition group-hover:text-primary">
                         {relatedPost.title}

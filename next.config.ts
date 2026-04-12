@@ -11,29 +11,24 @@ const nextConfig: NextConfig = {
   // Enable transpilation of the shared workspace package
   transpilePackages: ['@factory/shared'],
 
-  // Image optimization for affiliate sites
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.supabase.co',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      { protocol: 'https', hostname: 'm.media-amazon.com' },
-    ],
-  },
-
-  // Enable ISR revalidation via API
-
-  // Proxy Supabase storage through /cdn/ to hide project ref from page source.
+  // Proxy Supabase storage through /cdn/ to hide the project ref from page source.
+  // SUPABASE_CDN_BASE is a private (non-NEXT_PUBLIC) env var — never shipped to browser.
   async rewrites() {
     const base = process.env.SUPABASE_CDN_BASE;
     if (!base) return [];
     return [{ source: '/cdn/:path*', destination: `${base}/:path*` }];
   },
+
+  // Image optimization for affiliate sites
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**.supabase.co' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'm.media-amazon.com' },
+    ],
+  },
+
+  // Enable ISR revalidation via API
   experimental: {
     // Enable PPR for faster initial loads
   },

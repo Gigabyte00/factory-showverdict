@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Check, X, Minus, Star, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -96,9 +97,11 @@ export function ComparisonTable({
                   </Badge>
                 )}
                 {product.image && (
-                  <img
+                  <Image
                     src={product.image}
                     alt={product.name}
+                    width={80}
+                    height={48}
                     className="h-12 w-auto object-contain mx-auto mb-2"
                   />
                 )}

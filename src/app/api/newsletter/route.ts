@@ -62,6 +62,27 @@ export async function POST(request: Request) {
     // Only send welcome email for genuinely new subscribers
     if (rows && rows.length > 0) {
       sendNewsletterWelcome(data.email, data.name || undefined);
+
+      // Enroll in active email sequence (fire-and-forget — never block the response)
+      const subscriberId = rows[0].id;
+      supabase
+        .from('email_sequences')
+        .select('id')
+        .eq('site_id', site.id)
+        .eq('status', 'active')
+        .eq('trigger_event', 'newsletter_signup')
+        .limit(1)
+        .single()
+        .then(({ data: seq }) => {
+          if (seq) {
+            supabase
+              .from('subscriber_sequence_state')
+              .insert({ subscriber_id: subscriberId, sequence_id: seq.id, current_step: 0, status: 'active' })
+              .then(() => {})
+              .catch(console.error);
+          }
+        })
+        .catch(console.error);
     }
 
     return NextResponse.json({ success: true });

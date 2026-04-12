@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   const { data: post } = await supabase
     .from('posts')
-    .select('title, excerpt, featured_image_url')
+    .select('title, meta_title, meta_description, excerpt, featured_image_url')
     .eq('site_id', site.id)
     .eq('slug', slug)
     .eq('status', 'published')
@@ -51,11 +51,11 @@ export async function generateMetadata({ params }: PageProps) {
   }
 
   return {
-    title: post.title,
-    description: post.excerpt || `Read ${post.title} on ${site.name}`,
+    title: post.meta_title || post.title,
+    description: post.meta_description || post.excerpt || `Read ${post.title} on ${site.name}`,
     openGraph: {
-      title: post.title,
-      description: post.excerpt || undefined,
+      title: post.meta_title || post.title,
+      description: post.meta_description || post.excerpt || undefined,
       images: post.featured_image_url ? [post.featured_image_url] : undefined,
     },
   };

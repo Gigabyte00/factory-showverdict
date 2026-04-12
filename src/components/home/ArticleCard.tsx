@@ -1,8 +1,23 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Calendar, ArrowRight } from 'lucide-react';
+import { Clock, Calendar, ArrowRight, RefreshCw } from 'lucide-react';
+import { BookmarkButton } from '@/components/ui/bookmark-button';
 import type { Post, Category } from '@/types';
+
+/** Updated_at must be >14 days newer than published_at to count as a meaningful refresh. */
+function getFreshnessBadge(publishedAt: string | null | undefined, updatedAt: string | null | undefined): string | null {
+  if (!updatedAt || !publishedAt) return null;
+  const gapMs = new Date(updatedAt).getTime() - new Date(publishedAt).getTime();
+  if (gapMs <= 14 * 24 * 60 * 60 * 1000) return null;
+  const diffDays = Math.floor((Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 1) return 'Updated today';
+  if (diffDays < 7) return `Updated ${diffDays}d ago`;
+  if (diffDays < 30) return `Updated ${Math.floor(diffDays / 7)}w ago`;
+  if (diffDays < 365) return `Updated ${Math.floor(diffDays / 30)}mo ago`;
+  return null;
+}
 
 interface ArticleCardProps {
   post: Post;
@@ -32,9 +47,10 @@ export function ArticleCard({ post, category, variant = 'default', href }: Artic
 
   const readingTime = post.reading_time_minutes || estimateReadingTime(post.word_count);
   const postUrl = href || `/blog/${post.slug}`;
+  const freshnessBadge = getFreshnessBadge(post.published_at, post.updated_at);
 
   if (variant === 'featured') {
-    return <FeaturedArticleCard post={post} category={category} publishedDate={publishedDate} readingTime={readingTime} href={postUrl} />;
+    return <FeaturedArticleCard post={post} category={category} publishedDate={publishedDate} readingTime={readingTime} href={postUrl} freshnessBadge={freshnessBadge} />;
   }
 
   if (variant === 'compact') {
@@ -42,17 +58,32 @@ export function ArticleCard({ post, category, variant = 'default', href }: Artic
   }
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+    <Card className="group overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 relative">
+      {/* Bookmark — hover/focus reveal */}
+      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <BookmarkButton
+          bookmark={{
+            id: `post-${post.slug}`,
+            type: 'post',
+            title: post.title,
+            url: postUrl,
+            image: post.featured_image_url ?? undefined,
+            excerpt: post.excerpt ?? undefined,
+          }}
+        />
+      </div>
+
       {/* Thumbnail or placeholder */}
       <Link href={postUrl} className="block relative aspect-video overflow-hidden">
         {post.featured_image_url ? (
           <>
-            <div className="relative w-full h-full bg-muted animate-pulse">
-              <img
+            <div className="relative w-full h-full bg-muted">
+              <Image
                 src={post.featured_image_url}
                 alt={post.featured_image_alt || post.title}
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                fill
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
@@ -85,17 +116,22 @@ export function ArticleCard({ post, category, variant = 'default', href }: Artic
 
         {/* Meta info + read more arrow */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            {freshnessBadge ? (
+              <span className="inline-flex items-center gap-1 font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                <RefreshCw className="w-3 h-3" aria-hidden="true" />
+                {freshnessBadge}
+              </span>
+            ) : publishedDate ? (
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                {publishedDate}
+              </span>
+            ) : null}
             {readingTime > 0 && (
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
                 {readingTime} min read
-              </span>
-            )}
-            {publishedDate && (
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                {publishedDate}
               </span>
             )}
           </div>
@@ -115,24 +151,40 @@ function FeaturedArticleCard({
   publishedDate,
   readingTime,
   href,
+  freshnessBadge,
 }: {
   post: Post;
   category?: Category | null;
   publishedDate: string | null;
   readingTime: number;
   href: string;
+  freshnessBadge: string | null;
 }) {
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 relative">
+      <div className="absolute top-3 right-3 z-10">
+        <BookmarkButton
+          bookmark={{
+            id: `post-${post.slug}`,
+            type: 'post',
+            title: post.title,
+            url: href,
+            image: post.featured_image_url ?? undefined,
+            excerpt: post.excerpt ?? undefined,
+          }}
+        />
+      </div>
       <div className="md:flex">
         {/* Image section - larger */}
-        <Link href={href} className="block relative md:w-1/2 aspect-video md:aspect-auto overflow-hidden">
+        <Link href={href} className="block relative md:w-1/2 aspect-video md:aspect-auto overflow-hidden md:min-h-[280px]">
           {post.featured_image_url ? (
-            <img
+            <Image
               src={post.featured_image_url}
               alt={post.featured_image_alt || post.title}
-              loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 md:min-h-[280px]"
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              priority
             />
           ) : (
             <PlaceholderImage title={post.title} className="md:min-h-[280px]" />
@@ -159,17 +211,22 @@ function FeaturedArticleCard({
             </p>
           )}
 
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4 flex-wrap">
+            {freshnessBadge ? (
+              <span className="inline-flex items-center gap-1 font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 text-xs">
+                <RefreshCw className="w-3 h-3" aria-hidden="true" />
+                {freshnessBadge}
+              </span>
+            ) : publishedDate ? (
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                {publishedDate}
+              </span>
+            ) : null}
             {readingTime > 0 && (
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
                 {readingTime} min read
-              </span>
-            )}
-            {publishedDate && (
-              <span className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                {publishedDate}
               </span>
             )}
           </div>
@@ -204,13 +261,14 @@ function CompactArticleCard({
   return (
     <Link href={href} className="group flex gap-4 py-3">
       {/* Small thumbnail */}
-      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
         {post.featured_image_url ? (
-          <img
+          <Image
             src={post.featured_image_url}
             alt={post.title}
-            loading="lazy"
-            className="w-full h-full object-cover"
+            fill
+            sizes="80px"
+            className="object-cover"
           />
         ) : (
           <PlaceholderImage title={post.title} className="rounded-lg" />

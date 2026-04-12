@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Award, Star, ExternalLink, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -75,11 +76,15 @@ export function ProductCallout({
         {/* Image */}
         {image && (
           <div className="flex-shrink-0">
-            <img
-              src={image}
-              alt={name}
-              className="w-full md:w-32 h-32 object-contain rounded-md bg-white p-2"
-            />
+            <div className="relative w-full md:w-32 h-32 rounded-md bg-white">
+              <Image
+                src={image}
+                alt={name}
+                fill
+                sizes="(min-width: 768px) 128px, 100vw"
+                className="object-contain p-2"
+              />
+            </div>
           </div>
         )}
 
@@ -96,8 +101,10 @@ export function ProductCallout({
                 <span className="text-xs text-muted-foreground">/5</span>
               </div>
             )}
-            {price && (
+            {price ? (
               <span className="text-sm font-bold text-foreground">{price}</span>
+            ) : (
+              <span className="text-sm text-muted-foreground italic">Check current price</span>
             )}
           </div>
 

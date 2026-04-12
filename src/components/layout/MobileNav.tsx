@@ -23,6 +23,8 @@ interface MobileNavProps {
   siteName: string;
   links: NavLink[];
   categories: NavLink[];
+  resourceLinks?: NavLink[];
+  trustLinks?: NavLink[];
 }
 
 /**
@@ -31,7 +33,7 @@ interface MobileNavProps {
  * Uses shadcn Sheet component for slide-out menu.
  * Closes automatically on navigation.
  */
-export function MobileNav({ siteName, links, categories }: MobileNavProps) {
+export function MobileNav({ siteName, links, categories, resourceLinks = [], trustLinks = [] }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -99,6 +101,61 @@ export function MobileNav({ siteName, links, categories }: MobileNavProps) {
                   )}
                 >
                   {cat.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Knowledge Base */}
+          {resourceLinks.length > 0 && (
+            <div className="pt-4 border-t">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
+                Knowledge
+              </p>
+              {resourceLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={handleLinkClick}
+                  className={cn(
+                    'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                    pathname === link.href
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  )}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <Link
+                href="/bookmarks"
+                onClick={handleLinkClick}
+                className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                Saved Articles
+              </Link>
+            </div>
+          )}
+
+          {/* Trust & Company */}
+          {trustLinks.length > 0 && (
+            <div className="pt-4 border-t">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
+                About
+              </p>
+              {trustLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={handleLinkClick}
+                  className={cn(
+                    'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                    pathname === link.href
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  )}
+                >
+                  {link.name}
                 </Link>
               ))}
             </div>

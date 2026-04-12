@@ -134,7 +134,11 @@ export function SideBySide({
             <td className="p-3 text-xs font-medium text-muted-foreground">Price</td>
             {offers.map((offer) => (
               <td key={offer.id} className="p-3 text-center">
-                <span className="font-bold">{offer.price || '—'}</span>
+                {offer.price ? (
+                  <span className="font-bold">{offer.price}</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">Check price</span>
+                )}
               </td>
             ))}
           </tr>

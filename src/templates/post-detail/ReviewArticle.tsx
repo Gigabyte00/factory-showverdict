@@ -10,12 +10,15 @@ import { ReadingProgress } from '@/components/content/ReadingProgress';
 import JsonLd from '@/components/JsonLd';
 import type { FAQData } from '@/components/JsonLd';
 import JsonLdTyped from '@/components/JsonLd';
-import { Prose, Callout, LastUpdated, ProductCallout } from '@/components/content';
+import { Prose, Callout, LastUpdated, ProductCallout, InlineTOC, AudienceFit, Sources, Changelog, type ChangelogEntry } from '@/components/content';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ShareButtons from '@/components/ShareButtons';
+import { BookmarkButton } from '@/components/ui/bookmark-button';
+import { GiscusComments } from '@/components/comments/GiscusComments';
 import Link from 'next/link';
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
@@ -58,6 +61,15 @@ export default function ReviewArticle({
   const productName = reviewData.productName || post.title;
   const productPrice = reviewData.price || '';
   const affiliateUrl = reviewData.affiliateUrl || '';
+  const wordCount = (post.content || '').split(/\s+/).filter(Boolean).length;
+  const showInlineToc = wordCount >= 1200;
+  const audienceFit = (post.metadata as any)?.audienceFit as
+    | { forYou?: string[]; notForYou?: string[] }
+    | undefined;
+  const sources = (post.metadata as any)?.sources as
+    | Array<{ title: string; url?: string; publisher?: string; accessedOn?: string }>
+    | undefined;
+  const changelog = (post.metadata as any)?.changelog as ChangelogEntry[] | undefined;
 
   // Structured data for Product Review
   const structuredData = {
@@ -145,11 +157,16 @@ export default function ReviewArticle({
             <Card className="overflow-hidden">
               {/* Featured Image */}
               {post.featured_image_url && (
-                <img
-                  src={post.featured_image_url}
-                  alt={post.title}
-                  className="h-64 w-full object-cover md:h-96"
-                />
+                <div className="relative h-64 w-full md:h-96">
+                  <Image
+                    src={post.featured_image_url}
+                    alt={post.title}
+                    fill
+                    sizes="(min-width: 1024px) 896px, 100vw"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
               )}
 
               <CardContent className="p-6 md:p-8">
@@ -185,6 +202,23 @@ export default function ReviewArticle({
                     <span>{post.reading_time_minutes} min read</span>
                   )}
                   {post.author_name && <span>By {post.author_name}</span>}
+                  <div className="ml-auto flex items-center gap-2">
+                    <BookmarkButton
+                      variant="labeled"
+                      bookmark={{
+                        id: `post-${post.slug}`,
+                        type: 'post',
+                        title: post.title,
+                        url: `/blog/${post.slug}`,
+                        image: post.featured_image_url ?? undefined,
+                        excerpt: post.excerpt ?? undefined,
+                      }}
+                    />
+                    <ShareButtons
+                      url={`${site.domain ? `https://${site.domain}` : ''}/blog/${post.slug}`}
+                      title={post.title}
+                    />
+                  </div>
                 </div>
 
                 {/* Last Updated */}
@@ -196,6 +230,9 @@ export default function ReviewArticle({
                     className="mb-6"
                   />
                 )}
+
+                {/* Revision log — opt-in via post.metadata.changelog */}
+                {changelog && changelog.length > 0 && <Changelog entries={changelog} />}
 
                 {/* Rating Card */}
                 <Card className="mb-8 border-2 border-primary/20 bg-primary/5">
@@ -249,6 +286,12 @@ export default function ReviewArticle({
                     {post.excerpt}
                   </p>
                 )}
+
+                {/* Audience fit — "this is for you if / skip if" (opt-in via metadata) */}
+                {audienceFit && <AudienceFit data={audienceFit} />}
+
+                {/* Inline TOC for longer reviews */}
+                {showInlineToc && <InlineTOC articleSelector="article" />}
 
                 {/* Pros and Cons */}
                 {(pros.length > 0 || cons.length > 0) && (
@@ -342,6 +385,9 @@ export default function ReviewArticle({
                   </>
                 )}
 
+                {/* Sources / References — shown when post.metadata.sources is populated */}
+                {sources && sources.length > 0 && <Sources sources={sources} />}
+
                 {/* Verdict */}
                 {verdict && (
                   <Callout
@@ -382,6 +428,9 @@ export default function ReviewArticle({
                     title={post.title}
                   />
                 </div>
+
+                {/* Comments (Giscus) — env-gated */}
+                <GiscusComments slug={post.slug} />
               </CardContent>
             </Card>
           </article>
@@ -415,11 +464,15 @@ export default function ReviewArticle({
                   >
                     <Card className="overflow-hidden h-full transition hover:border-primary/30">
                       {relatedPost.featured_image_url ? (
-                        <img
-                          src={relatedPost.featured_image_url}
-                          alt={relatedPost.title}
-                          className="h-40 w-full object-cover"
-                        />
+                        <div className="relative h-40 w-full">
+                          <Image
+                            src={relatedPost.featured_image_url}
+                            alt={relatedPost.title}
+                            fill
+                            sizes="(min-width: 1024px) 280px, (min-width: 640px) 50vw, 100vw"
+                            className="object-cover"
+                          />
+                        </div>
                       ) : (
                         <div className="flex h-40 w-full items-center justify-center bg-muted">
                           <span className="text-3xl text-muted-foreground">📝</span>

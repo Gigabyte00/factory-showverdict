@@ -1,3 +1,4 @@
+import Script from 'next/script';
 
 // ============================================================================
 // Type Definitions
@@ -95,47 +96,11 @@ interface BreadcrumbData {
   items: BreadcrumbItem[];
 }
 
-interface PersonData {
-  name: string;
-  url?: string;
-  jobTitle?: string;
-  description?: string;
-  image?: string;
-  sameAs?: string[];
-  knowsAbout?: string[];
-  worksFor?: { name: string; url?: string };
-  honorificSuffix?: string;
-}
-
-interface SoftwareData {
-  name: string;
-  description?: string;
-  url?: string;
-  applicationCategory?: string;
-  operatingSystem?: string;
-  offers?: { price: number; priceCurrency: string };
-  featureList?: string[];
-}
-
-interface ReviewData {
-  itemName: string;
-  itemDescription?: string;
-  itemImage?: string;
-  itemUrl?: string;
-  ratingValue: number;
-  reviewCount?: number;
-  bestRating?: number;
-  worstRating?: number;
-  reviewBody?: string;
-  author?: string;
-  datePublished?: string;
-}
-
-type JsonLdType = 'article' | 'product' | 'comparison' | 'faq' | 'howto' | 'breadcrumb' | 'person' | 'software' | 'review';
+type JsonLdType = 'article' | 'product' | 'comparison' | 'faq' | 'howto' | 'breadcrumb';
 
 interface JsonLdTypedProps {
   type: JsonLdType;
-  data: ArticleData | ProductData | ComparisonData | FAQData | HowToData | BreadcrumbData | PersonData | SoftwareData | ReviewData;
+  data: ArticleData | ProductData | ComparisonData | FAQData | HowToData | BreadcrumbData;
 }
 
 /** Raw passthrough: pass a pre-built schema.org object directly */
@@ -314,76 +279,6 @@ function generateHowToSchema(data: HowToData) {
   };
 }
 
-function generatePersonSchema(data: PersonData) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: data.name,
-    url: data.url || undefined,
-    jobTitle: data.jobTitle || undefined,
-    description: data.description || undefined,
-    image: data.image || undefined,
-    honorificSuffix: data.honorificSuffix || undefined,
-    knowsAbout: data.knowsAbout?.length ? data.knowsAbout : undefined,
-    sameAs: data.sameAs?.length ? data.sameAs : undefined,
-    worksFor: data.worksFor
-      ? { '@type': 'Organization', name: data.worksFor.name, url: data.worksFor.url || undefined }
-      : undefined,
-  };
-}
-
-function generateSoftwareSchema(data: SoftwareData) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: data.name,
-    description: data.description || undefined,
-    url: data.url || undefined,
-    applicationCategory: data.applicationCategory || 'WebApplication',
-    operatingSystem: data.operatingSystem || 'Web',
-    featureList: data.featureList?.length ? data.featureList.join(', ') : undefined,
-    offers: data.offers
-      ? {
-          '@type': 'Offer',
-          price: data.offers.price,
-          priceCurrency: data.offers.priceCurrency,
-        }
-      : undefined,
-  };
-}
-
-function generateReviewSchema(data: ReviewData) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: data.itemName,
-    description: data.itemDescription || undefined,
-    image: data.itemImage || undefined,
-    url: data.itemUrl || undefined,
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: data.ratingValue,
-      bestRating: data.bestRating ?? 5,
-      worstRating: data.worstRating ?? 1,
-      reviewCount: data.reviewCount ?? 1,
-    },
-    review: data.reviewBody
-      ? {
-          '@type': 'Review',
-          reviewBody: data.reviewBody,
-          datePublished: data.datePublished || undefined,
-          author: data.author ? { '@type': 'Person', name: data.author } : undefined,
-          reviewRating: {
-            '@type': 'Rating',
-            ratingValue: data.ratingValue,
-            bestRating: data.bestRating ?? 5,
-            worstRating: data.worstRating ?? 1,
-          },
-        }
-      : undefined,
-  };
-}
-
 function generateBreadcrumbSchema(data: BreadcrumbData) {
   return {
     '@context': 'https://schema.org',
@@ -430,12 +325,6 @@ export default function JsonLd({ type, data }: JsonLdProps) {
         return generateHowToSchema(data as HowToData);
       case 'breadcrumb':
         return generateBreadcrumbSchema(data as BreadcrumbData);
-      case 'person':
-        return generatePersonSchema(data as PersonData);
-      case 'software':
-        return generateSoftwareSchema(data as SoftwareData);
-      case 'review':
-        return generateReviewSchema(data as ReviewData);
       default:
         return null;
     }
@@ -448,22 +337,16 @@ export default function JsonLd({ type, data }: JsonLdProps) {
   // Filter out undefined values for cleaner output
   const cleanSchema = JSON.parse(JSON.stringify(schema));
 
-  // Use dangerouslySetInnerHTML to render JSON-LD in the initial server HTML.
-  // JSON.stringify produces valid JSON with all special chars escaped — no XSS risk.
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(cleanSchema) }}
-    />
+    <Script id={`jsonld-${type ?? (data as Record<string, unknown>)['@type'] ?? 'raw'}`} type="application/ld+json" strategy="afterInteractive">
+      {JSON.stringify(cleanSchema)}
+    </Script>
   );
 }
 
 // ============================================================================
 // Export Types for External Use
 // ============================================================================
-
-// Named re-export for backwards compatibility with sites using `import { JsonLd }`
-export { JsonLd };
 
 export type {
   ArticleData,
@@ -475,9 +358,6 @@ export type {
   HowToStep,
   BreadcrumbData,
   BreadcrumbItem,
-  PersonData,
-  SoftwareData,
-  ReviewData,
   Entity,
   JsonLdType,
 };

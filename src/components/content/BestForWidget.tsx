@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { ChevronRight, RotateCcw, Star, ExternalLink, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -195,11 +196,15 @@ export function BestForWidget({
 
             <div className="flex gap-4 mb-4">
               {result.offerImage && (
-                <img
-                  src={result.offerImage}
-                  alt={result.offerName}
-                  className="h-16 w-16 object-contain rounded-lg border shrink-0"
-                />
+                <div className="relative h-16 w-16 rounded-lg border bg-background shrink-0 overflow-hidden">
+                  <Image
+                    src={result.offerImage}
+                    alt={result.offerName}
+                    fill
+                    sizes="64px"
+                    className="object-contain p-1"
+                  />
+                </div>
               )}
               <div className="flex-1 min-w-0">
                 {result.offerRating && (

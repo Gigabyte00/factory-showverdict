@@ -45,7 +45,7 @@ export function AuthorCard({
         ) : (
           <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <span className="text-sm font-bold text-primary">
-              {name.charAt(0).toUpperCase()}
+              {name?.charAt(0)?.toUpperCase() ?? '?'}
             </span>
           </div>
         )}

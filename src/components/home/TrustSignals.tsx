@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { ShieldCheck, Clock, Award, Newspaper, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 interface TrustStats {
@@ -159,11 +160,13 @@ export function AsSeenIn({ logos }: { logos: { name: string; src: string }[] }) 
         <p className="text-center text-sm text-muted-foreground mb-6">As Seen In</p>
         <div className="flex flex-wrap items-center justify-center gap-8 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
           {logos.map((logo) => (
-            <img
+            <Image
               key={logo.name}
               src={logo.src}
               alt={logo.name}
-              className="h-8 object-contain"
+              width={120}
+              height={32}
+              className="h-8 w-auto object-contain"
             />
           ))}
         </div>

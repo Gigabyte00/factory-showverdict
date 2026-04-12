@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 export async function generateMetadata(): Promise<Metadata> {
   const site = getSiteConfig();
   return {
-    title: `Terms of Service`,
+    title: `Terms of Service - ${site.name}`,
     description: `Terms of service for ${site.name}. Usage terms, disclaimers, and legal information.`,
     alternates: { canonical: `${site.domain}/terms` },
   };

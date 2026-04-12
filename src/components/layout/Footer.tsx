@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getSiteConfig } from '@/lib/site-config';
-import { getCategories } from '@/lib/queries';
+import { getCategories, getNavLinks } from '@/lib/queries';
 
 /**
  * Site footer with multi-column layout
@@ -14,6 +14,7 @@ import { getCategories } from '@/lib/queries';
 export async function Footer() {
   const site = getSiteConfig();
   const categories = await getCategories();
+  const nav = await getNavLinks();
   const currentYear = new Date().getFullYear();
   const socialLinks = site.settings?.socialLinks || {};
   const hasSocials = Object.values(socialLinks).some(Boolean);
@@ -21,7 +22,7 @@ export async function Footer() {
   return (
     <footer className="border-t bg-card">
       <div className="container py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="text-xl font-bold text-foreground">
@@ -127,16 +128,49 @@ export async function Footer() {
               </li>
               <li>
                 <Link
-                  href="/faq"
+                  href="/tools"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  FAQ
+                  Tools
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/bookmarks"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Saved Articles
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* About Column */}
+          {/* Knowledge Column — reference / learning pages */}
+          <div>
+            <h3 className="font-semibold text-foreground mb-3">Knowledge</h3>
+            <ul className="space-y-2">
+              {nav.resourceLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  href="/search"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Search
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Trust & Company Column */}
           <div>
             <h3 className="font-semibold text-foreground mb-3">About</h3>
             <ul className="space-y-2">
@@ -146,6 +180,22 @@ export async function Footer() {
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/methodology"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  How We Test
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/authors"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Our Team
                 </Link>
               </li>
               <li>

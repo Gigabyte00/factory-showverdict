@@ -9,6 +9,9 @@ import JsonLd from '@/components/JsonLd';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { BookmarkButton } from '@/components/ui/bookmark-button';
+import { OfferRating } from '@/components/offers/OfferRating';
+import { PriceHistory } from '@/components/offers/PriceHistory';
 import { cn } from '@/lib/utils';
 
 export const revalidate = 3600;
@@ -286,7 +289,7 @@ export default async function OfferDetailPage({ params }: PageProps) {
           </div>
 
           <div className="space-y-5">
-            <Card className="sticky top-24 border-primary/30">
+            <Card className="lg:sticky lg:top-24 border-primary/30">
               <CardContent className="p-5 text-center">
                 <p className="text-xs text-muted-foreground mb-1">Our Rating</p>
                 <div className="flex items-center justify-center gap-1 mb-1">
@@ -306,6 +309,19 @@ export default async function OfferDetailPage({ params }: PageProps) {
                   </Button>
                 )}
 
+                <div className="flex justify-center mb-4">
+                  <BookmarkButton
+                    variant="labeled"
+                    bookmark={{
+                      id: `offer-${offer.slug}`,
+                      type: 'offer',
+                      title: offer.name,
+                      url: `/offers/${offer.slug}`,
+                      image: offer.featured_image_url ?? offer.logo_url ?? undefined,
+                    }}
+                  />
+                </div>
+
                 <div className="space-y-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1.5">
                     <Shield className="h-3.5 w-3.5 text-emerald-500" />
@@ -320,6 +336,24 @@ export default async function OfferDetailPage({ params }: PageProps) {
                 <p className="text-[10px] text-muted-foreground mt-4 leading-relaxed">
                   This page contains affiliate links. We may earn a commission at no additional cost to you.
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Reader ratings — crowd-sourced, separate from editorial score */}
+            <Card>
+              <CardContent className="p-5">
+                <p className="text-sm font-semibold mb-1">What readers think</p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Tap a star to share your rating. One vote per visitor.
+                </p>
+                <OfferRating offerId={offer.id} size="md" />
+              </CardContent>
+            </Card>
+
+            {/* Observed price trend — filled in automatically as clicks roll in */}
+            <Card>
+              <CardContent className="p-5">
+                <PriceHistory offerId={offer.id} />
               </CardContent>
             </Card>
 

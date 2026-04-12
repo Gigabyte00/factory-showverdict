@@ -1,13 +1,9 @@
 import { getSiteConfig, getHeroConfig, getTestimonials, getCTAConfig, getHomepageSections } from '@/lib/site-config';
-import type { Metadata } from 'next';
-export const metadata: Metadata = { alternates: { canonical: '/' } };
-
 import { createServerClient } from '@/lib/supabase';
 import type { Post, Category, Offer } from '@/types';
 
 // Homepage components
 import { HeroSection } from '@/components/home/HeroSection';
-import { ShowVerdictHero } from '@/components/home/ShowVerdictHero';
 import { HowItWorks } from '@/components/home/HowItWorks';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
 import { ArticleCard } from '@/components/home/ArticleCard';
@@ -75,7 +71,22 @@ export default async function HomePage() {
 
   // Section map — each key maps to a rendered section (or null if data is empty)
   const sectionMap: Record<string, React.ReactNode> = {
-    'hero': <ShowVerdictHero key="hero" />,
+    'hero': (
+      <HeroSection
+        key="hero"
+        site={site}
+        categoryCount={categories.length}
+        postCount={totalPosts || posts.length}
+        tagline={hero.tagline}
+        subtitle={hero.subtitle}
+        accentWord={hero.accentWord}
+        variant={hero.variant}
+        ctaPrimaryText={cta.primaryText}
+        ctaPrimaryUrl={cta.primaryUrl}
+        ctaSecondaryText={cta.secondaryText}
+        ctaSecondaryUrl={cta.secondaryUrl}
+      />
+    ),
 
     'how-it-works': (
       <div key="how-it-works" className="animate-on-scroll">

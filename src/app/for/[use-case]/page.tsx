@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = useCase.seo_description || `Best products for ${useCase.use_case_name}. Expert recommendations and buying guide.`;
 
   return {
-    title: `${title} | ${site.name}`,
+    title,
     description,
     openGraph: {
       title,

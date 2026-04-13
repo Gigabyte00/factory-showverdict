@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!offer) return { title: 'Offer Not Found' };
 
-  const title = `${offer.name} Review ${new Date().getFullYear()} — ${site.name}`;
+  const title = `${offer.name} Review ${new Date().getFullYear()}`;
   return {
     title,
     description: offer.description?.slice(0, 160) || `Read our in-depth review of ${offer.name}.`,
@@ -119,28 +119,34 @@ export default async function OfferDetailPage({ params }: PageProps) {
     .ilike('question', `%${offer.name.split(' ')[0]}%`)
     .limit(4);
 
-  const rating = offer.rating ?? 4.2;
-  const reviewCount = (offer as any).review_count ?? 47;
-  const pros: string[] = offer.pros || ['Excellent user experience', 'Competitive pricing', 'Strong customer support'];
-  const cons: string[] = offer.cons || ['Limited free tier'];
+  const rating = offer.rating;
+  const reviewCount = (offer as any).review_count ?? 0;
+  const hasEditorialRating = rating != null && reviewCount > 0;
+  const pros: string[] = Array.isArray(offer.pros) && offer.pros.length > 0 ? offer.pros : [];
+  const cons: string[] = Array.isArray(offer.cons) && offer.cons.length > 0 ? offer.cons : [];
+  const hasProsCons = pros.length > 0 || cons.length > 0;
   const featureMatrix = (offer as any).feature_matrix as Record<string, number> | null;
   const hasMatrix = featureMatrix && Object.keys(featureMatrix).length > 0;
+  const heroImage = offer.featured_image_url ?? offer.logo_url;
+  const nameInitial = offer.name?.charAt(0).toUpperCase() || '?';
 
-  const productSchema = {
+  const productSchema: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: offer.name,
     description: offer.description,
-    image: offer.featured_image_url ?? offer.logo_url,
+    image: heroImage,
     brand: { '@type': 'Organization', name: offer.name },
-    aggregateRating: {
+  };
+  if (hasEditorialRating) {
+    productSchema.aggregateRating = {
       '@type': 'AggregateRating',
-      ratingValue: rating.toFixed(1),
+      ratingValue: rating!.toFixed(1),
       reviewCount,
       bestRating: '5',
       worstRating: '1',
-    },
-  };
+    };
+  }
 
   return (
     <>
@@ -173,17 +179,21 @@ export default async function OfferDetailPage({ params }: PageProps) {
             <Card className="overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row gap-6">
-                  {(offer.featured_image_url ?? offer.logo_url) && (
-                    <div className="shrink-0 flex items-center justify-center rounded-xl border bg-muted/30 p-3 w-full sm:w-32 h-32">
+                  <div className="shrink-0 flex items-center justify-center rounded-xl border bg-muted/30 p-3 w-full sm:w-32 h-32">
+                    {heroImage ? (
                       <Image
-                        src={(offer.featured_image_url ?? offer.logo_url)!}
+                        src={heroImage}
                         alt={offer.name}
                         width={100}
                         height={100}
                         className="object-contain max-h-24"
                       />
-                    </div>
-                  )}
+                    ) : (
+                      <span className="text-4xl font-bold text-muted-foreground" aria-hidden="true">
+                        {nameInitial}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex-1">
                     <div className="flex flex-wrap items-start gap-2 mb-2">
                       <h1 className="text-2xl font-bold">{offer.name}</h1>
@@ -194,11 +204,13 @@ export default async function OfferDetailPage({ params }: PageProps) {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <StarRating rating={rating} />
-                      <span className="font-semibold">{rating.toFixed(1)}</span>
-                      <span className="text-sm text-muted-foreground">({reviewCount} reviews)</span>
-                    </div>
+                    {hasEditorialRating && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <StarRating rating={rating!} />
+                        <span className="font-semibold">{rating!.toFixed(1)}</span>
+                        <span className="text-sm text-muted-foreground">({reviewCount} reviews)</span>
+                      </div>
+                    )}
                     {offer.description && (
                       <p className="text-sm text-muted-foreground leading-relaxed">{offer.description}</p>
                     )}
@@ -224,41 +236,47 @@ export default async function OfferDetailPage({ params }: PageProps) {
               </section>
             )}
 
-            <section>
-              <h2 className="text-lg font-bold mb-4">Pros &amp; Cons</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Card className="border-emerald-200 dark:border-emerald-800">
-                  <CardContent className="p-4">
-                    <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 mb-3 flex items-center gap-1.5">
-                      <Check className="h-4 w-4" /> Pros
-                    </p>
-                    <ul className="space-y-2">
-                      {pros.map((pro, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm">
-                          <Check className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                          {pro}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-                <Card className="border-red-200 dark:border-red-900">
-                  <CardContent className="p-4">
-                    <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-3 flex items-center gap-1.5">
-                      <X className="h-4 w-4" /> Cons
-                    </p>
-                    <ul className="space-y-2">
-                      {cons.map((con, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm">
-                          <X className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-                          {con}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
+            {hasProsCons && (
+              <section>
+                <h2 className="text-lg font-bold mb-4">Pros &amp; Cons</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {pros.length > 0 && (
+                    <Card className="border-emerald-200 dark:border-emerald-800">
+                      <CardContent className="p-4">
+                        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 mb-3 flex items-center gap-1.5">
+                          <Check className="h-4 w-4" /> Pros
+                        </p>
+                        <ul className="space-y-2">
+                          {pros.map((pro, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm">
+                              <Check className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                              {pro}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {cons.length > 0 && (
+                    <Card className="border-red-200 dark:border-red-900">
+                      <CardContent className="p-4">
+                        <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-3 flex items-center gap-1.5">
+                          <X className="h-4 w-4" /> Cons
+                        </p>
+                        <ul className="space-y-2">
+                          {cons.map((con, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm">
+                              <X className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+                              {con}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </section>
+            )}
 
             {(offer as any).full_review && (
               <section>
@@ -291,20 +309,33 @@ export default async function OfferDetailPage({ params }: PageProps) {
           <div className="space-y-5">
             <Card className="lg:sticky lg:top-24 border-primary/30">
               <CardContent className="p-5 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Our Rating</p>
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <StarRating rating={rating} />
-                </div>
-                <p className="text-3xl font-bold text-primary mb-1">
-                  {rating.toFixed(1)}<span className="text-base text-muted-foreground">/5</span>
-                </p>
-                <p className="text-xs text-muted-foreground mb-5">{reviewCount} reviews</p>
+                {hasEditorialRating ? (
+                  <>
+                    <p className="text-xs text-muted-foreground mb-1">Our Rating</p>
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <StarRating rating={rating!} />
+                    </div>
+                    <p className="text-3xl font-bold text-primary mb-1">
+                      {rating!.toFixed(1)}<span className="text-base text-muted-foreground">/5</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-5">{reviewCount} reviews</p>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground mb-5">
+                    Editorial review pending — see reader ratings below.
+                  </p>
+                )}
 
                 {offer.affiliate_url && (
                   <Button asChild className="w-full gap-2 mb-3" size="lg">
-                    <a href={offer.affiliate_url} rel="noopener noreferrer sponsored" target="_blank">
-                      Visit {offer.name}
-                      <ExternalLink className="h-4 w-4" />
+                    <a
+                      href={offer.affiliate_url}
+                      rel="noopener noreferrer sponsored"
+                      target="_blank"
+                      className="min-w-0"
+                    >
+                      <span className="truncate">Check price</span>
+                      <ExternalLink className="h-4 w-4 shrink-0" />
                     </a>
                   </Button>
                 )}
@@ -388,7 +419,7 @@ export default async function OfferDetailPage({ params }: PageProps) {
               {relatedOffers.map((alt) => (
                 <Card key={alt.id} className="hover:shadow-md transition">
                   <CardContent className="p-4">
-                    {(alt.featured_image_url ?? alt.logo_url) && (
+                    {(alt.featured_image_url ?? alt.logo_url) ? (
                       <Image
                         src={(alt.featured_image_url ?? alt.logo_url)!}
                         alt={alt.name}
@@ -396,10 +427,16 @@ export default async function OfferDetailPage({ params }: PageProps) {
                         height={60}
                         className="object-contain h-12 mb-3"
                       />
+                    ) : (
+                      <div className="h-12 w-12 rounded-md bg-muted/40 flex items-center justify-center mb-3" aria-hidden="true">
+                        <span className="text-xl font-bold text-muted-foreground">
+                          {alt.name?.charAt(0).toUpperCase() || '?'}
+                        </span>
+                      </div>
                     )}
                     <p className="font-semibold text-sm mb-1">{alt.name}</p>
                     {alt.award && <Badge variant="secondary" className="text-xs mb-2">{alt.award}</Badge>}
-                    {alt.rating && (
+                    {alt.rating != null && (
                       <div className="flex items-center gap-1 mb-2">
                         <StarRating rating={alt.rating} />
                         <span className="text-xs text-muted-foreground">{alt.rating.toFixed(1)}</span>

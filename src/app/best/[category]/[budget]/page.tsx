@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = priceTier.seo_description || `Best ${category.name.toLowerCase()} under ${priceTier.price_label}. Top picks reviewed and compared.`;
 
   return {
-    title: `${title} | ${site.name}`,
+    title,
     description,
     openGraph: {
       title,

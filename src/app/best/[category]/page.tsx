@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!category) return { title: 'Category Not Found' };
 
   return {
-    title: `Best ${category.name} by Budget | ${site.name}`,
+    title: `Best ${category.name} by Budget`,
     description: `Find the best ${category.name.toLowerCase()} at every price point. Budget-friendly options without compromising on quality.`,
   };
 }

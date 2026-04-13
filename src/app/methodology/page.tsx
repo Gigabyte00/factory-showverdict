@@ -14,7 +14,7 @@ export async function generateMetadata() {
   const site = getSiteConfig();
   const baseUrl = site.domain ? `https://${site.domain}` : '';
   return {
-    title: `Our Review Methodology | ${site.name}`,
+    title: `Our Review Methodology`,
     description: `How ${site.name} researches, tests, and evaluates ${(site.niche ?? 'products').toLowerCase()}. Our transparent review process and scoring criteria.`,
     alternates: baseUrl ? { canonical: `${baseUrl}/methodology` } : undefined,
   };

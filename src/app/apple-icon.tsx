@@ -4,8 +4,9 @@ export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
 
 export default function AppleIcon() {
-  const emoji = process.env.SITE_FAVICON_EMOJI || '🔗';
-  const primaryColor = process.env.SITE_PRIMARY_COLOR || '#3B82F6';
+  const primaryColor = (process.env.SITE_PRIMARY_COLOR || '#3B82F6').trim();
+  const siteName = (process.env.SITE_NAME || 'F').trim();
+  const letter = siteName.charAt(0).toUpperCase() || 'F';
 
   return new ImageResponse(
     (
@@ -18,9 +19,14 @@ export default function AppleIcon() {
           justifyContent: 'center',
           borderRadius: '32px',
           background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
+          color: '#fff',
+          fontSize: 100,
+          fontWeight: 700,
+          fontFamily: 'sans-serif',
+          letterSpacing: '-0.03em',
         }}
       >
-        <span style={{ fontSize: 100 }}>{emoji}</span>
+        {letter}
       </div>
     ),
     { ...size }

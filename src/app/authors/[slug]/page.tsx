@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: PageProps) {
     : `${data.title ? data.title + ' at ' : ''}${site.name}. Read ${data.name}'s expert reviews.`;
 
   return {
-    title: `${data.name} — ${data.title ?? 'Author'} | ${site.name}`,
+    title: `${data.name} — ${data.title ?? 'Author'}`,
     description: desc,
     alternates: baseUrl ? { canonical: `${baseUrl}/authors/${slug}` } : undefined,
     openGraph: {

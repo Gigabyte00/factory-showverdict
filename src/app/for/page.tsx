@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
 
   return {
-    title: `Product Guides by Use Case | ${site.name}`,
+    title: `Product Guides by Use Case`,
     description: `Find the perfect products for your specific needs. Expert recommendations tailored to your use case.`,
   };
 }

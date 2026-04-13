@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
 
   return {
-    title: `Product Comparisons | ${site.name}`,
+    title: `Product Comparisons`,
     description: `Side-by-side product comparisons to help you make informed buying decisions. Detailed analysis of features, pros, cons, and recommendations.`,
   };
 }

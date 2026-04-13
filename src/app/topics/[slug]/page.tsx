@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (!data) return { title: 'Topic Not Found' };
 
   return {
-    title: `${data.name} | ${site.name}`,
+    title: `${data.name}`,
     description: data.description || `Everything about ${data.name} on ${site.name}.`,
     alternates: baseUrl ? { canonical: `${baseUrl}/topics/${slug}` } : undefined,
   };

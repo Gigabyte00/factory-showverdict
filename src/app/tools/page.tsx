@@ -12,10 +12,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = getSiteConfig();
 
   return {
-    title: `Free Tools & Calculators | ${site.name}`,
+    title: `Free Tools & Calculators`,
     description: `Use our free ${site.niche?.toLowerCase() || ''} calculators and quizzes to make smarter decisions. Interactive tools designed to help you.`,
     openGraph: {
-      title: `Free Tools & Calculators | ${site.name}`,
+      title: `Free Tools & Calculators`,
       description: `Interactive tools and calculators for ${site.niche?.toLowerCase() || 'smarter decisions'}`,
       type: 'website',
     },

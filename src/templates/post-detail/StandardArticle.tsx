@@ -331,6 +331,9 @@ export default async function StandardArticle({
                 </>
               )}
 
+              {/* End-of-post opt-in — fallback for short posts where contentAfter is empty */}
+              {!contentAfter && <InlineOptIn siteId={siteId} niche={site.niche} />}
+
               {/* FAQ Section */}
               {faqs && faqs.length > 0 && (
                 <>

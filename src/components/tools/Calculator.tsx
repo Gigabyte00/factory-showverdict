@@ -382,6 +382,67 @@ function safeCalculate(
       break;
     }
 
+    case 'position_size': {
+      // Volatility-parity / R-multiple position sizing — Tharp's R unit.
+      const { account_size = 50000, risk_pct = 1, entry = 100, stop = 95 } = inputs;
+      const risk_dollars = account_size * (risk_pct / 100);
+      const stop_distance = Math.abs(entry - stop);
+      const shares = stop_distance > 0 ? Math.floor(risk_dollars / stop_distance) : 0;
+      const position_size = shares * entry;
+      results.risk_dollars = Math.round(risk_dollars * 100) / 100;
+      results.shares = shares;
+      results.position_size = Math.round(position_size * 100) / 100;
+      results.stop_distance = Math.round(stop_distance * 100) / 100;
+      results.account_pct_invested = account_size > 0
+        ? Math.round((position_size / account_size) * 10000) / 100
+        : 0;
+      break;
+    }
+
+    case 'r_multiple': {
+      // Measures trade outcome in R (initial risk) units, the canonical Tharp framework.
+      const { entry = 100, stop = 95, target = 110, exit = 110, win_rate = 55 } = inputs;
+      const risk = Math.abs(entry - stop);
+      const reward = Math.abs(target - entry);
+      const r_multiple_target = risk > 0 ? reward / risk : 0;
+      const actual_r = risk > 0 ? (exit - entry) / risk : 0;
+      const win_prob = win_rate / 100;
+      const expectancy_r = win_prob * r_multiple_target - (1 - win_prob);  // avg R per trade at stated win rate
+      results.risk = Math.round(risk * 100) / 100;
+      results.reward = Math.round(reward * 100) / 100;
+      results.r_multiple_target = Math.round(r_multiple_target * 100) / 100;
+      results.actual_r = Math.round(actual_r * 100) / 100;
+      results.expectancy_r = Math.round(expectancy_r * 100) / 100;
+      break;
+    }
+
+    case 'kelly_criterion': {
+      // Kelly fraction: optimal bet size as percent of bankroll.
+      // Returns full Kelly + fractional (half, quarter) since full Kelly is too aggressive for most traders.
+      const { win_rate = 55, avg_win = 1.5, avg_loss = 1 } = inputs;
+      const p = win_rate / 100;
+      const b = avg_loss > 0 ? avg_win / avg_loss : 1;
+      const kelly_full = b > 0 ? p - (1 - p) / b : 0;
+      const kelly_capped = Math.max(0, Math.min(kelly_full, 1));  // floor at 0, cap at 100%
+      results.kelly_full_pct = Math.round(kelly_capped * 10000) / 100;
+      results.kelly_half_pct = Math.round((kelly_capped / 2) * 10000) / 100;
+      results.kelly_quarter_pct = Math.round((kelly_capped / 4) * 10000) / 100;
+      results.win_loss_ratio = Math.round(b * 100) / 100;
+      break;
+    }
+
+    case 'dscr': {
+      // Debt-Service Coverage Ratio — core underwriting metric for business lending.
+      const { net_operating_income = 120000, annual_debt_service = 80000 } = inputs;
+      const dscr = annual_debt_service > 0 ? net_operating_income / annual_debt_service : 0;
+      results.dscr = Math.round(dscr * 100) / 100;
+      results.coverage_surplus = Math.round((net_operating_income - annual_debt_service) * 100) / 100;
+      // Interpretive bands keep the result actionable.
+      results.interpretation_code = dscr >= 1.25 ? 1 : dscr >= 1.0 ? 0 : -1;
+      // 1 = lender-approvable, 0 = break-even (risky), -1 = cash-flow negative
+      break;
+    }
+
     // Default: pass through inputs as results
     default:
       Object.assign(results, inputs);

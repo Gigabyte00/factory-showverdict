@@ -11,6 +11,10 @@ import JsonLd from '@/components/JsonLd';
 import type { FAQData } from '@/components/JsonLd';
 import JsonLdTyped from '@/components/JsonLd';
 import { Prose, Callout, LastUpdated, ProductCallout, InlineTOC, AudienceFit, Sources, Changelog, type ChangelogEntry } from '@/components/content';
+import { InlineOptIn } from '@/components/content/InlineOptIn';
+import { ComparisonTable } from '@/components/content/ComparisonTable';
+import { PriceHistory } from '@/components/offers/PriceHistory';
+import { StickyMobileBuyBar } from '@/components/offers/StickyMobileBuyBar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -70,6 +74,25 @@ export default function ReviewArticle({
     | Array<{ title: string; url?: string; publisher?: string; accessedOn?: string }>
     | undefined;
   const changelog = (post.metadata as any)?.changelog as ChangelogEntry[] | undefined;
+  // Optional enhancements: each renders only if its metadata opts in.
+  const reviewOfferId = (post.metadata as any)?.review?.offer_id as string | undefined;
+  const comparison = (post.metadata as any)?.comparison as
+    | {
+        products: Array<{
+          id: string;
+          name: string;
+          image?: string;
+          price?: string;
+          affiliateUrl?: string;
+          rating?: number;
+          badge?: string;
+          features: Record<string, string | boolean | number>;
+        }>;
+        features: string[];
+        featureLabels?: Record<string, string>;
+        title?: string;
+      }
+    | undefined;
 
   // Structured data for Product Review
   const structuredData = {
@@ -367,6 +390,30 @@ export default function ReviewArticle({
                   </ReactMarkdown>
                 </Prose>
 
+                {/* Price history chart — only renders if review metadata carries an offer_id */}
+                {reviewOfferId && (
+                  <div className="mt-8">
+                    <PriceHistory offerId={reviewOfferId} />
+                  </div>
+                )}
+
+                {/* Comparison table — renders only when post.metadata.comparison is populated */}
+                {comparison && comparison.products && comparison.products.length > 0 && (
+                  <div className="mt-10">
+                    {comparison.title && (
+                      <h2 className="text-2xl font-bold mb-4">{comparison.title}</h2>
+                    )}
+                    <ComparisonTable
+                      products={comparison.products}
+                      features={comparison.features}
+                      featureLabels={comparison.featureLabels}
+                    />
+                  </div>
+                )}
+
+                {/* Newsletter opt-in — conversion anchor on review posts */}
+                <InlineOptIn siteId={site.id} niche={site.niche} />
+
                 {/* FAQ Section with Schema */}
                 {faqs && faqs.length > 0 && (
                   <>
@@ -499,6 +546,17 @@ export default function ReviewArticle({
             </section>
           )}
       </div>
+
+      {/* Sticky mobile buy bar — appears on scroll; desktop hidden via md:hidden */}
+      {affiliateUrl && productName && (
+        <StickyMobileBuyBar
+          productName={productName}
+          price={productPrice}
+          rating={rating}
+          maxRating={maxRating}
+          affiliateUrl={affiliateUrl}
+        />
+      )}
     </div>
   );
 }

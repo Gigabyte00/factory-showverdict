@@ -121,12 +121,18 @@ function buildSocialLinks(): Record<string, string> {
  * Get hero section configuration from env vars
  */
 export function getHeroConfig(site: SiteContext) {
+  const trim = (v: string | undefined) => v?.trim() || undefined;
   return {
     tagline: process.env.SITE_HERO_TAGLINE || site.name,
     subtitle: process.env.SITE_HERO_SUBTITLE ||
       `Expert reviews, honest comparisons, and the best deals on ${site.niche || 'products'} — helping you make smarter buying decisions.`,
     accentWord: process.env.SITE_HERO_ACCENT_WORD || null,
     variant: (process.env.SITE_HERO_VARIANT || 'dark') as 'dark' | 'split' | 'minimal' | 'gradient-brand',
+    // Optional per-site hero imagery. imageUrl renders as a photo; backgroundUrl renders as a dimmed full-bleed backdrop.
+    // Both are intentionally separate so a niche can use either a product shot (split/minimal variants) or an atmospheric backdrop (dark/gradient-brand variants).
+    imageUrl: trim(process.env.SITE_HERO_IMAGE),
+    imageAlt: trim(process.env.SITE_HERO_IMAGE_ALT),
+    backgroundUrl: trim(process.env.SITE_HERO_BACKGROUND),
   };
 }
 
@@ -175,7 +181,7 @@ export function getHowItWorksSteps(): Array<{ title: string; description: string
 /**
  * Get testimonials from env var (JSON array) or return empty array
  */
-export function getTestimonials(): Array<{ name: string; context: string; quote: string; rating: number }> {
+export function getTestimonials(): Array<{ name: string; context: string; quote: string; rating: number; isSample?: boolean }> {
   const raw = process.env.SITE_TESTIMONIALS;
   if (!raw) return [];
   try {

@@ -17,6 +17,11 @@ interface HeroSectionProps {
   ctaPrimaryUrl?: string;
   ctaSecondaryText?: string;
   ctaSecondaryUrl?: string;
+  /** Foreground product/lifestyle photo (split + minimal variants use it as an inline image). */
+  imageUrl?: string;
+  imageAlt?: string;
+  /** Full-bleed dimmed backdrop (dark + gradient-brand variants use it behind the gradient). */
+  backgroundUrl?: string;
 }
 
 /**
@@ -35,6 +40,9 @@ export function HeroSection({
   ctaPrimaryUrl,
   ctaSecondaryText,
   ctaSecondaryUrl,
+  imageUrl,
+  imageAlt,
+  backgroundUrl,
 }: HeroSectionProps) {
   const valueProps = getValuePropositions(site.settings?.site_type || 'affiliate', site.niche);
   const displayTagline = tagline || site.name;
@@ -59,6 +67,9 @@ export function HeroSection({
     categoryCount,
     postCount,
     site,
+    imageUrl,
+    imageAlt: imageAlt || (site.niche ? `${site.niche} illustration` : 'Hero image'),
+    backgroundUrl,
   };
 
   switch (variant) {
@@ -87,6 +98,9 @@ interface HeroContentProps {
   categoryCount: number;
   postCount: number;
   site: SiteContext;
+  imageUrl?: string;
+  imageAlt?: string;
+  backgroundUrl?: string;
 }
 
 // ─── Variant: Dark (default) ────────────────────────────────────────────────
@@ -95,9 +109,18 @@ function HeroDark({
   taglineParts, displaySubtitle, valueProps,
   primaryText, primaryUrl, secondaryText, secondaryUrl,
   categoryCount, postCount, site,
+  backgroundUrl,
 }: HeroContentProps) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20 lg:py-28">
+      {/* Optional full-bleed backdrop photo — sits under the dimmed gradient + orbs */}
+      {backgroundUrl && (
+        <div
+          className="absolute inset-0 -z-10 bg-cover bg-center opacity-40"
+          style={{ backgroundImage: `url(${backgroundUrl})` }}
+          aria-hidden="true"
+        />
+      )}
       {/* Decorative blur orbs — hidden on mobile to reduce GPU load */}
       <div className="hidden sm:block absolute inset-0 -z-0 overflow-hidden" aria-hidden="true">
         <div
@@ -175,6 +198,7 @@ function HeroSplit({
   taglineParts, displaySubtitle, valueProps,
   primaryText, primaryUrl, secondaryText, secondaryUrl,
   site,
+  imageUrl, imageAlt,
 }: HeroContentProps) {
   return (
     <section className="relative py-16 lg:py-24 bg-gradient-to-br from-background via-background to-primary/5">
@@ -207,7 +231,29 @@ function HeroSplit({
             />
           </div>
 
-          {/* Right: Decorative card stack */}
+          {/* Right: real photo (if SITE_HERO_IMAGE set) or decorative card stack fallback */}
+          {imageUrl ? (
+            <div className="hidden lg:flex justify-center">
+              <div className="relative w-full max-w-md">
+                <div
+                  className="absolute -top-4 -right-4 w-full h-full rounded-2xl border-2 border-primary/10 bg-primary/5"
+                  aria-hidden="true"
+                />
+                {/* Using <img> instead of next/image to avoid domain allowlist friction across 17 sites */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl}
+                  alt={imageAlt ?? ''}
+                  loading="eager"
+                  className="relative rounded-2xl border border-border object-cover w-full aspect-[4/3] shadow-xl"
+                />
+                <div
+                  className="absolute -bottom-4 -left-4 w-full h-full rounded-2xl border border-primary/20 -z-10"
+                  aria-hidden="true"
+                />
+              </div>
+            </div>
+          ) : (
           <div className="hidden lg:flex justify-center">
             <div className="relative w-full max-w-md">
               {/* Background decorative card */}
@@ -243,6 +289,7 @@ function HeroSplit({
               <div className="absolute -bottom-4 -left-4 w-full h-full rounded-2xl border border-primary/20 -z-10" />
             </div>
           </div>
+          )}
         </div>
       </div>
     </section>
@@ -255,9 +302,18 @@ function HeroGradientBrand({
   taglineParts, displaySubtitle, valueProps,
   primaryText, primaryUrl, secondaryText, secondaryUrl,
   categoryCount, postCount, site,
+  backgroundUrl,
 }: HeroContentProps) {
   return (
     <section className="relative overflow-hidden py-20 lg:py-28 text-white" style={{ background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8), hsl(var(--primary) / 0.6))` }}>
+      {/* Optional full-bleed backdrop — sits under the brand gradient at 25% opacity */}
+      {backgroundUrl && (
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-25"
+          style={{ backgroundImage: `url(${backgroundUrl})` }}
+          aria-hidden="true"
+        />
+      )}
       {/* Geometric pattern overlay */}
       <div className="absolute inset-0 opacity-10" aria-hidden="true">
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white/20 blur-3xl -translate-y-1/2 translate-x-1/3" />

@@ -6,24 +6,33 @@ interface Testimonial {
   context: string;
   quote: string;
   rating: number;
+  /** Set to true if this is representative/sample feedback, not a specific customer quote. FTC-compliant labeling. */
+  isSample?: boolean;
 }
 
 interface TestimonialGridProps {
   testimonials: Testimonial[];
   title?: string;
   subtitle?: string;
+  /** Shown under the heading when any testimonial is flagged isSample — satisfies FTC 16 CFR 255 truth-in-advertising. */
+  sampleDisclaimer?: string;
 }
 
 /**
  * 3-column testimonial grid with star ratings.
  * Only renders when testimonials data is provided via SITE_TESTIMONIALS env var.
+ *
+ * FTC compliance: any testimonial with `isSample: true` is labeled as "Representative feedback"
+ * per 16 CFR Part 255. Once real verified customer quotes replace samples, omit the flag.
  */
 export function TestimonialGrid({
   testimonials,
   title = 'What Our Readers Say',
   subtitle = 'Trusted by thousands of readers making smarter decisions',
+  sampleDisclaimer = 'Representative reader feedback. Results vary and are not a guarantee.',
 }: TestimonialGridProps) {
   if (testimonials.length === 0) return null;
+  const hasSamples = testimonials.some((t) => t.isSample);
 
   return (
     <section className="py-16 lg:py-24 bg-muted/50">
@@ -39,6 +48,11 @@ export function TestimonialGrid({
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {subtitle}
           </p>
+          {hasSamples && (
+            <p className="mt-4 text-xs text-muted-foreground/80 italic max-w-2xl mx-auto">
+              {sampleDisclaimer}
+            </p>
+          )}
         </div>
 
         {/* Testimonial cards */}
@@ -72,8 +86,15 @@ export function TestimonialGrid({
                       {testimonial.name.charAt(0)}
                     </span>
                   </div>
-                  <div>
-                    <div className="font-semibold text-sm text-foreground">{testimonial.name}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm text-foreground">{testimonial.name}</span>
+                      {testimonial.isSample && (
+                        <span className="text-[10px] uppercase tracking-wide text-muted-foreground/70 px-1.5 py-0.5 rounded border border-border">
+                          Sample
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground">{testimonial.context}</div>
                   </div>
                 </div>

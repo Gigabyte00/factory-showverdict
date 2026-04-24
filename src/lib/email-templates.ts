@@ -18,11 +18,39 @@ function getSiteInfo() {
   const domain = site.domain || `${site.slug}.vercel.app`;
   const niche = site.niche || 'products';
   const primaryColor = site.theme_config?.primaryColor || '#3B82F6';
-  return { name, domain, niche, primaryColor };
+  const logoUrl = process.env.SITE_EMAIL_LOGO_URL?.trim() || undefined;
+  return { name, domain, niche, primaryColor, logoUrl };
 }
 
-function layout(title: string, body: string): string {
-  const { name, domain, primaryColor } = getSiteInfo();
+type EmailKind = 'welcome' | 'drip' | 'receipt' | 'transactional';
+
+/**
+ * Per-email-kind header treatment. Keeps a consistent shell but lets transactional
+ * mail (receipts, auth) render as brand-neutral and drip content read as editorial.
+ */
+function headerBlock(kind: EmailKind): string {
+  const { name, primaryColor, logoUrl } = getSiteInfo();
+  const bg =
+    kind === 'welcome' ? primaryColor :
+    kind === 'receipt' ? '#ffffff' :
+    kind === 'transactional' ? '#ffffff' :
+    '#18181b';  // drip (and unspecified) — editorial dark
+  const textColor =
+    kind === 'welcome' ? '#ffffff' :
+    kind === 'receipt' ? '#18181b' :
+    kind === 'transactional' ? '#18181b' :
+    primaryColor;
+  const border = (kind === 'receipt' || kind === 'transactional')
+    ? `border-bottom:1px solid #e5e7eb;`
+    : '';
+  const logoImg = logoUrl
+    ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(name)}" height="28" style="display:block;height:28px;width:auto;border:0;outline:none;text-decoration:none" />`
+    : `<h1 style="margin:0;color:${textColor};font-size:22px;font-weight:700">${escapeHtml(name)}</h1>`;
+  return `<tr><td style="background:${bg};padding:24px 32px;border-radius:8px 8px 0 0;${border}">${logoImg}</td></tr>`;
+}
+
+function layout(title: string, body: string, kind: EmailKind = 'drip'): string {
+  const { name, domain } = getSiteInfo();
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title></head>
@@ -30,10 +58,7 @@ function layout(title: string, body: string): string {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7">
 <tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%">
-<!-- Header -->
-<tr><td style="background:#18181b;padding:24px 32px;border-radius:8px 8px 0 0">
-<h1 style="margin:0;color:${primaryColor};font-size:22px;font-weight:700">${escapeHtml(name)}</h1>
-</td></tr>
+${headerBlock(kind)}
 <!-- Body -->
 <tr><td style="background:#ffffff;padding:32px;border-radius:0 0 8px 8px">
 ${body}
@@ -85,7 +110,7 @@ You're in. Welcome to ${escapeHtml(siteName)} — your source for expert ${escap
 <p style="margin:0;color:#6b7280;font-size:13px">
 You're receiving this because ${escapeHtml(email)} was subscribed to our newsletter. You can unsubscribe at any time.
 </p>
-`);
+`, 'welcome');
 }
 
 // ─── Sequence Step (DB-driven drip) ────────────────────────
@@ -103,7 +128,7 @@ export function buildSequenceStepHtml(
     .replace(/\{\{site_url\}\}/g, vars.site_url)
     .replace(/\{\{site_name\}\}/g, escapeHtml(vars.site_name))
     .replace(/\{\{email\}\}/g, escapeHtml(vars.email));
-  return layout(subject, body);
+  return layout(subject, body, 'drip');
 }
 
 // ─── Drip Email #2 (Day 3) ──────────────────────────────────
@@ -131,7 +156,7 @@ Whether you're just getting started or looking to upgrade, our expert guides bre
 <p style="margin:0;color:#6b7280;font-size:13px">
 You're receiving this because ${escapeHtml(email)} is subscribed to ${escapeHtml(siteName)}. Unsubscribe at any time.
 </p>
-`);
+`, 'drip');
 }
 
 // ─── Drip Email #3 (Day 7) ──────────────────────────────────
@@ -170,5 +195,5 @@ Warranties, return policies, and hidden costs matter. Our reviews always cover w
 <p style="margin:0;color:#6b7280;font-size:13px">
 You're receiving this because ${escapeHtml(email)} is subscribed to ${escapeHtml(siteName)}. Unsubscribe at any time.
 </p>
-`);
+`, 'drip');
 }

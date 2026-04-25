@@ -11,6 +11,7 @@ import JsonLd from '@/components/JsonLd';
 import type { FAQData } from '@/components/JsonLd';
 import JsonLdTyped from '@/components/JsonLd';
 import { Prose, Callout, LastUpdated } from '@/components/content';
+import { InlineOptIn } from '@/components/content/InlineOptIn';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -386,6 +387,9 @@ export default function ComparisonArticle({
               {post.content || ''}
             </ReactMarkdown>
           </Prose>
+
+          {/* Newsletter opt-in — conversion anchor for comparison posts */}
+          <InlineOptIn siteId={site.id} niche={site.niche} />
 
           {/* FAQ Section with Schema */}
           {faqs && faqs.length > 0 && (

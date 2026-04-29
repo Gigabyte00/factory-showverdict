@@ -103,20 +103,56 @@ export default async function BlogPostPage({ params }: PageProps) {
     .order('published_at', { ascending: false })
     .limit(4);
 
-  // Determine template variant
-  // Priority: 1. Explicit variant in metadata, 2. Auto-detect from content type, 3. Default
+  // Determine template variant.
+  // Priority: 1. Explicit metadata.variant, 2. content_type column, 3. metadata flags,
+  // 4. word-count fallback. content_type is authoritative for inserter-driven posts.
   let variant = post.metadata?.variant;
 
   if (!variant) {
-    // Auto-detect based on metadata flags
-    if (post.metadata?.isComparison || post.metadata?.comparison) {
+    if ((post as any).content_type === 'review') {
+      variant = 'review';
+    } else if ((post as any).content_type === 'comparison') {
+      variant = 'comparison';
+    } else if (post.metadata?.isComparison || post.metadata?.comparison) {
       variant = 'comparison';
     } else if (post.metadata?.isReview || post.metadata?.review) {
       variant = 'review';
     } else {
-      // Auto-detect based on word count
       const wordCount = post.content?.split(/\s+/).length || 0;
       variant = wordCount > 3000 ? 'longform' : 'standard';
+    }
+  }
+
+  // Hydrate review metadata from the linked offer when missing. The inserter writes
+  // featured_offer_id but not metadata.review, which leaves rich CTAs dormant.
+  if (variant === 'review' && (post as any).featured_offer_id && !(post.metadata as any)?.review?.affiliateUrl) {
+    const { data: offer } = await supabase
+      .from('offers')
+      .select('slug, name, rating, current_price, price_usd, pros, cons, featured_image_url')
+      .eq('id', (post as any).featured_offer_id)
+      .single();
+
+    if (offer) {
+      const rawPrice = (offer as any).current_price ?? (offer as any).price_usd ?? '';
+      const priceStr = rawPrice
+        ? (typeof rawPrice === 'number' ? `$${rawPrice}` : String(rawPrice))
+        : '';
+      (post as any).metadata = {
+        ...((post.metadata as any) || {}),
+        isReview: true,
+        review: {
+          ...(((post.metadata as any) || {}).review || {}),
+          productName: (offer as any).name || post.title,
+          affiliateUrl: `/go/${(offer as any).slug}`,
+          price: priceStr,
+          rating: (offer as any).rating ?? 4.5,
+          maxRating: 5,
+          pros: Array.isArray((offer as any).pros) ? (offer as any).pros.slice(0, 6) : [],
+          cons: Array.isArray((offer as any).cons) ? (offer as any).cons.slice(0, 6) : [],
+          badge: "Editor's Pick",
+          offer_id: (post as any).featured_offer_id,
+        },
+      };
     }
   }
 

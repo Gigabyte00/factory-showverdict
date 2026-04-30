@@ -10,9 +10,13 @@
  * - NewsletterSignup: Email capture form (client component)
  */
 
-export { HeroSection } from './HeroSection';
-export { CategoryGrid, CategoryList } from './CategoryGrid';
-export { ArticleCard } from './ArticleCard';
-export { FeaturedOffers, CompactOfferCard } from './FeaturedOffers';
+export { default as HeroSection } from './HeroSection';
+export { default as CategoryGrid } from './CategoryGrid';
+export { default as ArticleCard } from './ArticleCard';
+export { default as FeaturedOffers } from './FeaturedOffers';
 export { TrustSignals, AsSeenIn } from './TrustSignals';
-export { NewsletterSignup } from './NewsletterSignup';
+export { default as NewsletterSignup } from './NewsletterSignup';
+
+export { default as TestimonialGrid } from './TestimonialGrid';
+
+export { default as FinalCTA } from './FinalCTA';

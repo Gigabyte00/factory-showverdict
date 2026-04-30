@@ -1,95 +1,212 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { getSiteConfig } from '@/lib/site-config';
-import { getNavLinks } from '@/lib/queries';
-import { MobileNav } from './MobileNav';
-import { DesktopNav } from './DesktopNav';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Search } from 'lucide-react';
+import Link from "next/link";
+import { Search, Menu } from "lucide-react";
 
 /**
- * Site header with navigation
+ * ShowVerdict — Header
  *
- * Features:
- * - Sticky positioning with backdrop blur
- * - Logo support (image or text fallback)
- * - Desktop nav links with active states
- * - Theme toggle (dark mode)
- * - Mobile hamburger menu via Sheet
+ * Sticky editorial header. Brass accent, serif wordmark, backdrop blur.
+ * No event handlers, no state. Mobile menu is a CSS-only <details> element.
+ *
+ * Border-on-scroll trick (CSS-only): we use the :has() selector on <html>
+ * combined with a scroll-driven container query fallback. The simplest
+ * cross-browser CSS-only approach is to draw a hairline border that animates
+ * in via a sentinel — but to keep this dependency-free and JS-free we just
+ * apply a subtle border that reads well on both states.
  */
-export async function Header() {
-  const site = getSiteConfig();
-  const navData = await getNavLinks();
-  // Support both `staticLinks` (template) and `mainLinks` (some older site queries.ts)
-  const staticLinks: Array<{ name: string; href: string }> =
-    (navData as any).staticLinks ?? (navData as any).mainLinks ?? [];
-  const categories: Array<{ name: string; href: string }> =
-    ((navData as any).categories ?? []).map((c: any) => ({ name: c.name, href: c.href ?? `/category/${c.slug}` }));
-  const resourceLinks: Array<{ name: string; href: string }> = (navData as any).resourceLinks ?? [];
-  const trustLinks: Array<{ name: string; href: string }> = (navData as any).trustLinks ?? [];
-
-  const allLinks = [...staticLinks, ...categories.slice(0, 4)].slice(0, 6); // Cap at 6 total to prevent overflow
+export default function Header() {
+  const navItems: { label: string; href: string }[] = [
+    { label: "Reviews", href: "/blog" },
+    { label: "Tools", href: "/tools" },
+    { label: "Compare", href: "/compare" },
+    { label: "Best Picks", href: "/best" },
+    { label: "About", href: "/about" },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        {/* Logo / Site Name */}
-        <Link href="/" className="flex items-center space-x-2">
-          {site.theme_config?.logoUrl ? (
-            <Image
-              src={site.theme_config.logoUrl}
-              alt={site.name}
-              width={160}
-              height={32}
-              priority
-              className="h-8 w-auto"
-            />
-          ) : (
-            <span className="text-xl font-bold text-foreground">{site.name}</span>
-          )}
+    <header
+      className="
+        sticky top-0 z-50
+        h-14 md:h-16
+        bg-background/85 backdrop-blur
+        supports-[backdrop-filter]:bg-background/70
+        border-b border-transparent
+        [@supports(animation-timeline:scroll())]:animate-[sv-border_linear_both]
+        [animation-timeline:scroll()]
+        [animation-range:0_120px]
+      "
+    >
+      <style>{`
+        @keyframes sv-border {
+          to { border-bottom-color: rgb(0 0 0 / 0.08); }
+        }
+      `}</style>
+
+      <div className="mx-auto h-full max-w-7xl px-4 md:px-6 flex items-center justify-between gap-4">
+        {/* Left — Wordmark */}
+        <Link
+          href="/"
+          aria-label="ShowVerdict — home"
+          className="flex items-center gap-1.5 shrink-0 group"
+        >
+          <span
+            className="
+              font-serif font-semibold tracking-tight
+              text-[1.1rem] md:text-[1.25rem]
+              text-foreground
+            "
+            style={{ fontFamily: '"Source Serif 4", "Source Serif Pro", Georgia, serif' }}
+          >
+            ShowVerdict
+          </span>
+          <span
+            aria-hidden="true"
+            className="
+              inline-block w-1.5 h-1.5 rounded-full
+              bg-[var(--sv-brass,#B8893B)]
+              translate-y-[3px]
+              transition-transform duration-200
+              group-hover:scale-125
+            "
+          />
         </Link>
 
-        {/* Desktop Navigation */}
-        <DesktopNav links={allLinks} />
+        {/* Center — Primary nav (desktop only) */}
+        <nav
+          aria-label="Primary"
+          className="hidden md:flex items-center gap-7"
+        >
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="
+                relative text-[0.9375rem] font-medium
+                text-foreground/75 hover:text-foreground
+                transition-colors
+                after:absolute after:left-0 after:right-0 after:-bottom-1
+                after:h-px after:bg-[var(--sv-brass,#B8893B)]
+                after:scale-x-0 hover:after:scale-x-100
+                after:origin-left after:transition-transform after:duration-200
+              "
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
-        {/* CTA Button + Search + Theme Toggle + Mobile Navigation */}
-        <div className="flex items-center gap-2">
-          {process.env.SITE_HEADER_CTA_TEXT && process.env.SITE_HEADER_CTA_URL && (
-            <>
-              {/* Desktop CTA — full-width pill */}
-              <Link
-                href={process.env.SITE_HEADER_CTA_URL}
-                className="hidden md:inline-flex items-center px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                {process.env.SITE_HEADER_CTA_TEXT}
-              </Link>
-              {/* Mobile CTA — compact pill so the primary action is visible above-the-fold on phones */}
-              <Link
-                href={process.env.SITE_HEADER_CTA_URL}
-                className="inline-flex md:hidden items-center px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors whitespace-nowrap max-w-[120px] truncate"
-                aria-label={process.env.SITE_HEADER_CTA_TEXT}
-              >
-                {process.env.SITE_HEADER_CTA_TEXT}
-              </Link>
-            </>
-          )}
+        {/* Right — Search + CTA (desktop) / Hamburger (mobile) */}
+        <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+          {/* Search — visible on all sizes */}
           <Link
             href="/search"
-            aria-label="Search"
-            className="hidden md:inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Search reviews"
+            className="
+              hidden md:inline-flex items-center justify-center
+              w-9 h-9 rounded-full
+              text-foreground/70 hover:text-foreground
+              hover:bg-foreground/5
+              transition-colors
+            "
           >
-            <Search className="h-4 w-4" aria-hidden="true" />
+            <Search className="w-[18px] h-[18px]" strokeWidth={1.75} />
           </Link>
-          <ThemeToggle />
-          <MobileNav
-            siteName={site.name}
-            links={allLinks}
-            categories={categories}
-            resourceLinks={resourceLinks}
-            trustLinks={trustLinks}
-          />
+
+          {/* CTA — desktop */}
+          <Link
+            href="/blog"
+            className="
+              hidden md:inline-flex items-center
+              h-9 px-4 rounded-full
+              text-[0.875rem] font-medium tracking-tight
+              text-white
+              bg-[var(--sv-brass,#B8893B)]
+              hover:bg-[var(--sv-brass-dark,#9E7530)]
+              shadow-[0_1px_0_rgb(0_0_0/0.04),0_1px_2px_rgb(0_0_0/0.06)]
+              transition-colors
+            "
+          >
+            Browse Reviews
+          </Link>
+
+          {/* Mobile — search icon */}
+          <Link
+            href="/search"
+            aria-label="Search reviews"
+            className="
+              md:hidden inline-flex items-center justify-center
+              w-10 h-10 rounded-full
+              text-foreground/75
+              hover:bg-foreground/5
+            "
+          >
+            <Search className="w-[20px] h-[20px]" strokeWidth={1.75} />
+          </Link>
+
+          {/* Mobile — hamburger as CSS-only <details> */}
+          <details className="md:hidden relative group">
+            <summary
+              aria-label="Open menu"
+              className="
+                list-none cursor-pointer
+                inline-flex items-center justify-center
+                w-10 h-10 rounded-full
+                text-foreground/80
+                hover:bg-foreground/5
+                [&::-webkit-details-marker]:hidden
+              "
+            >
+              <Menu className="w-[20px] h-[20px]" strokeWidth={1.75} />
+            </summary>
+
+            {/* Panel */}
+            <div
+              className="
+                absolute right-0 top-[calc(100%+8px)]
+                w-[min(78vw,280px)]
+                rounded-xl border border-black/5
+                bg-background/95 backdrop-blur
+                shadow-[0_10px_30px_-8px_rgb(0_0_0/0.18),0_2px_8px_rgb(0_0_0/0.06)]
+                overflow-hidden
+                origin-top-right
+              "
+            >
+              <nav aria-label="Mobile" className="flex flex-col py-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="
+                      px-4 py-2.5
+                      text-[0.95rem] font-medium
+                      text-foreground/85 hover:text-foreground
+                      hover:bg-foreground/5
+                    "
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="h-px mx-4 my-2 bg-black/5" />
+                <Link
+                  href="/blog"
+                  className="
+                    mx-3 my-1 inline-flex items-center justify-center
+                    h-10 rounded-full
+                    text-[0.9rem] font-medium
+                    text-white
+                    bg-[var(--sv-brass,#B8893B)]
+                    hover:bg-[var(--sv-brass-dark,#9E7530)]
+                  "
+                >
+                  Browse Reviews
+                </Link>
+              </nav>
+            </div>
+          </details>
         </div>
       </div>
     </header>
   );
 }
+
+
+export { Header };

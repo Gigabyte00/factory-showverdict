@@ -1,329 +1,474 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Clock, Calendar, ArrowRight, RefreshCw } from 'lucide-react';
-import { BookmarkButton } from '@/components/ui/bookmark-button';
-import type { Post, Category } from '@/types';
-
-/** Updated_at must be >14 days newer than published_at to count as a meaningful refresh. */
-function getFreshnessBadge(publishedAt: string | null | undefined, updatedAt: string | null | undefined): string | null {
-  if (!updatedAt || !publishedAt) return null;
-  const gapMs = new Date(updatedAt).getTime() - new Date(publishedAt).getTime();
-  if (gapMs <= 14 * 24 * 60 * 60 * 1000) return null;
-  const diffDays = Math.floor((Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays < 1) return 'Updated today';
-  if (diffDays < 7) return `Updated ${diffDays}d ago`;
-  if (diffDays < 30) return `Updated ${Math.floor(diffDays / 7)}w ago`;
-  if (diffDays < 365) return `Updated ${Math.floor(diffDays / 30)}mo ago`;
-  return null;
-}
-
-interface ArticleCardProps {
-  post: Post;
-  category?: Category | null;
-  variant?: 'default' | 'featured' | 'compact';
-  /** Override the default /blog/{slug} URL */
-  href?: string;
-}
+import Image from "next/image";
+import Link from "next/link";
+import * as React from "react";
 
 /**
- * Article card with thumbnail, category badge, and metadata
+ * ShowVerdict — ArticleCard
+ * --------------------------------------------------------------
+ * Cinema-noir editorial card for TV & film reviews.
  *
- * Features:
- * - Gradient placeholder when no featured image
- * - Category badge with link
- * - Reading time and date
- * - Three variants: default, featured (large), compact
+ * Three variants:
+ *   - default  : image-top vertical card (16:9 image)
+ *   - featured : 60/40 split, image right (desktop), top (mobile)
+ *   - minimal  : image left (4:3, 120px), text right, no excerpt
+ *
+ * Server-renderable: no onClick / onError / event handlers.
+ *
+ * Token contract (define in your global stylesheet):
+ *   --sv-burgundy:  #5B1A2B;  /* primary ink */
+ *   --sv-burgundy-2:#7A2336;  /* hover/active */
+ *   --sv-cream:     #F4ECDD;  /* surface */
+ *   --sv-cream-2:   #EBE0CC;  /* subtle surface */
+ *   --sv-brass:     #B8893B;  /* accent */
+ *   --sv-brass-2:   #D6A24E;  /* accent hover */
+ *   --sv-ink:       #14110F;  /* deep ink for body */
+ *   --sv-ink-2:     #3A322D;  /* secondary text */
+ *   --sv-rule:      #D9CDB6;  /* hairline rules */
  */
-export function ArticleCard({ post, category, variant = 'default', href }: ArticleCardProps) {
-  const publishedDate = post.published_at
-    ? new Date(post.published_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : null;
 
-  const readingTime = post.reading_time_minutes || estimateReadingTime(post.word_count);
-  const postUrl = href || `/blog/${post.slug}`;
-  const freshnessBadge = getFreshnessBadge(post.published_at, post.updated_at);
+export interface ArticleCardPost {
+  slug: string;
+  title: string;
+  excerpt: string;
+  featured_image_url: string;
+  published_at: string; // ISO string
+  reading_time_minutes: number;
+  tags?: string[];
+}
 
-  if (variant === 'featured') {
-    return <FeaturedArticleCard post={post} category={category} publishedDate={publishedDate} readingTime={readingTime} href={postUrl} freshnessBadge={freshnessBadge} />;
-  }
+export interface ArticleCardProps {
+  post: ArticleCardPost;
+  variant?: "default" | "featured" | "minimal";
+  href?: string;
+  className?: string;
+}
 
-  if (variant === 'compact') {
-    return <CompactArticleCard post={post} category={category} publishedDate={publishedDate} href={postUrl} />;
-  }
+/* -------------------------------------------------------------------------- */
+/*  Helpers                                                                   */
+/* -------------------------------------------------------------------------- */
 
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function cx(...parts: Array<string | false | null | undefined>): string {
+  return parts.filter(Boolean).join(" ");
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Bookmark icon (stub — no handlers)                                        */
+/* -------------------------------------------------------------------------- */
+
+function BookmarkIcon({ className }: { className?: string }) {
   return (
-    <Card className="group overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300 relative">
-      {/* Bookmark — hover/focus reveal */}
-      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-        <BookmarkButton
-          bookmark={{
-            id: `post-${post.slug}`,
-            type: 'post',
-            title: post.title,
-            url: postUrl,
-            image: post.featured_image_url ?? undefined,
-            excerpt: post.excerpt ?? undefined,
-          }}
-        />
-      </div>
-
-      {/* Thumbnail or placeholder */}
-      <Link href={postUrl} className="block relative aspect-video overflow-hidden">
-        {post.featured_image_url ? (
-          <>
-            <div className="relative w-full h-full bg-muted">
-              <Image
-                src={post.featured_image_url}
-                alt={post.featured_image_alt || post.title}
-                fill
-                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-          </>
-        ) : (
-          <PlaceholderImage title={post.title} />
-        )}
-        {/* Category badge overlay — slides in on hover */}
-        {category && (
-          <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground transition-transform duration-300 -translate-x-1 group-hover:translate-x-0">
-            {category.name}
-          </Badge>
-        )}
-      </Link>
-
-      <CardContent className="p-5">
-        {/* Title */}
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-          <Link href={postUrl}>
-            {post.title}
-          </Link>
-        </h3>
-
-        {/* Excerpt */}
-        {post.excerpt && (
-          <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
-            {post.excerpt}
-          </p>
-        )}
-
-        {/* Meta info + read more arrow */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-4 flex-wrap">
-            {freshnessBadge ? (
-              <span className="inline-flex items-center gap-1 font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">
-                <RefreshCw className="w-3 h-3" aria-hidden="true" />
-                {freshnessBadge}
-              </span>
-            ) : publishedDate ? (
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                {publishedDate}
-              </span>
-            ) : null}
-            {readingTime > 0 && (
-              <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                {readingTime} min read
-              </span>
-            )}
-          </div>
-          <ArrowRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-0 group-hover:translate-x-1" />
-        </div>
-      </CardContent>
-    </Card>
+    <span
+      aria-hidden="true"
+      className={cx(
+        "pointer-events-none absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full",
+        "bg-[color:var(--sv-cream)]/85 backdrop-blur-md ring-1 ring-[color:var(--sv-ink)]/10",
+        "shadow-[0_2px_8px_-2px_rgba(20,17,15,0.25)]",
+        "transition-transform duration-300 group-hover:-translate-y-0.5",
+        className,
+      )}
+    >
+      <svg
+        width="14"
+        height="16"
+        viewBox="0 0 14 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-[color:var(--sv-burgundy)]"
+      >
+        <path d="M2 1.5h10v13l-5-3.2-5 3.2v-13z" />
+      </svg>
+    </span>
   );
 }
 
-/**
- * Featured variant - larger card with horizontal layout on desktop
- */
-function FeaturedArticleCard({
-  post,
-  category,
-  publishedDate,
+/* -------------------------------------------------------------------------- */
+/*  Tag pill (top-left of image)                                              */
+/* -------------------------------------------------------------------------- */
+
+function TagPill({ label, className }: { label: string; className?: string }) {
+  return (
+    <span
+      className={cx(
+        "absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
+        "bg-[color:var(--sv-ink)]/55 backdrop-blur-md ring-1 ring-white/10",
+        "text-[10.5px] font-medium uppercase tracking-[0.14em] text-[color:var(--sv-cream)]",
+        className,
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className="h-1.5 w-1.5 rounded-full bg-[color:var(--sv-brass-2)]"
+      />
+      {label}
+    </span>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Meta line                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function MetaLine({
+  publishedAt,
   readingTime,
-  href,
-  freshnessBadge,
+  firstTag,
+  className,
 }: {
-  post: Post;
-  category?: Category | null;
-  publishedDate: string | null;
+  publishedAt: string;
   readingTime: number;
-  href: string;
-  freshnessBadge: string | null;
+  firstTag?: string;
+  className?: string;
 }) {
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 relative">
-      <div className="absolute top-3 right-3 z-10">
-        <BookmarkButton
-          bookmark={{
-            id: `post-${post.slug}`,
-            type: 'post',
-            title: post.title,
-            url: href,
-            image: post.featured_image_url ?? undefined,
-            excerpt: post.excerpt ?? undefined,
-          }}
-        />
-      </div>
-      <div className="md:flex">
-        {/* Image section - larger */}
-        <Link href={href} className="block relative md:w-1/2 aspect-video md:aspect-auto overflow-hidden md:min-h-[280px]">
-          {post.featured_image_url ? (
-            <Image
-              src={post.featured_image_url}
-              alt={post.featured_image_alt || post.title}
-              fill
-              sizes="(min-width: 768px) 50vw, 100vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              priority
-            />
-          ) : (
-            <PlaceholderImage title={post.title} className="md:min-h-[280px]" />
-          )}
-        </Link>
+    <div
+      className={cx(
+        "flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[12px] uppercase tracking-[0.16em]",
+        "text-[color:var(--sv-ink-2)]",
+        className,
+      )}
+    >
+      <time dateTime={publishedAt} className="whitespace-nowrap">
+        {formatDate(publishedAt)}
+      </time>
+      <span aria-hidden="true" className="text-[color:var(--sv-rule)]">
+        ·
+      </span>
+      <span className="whitespace-nowrap">{readingTime} min read</span>
+      {firstTag ? (
+        <>
+          <span aria-hidden="true" className="text-[color:var(--sv-rule)]">
+            ·
+          </span>
+          <span className="whitespace-nowrap text-[color:var(--sv-burgundy)]">
+            {firstTag}
+          </span>
+        </>
+      ) : null}
+    </div>
+  );
+}
 
-        {/* Content section */}
-        <CardContent className="p-6 md:w-1/2 flex flex-col justify-center">
-          {category && (
-            <Badge variant="secondary" className="w-fit mb-3">
-              {category.name}
-            </Badge>
-          )}
+/* -------------------------------------------------------------------------- */
+/*  Shared classes                                                            */
+/* -------------------------------------------------------------------------- */
 
-          <h3 className="font-bold text-2xl mb-3 line-clamp-2 group-hover:text-primary transition-colors">
-            <Link href={href}>
+const SERIF = "font-['Cormorant_Garamond',_Georgia,_serif]";
+const SANS =
+  "font-['Inter',_'Helvetica_Neue',_system-ui,_-apple-system,_sans-serif]";
+
+const ROOT_BASE = cx(
+  "group relative isolate block overflow-hidden",
+  "bg-[color:var(--sv-cream)] text-[color:var(--sv-ink)]",
+  "ring-1 ring-[color:var(--sv-rule)]",
+  "transition-all duration-300 ease-out",
+  "hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(20,17,15,0.45)]",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--sv-brass)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--sv-cream)]",
+  SANS,
+);
+
+const IMG_WRAP = cx(
+  "relative overflow-hidden rounded-xl",
+  "bg-[color:var(--sv-ink)]/10",
+);
+
+const IMG_INNER = cx(
+  "object-cover transition-transform duration-[600ms] ease-out",
+  "group-hover:scale-[1.02]",
+);
+
+const TITLE_CLAMP_2: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const EXCERPT_CLAMP_2: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const EXCERPT_CLAMP_3: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Component                                                                 */
+/* -------------------------------------------------------------------------- */
+
+export default function ArticleCard({
+  post,
+  variant = "default",
+  href,
+  className,
+}: ArticleCardProps) {
+  const url = href ?? `/reviews/${post.slug}`;
+  const firstTag = post.tags?.[0];
+
+  /* ----------------------------------- featured ---------------------------- */
+  if (variant === "featured") {
+    return (
+      <Link
+        href={url}
+        className={cx(
+          ROOT_BASE,
+          "rounded-2xl",
+          "grid grid-cols-1 md:grid-cols-5",
+          className,
+        )}
+        aria-label={post.title}
+      >
+        {/* Text column — first in DOM for a11y, visually left on desktop */}
+        <div className="order-2 flex flex-col justify-between gap-6 p-6 md:order-1 md:col-span-3 md:p-8 lg:p-10">
+          <div className="flex flex-col gap-4">
+            {firstTag ? (
+              <span
+                className={cx(
+                  "inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1",
+                  "bg-[color:var(--sv-burgundy)] text-[color:var(--sv-cream)]",
+                  "text-[10.5px] font-medium uppercase tracking-[0.18em]",
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 rounded-full bg-[color:var(--sv-brass-2)]"
+                />
+                {firstTag}
+              </span>
+            ) : null}
+
+            <h3
+              className={cx(
+                SERIF,
+                "text-[28px] leading-[1.08] tracking-[-0.01em] md:text-[32px]",
+                "text-[color:var(--sv-ink)]",
+                "transition-colors duration-300 group-hover:text-[color:var(--sv-burgundy)]",
+              )}
+              style={TITLE_CLAMP_2}
+            >
               {post.title}
-            </Link>
-          </h3>
+            </h3>
 
-          {post.excerpt && (
-            <p className="text-muted-foreground line-clamp-3 mb-4">
+            <p
+              className="text-[15px] leading-[1.65] text-[color:var(--sv-ink-2)]"
+              style={EXCERPT_CLAMP_3}
+            >
               {post.excerpt}
             </p>
-          )}
-
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4 flex-wrap">
-            {freshnessBadge ? (
-              <span className="inline-flex items-center gap-1 font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 text-xs">
-                <RefreshCw className="w-3 h-3" aria-hidden="true" />
-                {freshnessBadge}
-              </span>
-            ) : publishedDate ? (
-              <span className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                {publishedDate}
-              </span>
-            ) : null}
-            {readingTime > 0 && (
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {readingTime} min read
-              </span>
-            )}
           </div>
 
-          <Link
-            href={href}
-            className="inline-flex items-center gap-2 text-primary font-medium hover:underline"
-          >
-            Read Article
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </CardContent>
-      </div>
-    </Card>
-  );
-}
+          <div className="flex flex-col gap-5">
+            <MetaLine
+              publishedAt={post.published_at}
+              readingTime={post.reading_time_minutes}
+              firstTag={post.tags?.[0]}
+            />
 
-/**
- * Compact variant - for sidebar or list views
- */
-function CompactArticleCard({
-  post,
-  category,
-  publishedDate,
-  href,
-}: {
-  post: Post;
-  category?: Category | null;
-  publishedDate: string | null;
-  href: string;
-}) {
-  return (
-    <Link href={href} className="group flex gap-4 py-3">
-      {/* Small thumbnail */}
-      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-        {post.featured_image_url ? (
+            <span
+              className={cx(
+                "inline-flex w-fit items-center gap-2 rounded-full px-5 py-2.5",
+                "bg-[color:var(--sv-burgundy)] text-[color:var(--sv-cream)]",
+                "text-[12px] font-semibold uppercase tracking-[0.18em]",
+                "ring-1 ring-[color:var(--sv-burgundy)]/0",
+                "transition-all duration-300",
+                "group-hover:bg-[color:var(--sv-burgundy-2)] group-hover:ring-[color:var(--sv-brass)]/40",
+              )}
+            >
+              Read review
+              <span
+                aria-hidden="true"
+                className="transition-transform duration-300 group-hover:translate-x-0.5"
+              >
+                →
+              </span>
+            </span>
+          </div>
+        </div>
+
+        {/* Image column */}
+        <div className="relative order-1 md:order-2 md:col-span-2">
+          <div className={cx(IMG_WRAP, "m-4 aspect-[4/3] md:m-5 md:aspect-auto md:h-[calc(100%-2.5rem)]")}>
+            <Image
+              src={post.featured_image_url}
+              alt={post.title}
+              fill
+              sizes="(min-width: 768px) 40vw, 100vw"
+              className={IMG_INNER}
+            />
+            {/* film-grain / vignette */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[color:var(--sv-ink)]/35 via-transparent to-transparent"
+            />
+            {firstTag ? <TagPill label={firstTag} /> : null}
+            <BookmarkIcon />
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  /* ----------------------------------- minimal ----------------------------- */
+  if (variant === "minimal") {
+    return (
+      <Link
+        href={url}
+        className={cx(
+          ROOT_BASE,
+          "rounded-xl",
+          "flex items-stretch gap-4 p-3 sm:gap-5 sm:p-4",
+          className,
+        )}
+        aria-label={post.title}
+      >
+        <div
+          className={cx(
+            IMG_WRAP,
+            "relative w-[120px] shrink-0 self-stretch aspect-[4/3]",
+          )}
+        >
           <Image
             src={post.featured_image_url}
             alt={post.title}
             fill
-            sizes="80px"
-            className="object-cover"
+            sizes="120px"
+            className={IMG_INNER}
           />
-        ) : (
-          <PlaceholderImage title={post.title} className="rounded-lg" />
-        )}
+          {firstTag ? (
+            <span
+              className={cx(
+                "absolute left-1.5 top-1.5 z-10 inline-flex items-center rounded-full px-1.5 py-0.5",
+                "bg-[color:var(--sv-ink)]/60 backdrop-blur-md ring-1 ring-white/10",
+                "text-[9px] font-medium uppercase tracking-[0.12em] text-[color:var(--sv-cream)]",
+              )}
+            >
+              {firstTag}
+            </span>
+          ) : null}
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-2 py-1 pr-10">
+          <h3
+            className={cx(
+              SERIF,
+              "text-[20px] leading-[1.15] tracking-[-0.01em]",
+              "text-[color:var(--sv-ink)]",
+              "transition-colors duration-300 group-hover:text-[color:var(--sv-burgundy)]",
+            )}
+            style={TITLE_CLAMP_2}
+          >
+            {post.title}
+          </h3>
+
+          <MetaLine
+            publishedAt={post.published_at}
+            readingTime={post.reading_time_minutes}
+            firstTag={post.tags?.[0]}
+            className="text-[11px]"
+          />
+        </div>
+
+        {/* compact bookmark, vertically centered on right */}
+        <span
+          aria-hidden="true"
+          className={cx(
+            "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-8 w-8 items-center justify-center rounded-full",
+            "bg-[color:var(--sv-cream-2)] ring-1 ring-[color:var(--sv-ink)]/10",
+            "transition-transform duration-300 group-hover:-translate-y-[calc(50%+2px)]",
+          )}
+        >
+          <svg
+            width="12"
+            height="14"
+            viewBox="0 0 14 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-[color:var(--sv-burgundy)]"
+          >
+            <path d="M2 1.5h10v13l-5-3.2-5 3.2v-13z" />
+          </svg>
+        </span>
+      </Link>
+    );
+  }
+
+  /* ----------------------------------- default ----------------------------- */
+  return (
+    <Link
+      href={url}
+      className={cx(ROOT_BASE, "rounded-2xl flex flex-col", className)}
+      aria-label={post.title}
+    >
+      <div className="p-4 pb-0">
+        <div className={cx(IMG_WRAP, "relative aspect-[16/9]")}>
+          <Image
+            src={post.featured_image_url}
+            alt={post.title}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className={IMG_INNER}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[color:var(--sv-ink)]/30 via-transparent to-transparent"
+          />
+          {firstTag ? <TagPill label={firstTag} /> : null}
+          <BookmarkIcon />
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        {category && (
-          <span className="text-xs text-primary font-medium">{category.name}</span>
-        )}
-        <h4 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+      <div className="flex flex-1 flex-col gap-3 p-6">
+        <h3
+          className={cx(
+            SERIF,
+            "text-[22px] leading-[1.15] tracking-[-0.01em]",
+            "text-[color:var(--sv-ink)]",
+            "transition-colors duration-300 group-hover:text-[color:var(--sv-burgundy)]",
+          )}
+          style={TITLE_CLAMP_2}
+        >
           {post.title}
-        </h4>
-        {publishedDate && (
-          <span className="text-xs text-muted-foreground">{publishedDate}</span>
-        )}
+        </h3>
+
+        <p
+          className="text-[14.5px] leading-[1.6] text-[color:var(--sv-ink-2)]"
+          style={EXCERPT_CLAMP_2}
+        >
+          {post.excerpt}
+        </p>
+
+        <div className="mt-auto pt-3 border-t border-dashed border-[color:var(--sv-rule)]">
+          <MetaLine
+            publishedAt={post.published_at}
+            readingTime={post.reading_time_minutes}
+            firstTag={post.tags?.[0]}
+          />
+        </div>
       </div>
     </Link>
   );
 }
 
-/**
- * Themed placeholder for articles without featured images.
- * Uses the site's primary color gradient with a subtle pattern overlay.
- */
-function PlaceholderImage({ title, className = '' }: { title: string; className?: string }) {
-  return (
-    <div
-      className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/80 to-primary/40 relative ${className}`}
-      aria-hidden="true"
-    >
-      {/* Subtle diagonal line pattern overlay */}
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            45deg,
-            transparent,
-            transparent 10px,
-            rgba(255,255,255,0.1) 10px,
-            rgba(255,255,255,0.1) 11px
-          )`,
-        }}
-      />
-      {/* Large initial letter */}
-      <span className="text-5xl font-bold text-white/40 relative z-10">
-        {title.charAt(0).toUpperCase()}
-      </span>
-    </div>
-  );
-}
 
-// Estimate reading time from word count
-function estimateReadingTime(wordCount: number | null): number {
-  if (!wordCount) return 0;
-  return Math.ceil(wordCount / 200); // ~200 words per minute
-}
+export { ArticleCard };

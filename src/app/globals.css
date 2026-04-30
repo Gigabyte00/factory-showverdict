@@ -4,42 +4,50 @@
 
 @layer base {
   :root {
-    /* Professional Slate palette - light mode */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* ShowVerdict editorial palette — cinema noir burgundy / cream / brass */
+    --background: 36 25% 95%;
+    --foreground: 0 30% 10%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 36 25% 95%;
+    --card-foreground: 0 30% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 36 25% 95%;
+    --popover-foreground: 0 30% 10%;
 
-    /* Primary - site-specific, default to professional blue */
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 350 55% 30%;
+    --primary-foreground: 36 25% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 30 18% 88%;
+    --secondary-foreground: 0 30% 10%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 43%;
+    --muted: 30 18% 88%;
+    --muted-foreground: 0 12% 38%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 40 65% 75%;
+    --accent-foreground: 0 30% 10%;
 
     --destructive: 0 84.2% 50.5%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 36 25% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --border: 30 18% 84%;
+    --input: 30 18% 84%;
+    --ring: 350 55% 30%;
 
     --radius: 0.5rem;
 
-    /* Legacy support - map to new system */
     --color-primary: hsl(var(--primary));
     --color-accent: hsl(var(--accent));
-    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-sans: var(--font-inter, 'Inter'), system-ui, sans-serif;
+    --font-serif: var(--font-cormorant, 'Cormorant Garamond'), Georgia, serif;
+
+    /* Claude Design editorial component tokens (Wave 13a) */
+    --color-cream:   #F4ECDD;
+    --color-blush:   #E8D8C0;
+    --color-jade:    #7C2D3C;
+    --color-jade-50: #F1E0E4;
+    --color-ink:     #1F1418;
+    --color-mute:    #7E7268;
+    --color-line:    #EADBC8;
   }
 
   .dark {

@@ -1,242 +1,306 @@
-import Link from 'next/link';
-import { getSiteConfig } from '@/lib/site-config';
-import { getCategories, getNavLinks } from '@/lib/queries';
+import Link from "next/link";
+import { Film, Youtube, Twitter } from "lucide-react";
 
 /**
- * Site footer with multi-column layout
+ * ShowVerdict — editorial Footer
  *
- * Features:
- * - Navigation links organized by section
- * - Social media SVG icon buttons
- * - Affiliate disclosure (required for FTC compliance)
- * - Dynamic copyright year
+ * Brass accent via CSS variables (set on the <footer> element).
+ * Tailwind tokens used: bg-muted/30, border, text-foreground, etc.
+ * Newsletter form posts to /api/newsletter (no client handlers).
  */
-export async function Footer() {
-  const site = getSiteConfig();
-  const categories = await getCategories();
-  const nav = await getNavLinks();
-  const currentYear = new Date().getFullYear();
-  const socialLinks = site.settings?.socialLinks || {};
-  const hasSocials = Object.values(socialLinks).some(Boolean);
-
+export default function Footer() {
   return (
-    <footer className="border-t bg-card">
-      <div className="container py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          {/* Brand Column */}
-          <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="text-xl font-bold text-foreground">
-              {site.name}
+    <footer
+      role="contentinfo"
+      className="relative border-t bg-muted/30 text-foreground"
+      style={
+        {
+          // Brass palette — warm, editorial, not gold-y
+          ["--brass" as any]: "#B08D57",
+          ["--brass-ink" as any]: "#7A5E33",
+          ["--brass-tint" as any]: "#F5EFE3",
+          borderTopColor: "var(--brass)",
+          borderTopWidth: "2px",
+        } as React.CSSProperties
+      }
+    >
+      {/* ROW 1 — brand + nav columns */}
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-12 md:px-10 md:pt-20 md:pb-14">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-4 md:gap-10">
+          {/* Col 1 — wordmark + tagline + socials */}
+          <div className="md:col-span-1">
+            <Link
+              href="/"
+              className="inline-flex items-baseline gap-1 font-serif text-2xl tracking-tight"
+            >
+              <span className="font-semibold">Show</span>
+              <span
+                className="font-semibold italic"
+                style={{ color: "var(--brass-ink)" }}
+              >
+                Verdict
+              </span>
+              <span
+                aria-hidden
+                className="ml-0.5 inline-block h-1.5 w-1.5 translate-y-[-2px] rounded-full"
+                style={{ background: "var(--brass)" }}
+              />
             </Link>
-            {site.niche && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                Your trusted guide to {site.niche}
-              </p>
-            )}
 
-            {/* Social icons */}
-            {hasSocials && (
-              <div className="flex items-center gap-3 mt-4">
-                {socialLinks.twitter && (
-                  <a
-                    href={socialLinks.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                    aria-label="Follow us on X (Twitter)"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                    </svg>
-                  </a>
-                )}
-                {socialLinks.instagram && (
-                  <a
-                    href={socialLinks.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                    aria-label="Follow us on Instagram"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                    </svg>
-                  </a>
-                )}
-                {socialLinks.youtube && (
-                  <a
-                    href={socialLinks.youtube}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                    aria-label="Subscribe on YouTube"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                    </svg>
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Categories Column */}
-          {categories.length > 0 && (
-            <div>
-              <h3 className="font-semibold text-foreground mb-3">Categories</h3>
-              <ul className="space-y-2">
-                {categories.slice(0, 5).map((cat) => (
-                  <li key={cat.id}>
-                    <Link
-                      href={`/category/${cat.slug}`}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {cat.name}
-                    </Link>
-                  </li>
-                ))}
-                {categories.length > 5 && (
-                  <li className="pt-1">
-                    <Link href="/blog" className="text-sm text-primary hover:underline font-medium">
-                      View all →
-                    </Link>
-                  </li>
-                )}
-              </ul>
-            </div>
-          )}
-
-          {/* Resources Column */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-3">Resources</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/offers"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Offers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/tools"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Tools
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/bookmarks"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Saved Articles
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Knowledge Column — reference / learning pages */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-3">Knowledge</h3>
-            <ul className="space-y-2">
-              {nav.resourceLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <Link
-                  href="/search"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Search
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Trust & Company Column */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-3">About</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/methodology"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  How We Test
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/authors"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Our Team
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Terms
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Affiliate Disclosure — FTC requires "clear and conspicuous" */}
-        <div className="mt-8 pt-6 border-t">
-          <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto leading-relaxed">
-            <strong>Affiliate Disclosure:</strong> Some of the links on this site are affiliate links, meaning we may earn a commission if you click through and make a purchase — at no additional cost to you. We only recommend products we believe in. This helps support the site and allows us to continue providing free content.
-          </p>
-        </div>
-
-        {/* Copyright */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} {site.name}. All rights reserved.
-          </p>
-          {site.settings?.footerText && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {site.settings.footerText}
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
+              Independent television criticism. We watch the pilots, the
+              middles, and the finales — so your weekend doesn't go to waste.
             </p>
-          )}
+
+            <div className="mt-6 flex items-center gap-2">
+              <SocialLink
+                href="https://letterboxd.com/showverdict"
+                label="Letterboxd"
+              >
+                <Film className="h-4 w-4" strokeWidth={1.75} />
+              </SocialLink>
+              <SocialLink
+                href="https://youtube.com/@showverdict"
+                label="YouTube"
+              >
+                <Youtube className="h-4 w-4" strokeWidth={1.75} />
+              </SocialLink>
+              <SocialLink href="https://x.com/showverdict" label="X / Twitter">
+                <Twitter className="h-4 w-4" strokeWidth={1.75} />
+              </SocialLink>
+            </div>
+          </div>
+
+          {/* Col 2 — Reviews */}
+          <FooterColumn title="Reviews">
+            <FooterLink href="/blog">Latest reviews</FooterLink>
+            <FooterLink href="/tools">Watch tools</FooterLink>
+            <FooterLink href="/compare">Compare shows</FooterLink>
+            <FooterLink href="/offers">Streaming offers</FooterLink>
+          </FooterColumn>
+
+          {/* Col 3 — Resources */}
+          <FooterColumn title="Resources">
+            <FooterLink href="/methodology">Our methodology</FooterLink>
+            <FooterLink href="/faq">FAQ</FooterLink>
+            <FooterLink href="/glossary">Glossary</FooterLink>
+            <FooterLink href="/authors">Authors</FooterLink>
+            <FooterLink href="/editorial-standards">
+              Editorial standards
+            </FooterLink>
+          </FooterColumn>
+
+          {/* Col 4 — About */}
+          <FooterColumn title="About">
+            <FooterLink href="/about">About us</FooterLink>
+            <FooterLink href="/contact">Contact</FooterLink>
+            <FooterLink href="/privacy">Privacy</FooterLink>
+            <FooterLink href="/terms">Terms</FooterLink>
+            <FooterLink href="/affiliate-disclosure">
+              Affiliate disclosure
+            </FooterLink>
+          </FooterColumn>
+        </div>
+      </div>
+
+      {/* ROW 2 — newsletter band */}
+      <div
+        className="border-y"
+        style={{
+          background: "var(--brass-tint)",
+          borderColor: "color-mix(in oklab, var(--brass) 22%, transparent)",
+        }}
+      >
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-6 py-12 md:grid-cols-[1.1fr_1fr] md:gap-16 md:px-10 md:py-14">
+          <div>
+            <h3
+              className="font-serif text-3xl leading-tight tracking-tight md:text-[2.125rem]"
+              style={{ color: "#1f1a14" }}
+            >
+              One show pick.
+              <span
+                className="italic"
+                style={{ color: "var(--brass-ink)" }}
+              >
+                {" "}
+                Every Sunday morning.
+              </span>
+            </h3>
+            <p
+              className="mt-3 max-w-lg text-[15px] leading-relaxed"
+              style={{ color: "#5a4a32" }}
+            >
+              Spoiler-free reviews and weekend watch picks from our screening
+              room. No fluff, no SPAM.
+            </p>
+          </div>
+
+          <form
+            action="/api/newsletter"
+            method="post"
+            className="w-full"
+            aria-label="Subscribe to the ShowVerdict newsletter"
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+              <label htmlFor="footer-newsletter-email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="footer-newsletter-email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="you@inbox.com"
+                className="h-12 flex-1 rounded-md border bg-white px-4 text-[15px] outline-none transition placeholder:text-stone-400 focus:border-[var(--brass)] focus:ring-2 focus:ring-[var(--brass)]/30"
+                style={{
+                  borderColor:
+                    "color-mix(in oklab, var(--brass) 28%, transparent)",
+                }}
+              />
+              <button
+                type="submit"
+                className="h-12 shrink-0 rounded-md px-6 text-[15px] font-medium tracking-wide text-white transition hover:brightness-95"
+                style={{
+                  background: "var(--brass-ink)",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                Subscribe
+              </button>
+            </div>
+            <p
+              className="mt-3 text-xs"
+              style={{ color: "#7a6648" }}
+            >
+              Free. Unsubscribe in one click. Read by 42,000+ TV obsessives.
+            </p>
+          </form>
+        </div>
+      </div>
+
+      {/* ROW 3 — legal */}
+      <div className="mx-auto max-w-7xl px-6 py-7 md:px-10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="text-sm">
+            <p className="font-medium text-foreground">© 2026 ShowVerdict</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Editorial independence: we never accept payment for positive
+              reviews.
+            </p>
+          </div>
+
+          <nav
+            aria-label="Legal"
+            className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-muted-foreground"
+          >
+            <LegalLink href="/privacy">Privacy</LegalLink>
+            <LegalSep />
+            <LegalLink href="/terms">Terms</LegalLink>
+            <LegalSep />
+            <LegalLink href="/affiliate-disclosure">Disclosure</LegalLink>
+            <LegalSep />
+            <LegalLink href="/sitemap">Sitemap</LegalLink>
+          </nav>
         </div>
       </div>
     </footer>
   );
 }
+
+/* ---------- subcomponents ---------- */
+
+function FooterColumn({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <h3
+        className="font-serif text-[15px] font-semibold tracking-wide"
+        style={{ color: "#1f1a14" }}
+      >
+        {title}
+      </h3>
+      <span
+        aria-hidden
+        className="mt-2 block h-px w-8"
+        style={{ background: "var(--brass)" }}
+      />
+      <ul className="mt-4 space-y-2.5">{children}</ul>
+    </div>
+  );
+}
+
+function FooterLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <li>
+      <Link
+        href={href}
+        className="text-sm text-muted-foreground transition-colors hover:text-[var(--brass-ink)]"
+      >
+        {children}
+      </Link>
+    </li>
+  );
+}
+
+function SocialLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border text-muted-foreground transition-colors hover:text-[var(--brass-ink)]"
+      style={{
+        borderColor: "color-mix(in oklab, var(--brass) 30%, transparent)",
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function LegalLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="px-1.5 py-0.5 transition-colors hover:text-[var(--brass-ink)]"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function LegalSep() {
+  return (
+    <span aria-hidden className="text-muted-foreground/50">
+      ·
+    </span>
+  );
+}
+
+
+export { Footer };

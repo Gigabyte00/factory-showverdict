@@ -1,476 +1,294 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import type { SiteContext } from '@/types';
-
-type HeroVariant = 'dark' | 'split' | 'minimal' | 'gradient-brand';
-
-interface HeroSectionProps {
-  site: SiteContext;
-  categoryCount?: number;
-  postCount?: number;
-  tagline?: string;
-  subtitle?: string;
-  accentWord?: string | null;
-  variant?: HeroVariant;
-  ctaPrimaryText?: string;
-  ctaPrimaryUrl?: string;
-  ctaSecondaryText?: string;
-  ctaSecondaryUrl?: string;
-  /** Foreground product/lifestyle photo (split + minimal variants use it as an inline image). */
-  imageUrl?: string;
-  imageAlt?: string;
-  /** Full-bleed dimmed backdrop (dark + gradient-brand variants use it behind the gradient). */
-  backgroundUrl?: string;
-}
+import { ArrowRight, Compass, Film, Tv, Clapperboard, RotateCw } from "lucide-react";
 
 /**
- * Hero section with 4 visual variants controlled by SITE_HERO_VARIANT env var.
- * All variants share the same content (tagline, subtitle, CTAs) but differ in layout/style.
+ * HeroSection — ShowVerdict
+ *
+ * Editorial, cinema-noir hero. Burgundy / cream / brass with deep-ink accents.
+ * Cormorant Garamond display paired with a crisp sans body.
+ *
+ * Server-Component-safe: no event handlers, no client state.
+ * Tailwind only — colors driven by CSS variables defined in the <style> block
+ * so this drops into any app and supports dark mode automatically.
  */
-export function HeroSection({
-  site,
-  categoryCount = 0,
-  postCount = 0,
-  tagline,
-  subtitle,
-  accentWord,
-  variant = 'dark',
-  ctaPrimaryText,
-  ctaPrimaryUrl,
-  ctaSecondaryText,
-  ctaSecondaryUrl,
-  imageUrl,
-  imageAlt,
-  backgroundUrl,
-}: HeroSectionProps) {
-  const valueProps = getValuePropositions(site.settings?.site_type || 'affiliate', site.niche);
-  const displayTagline = tagline || site.name;
-  const displaySubtitle = subtitle ||
-    `Expert reviews, honest comparisons, and the best deals on ${site.niche || 'products'} — helping you make smarter buying decisions.`;
-  const taglineParts = buildAccentTagline(displayTagline, accentWord);
-
-  const primaryText = ctaPrimaryText || 'Read Reviews';
-  const primaryUrl = ctaPrimaryUrl || '/blog';
-  const secondaryText = ctaSecondaryText || 'View Best Deals';
-  const secondaryUrl = ctaSecondaryUrl || '/offers';
-
-  // Shared content block used by all variants
-  const sharedContent = {
-    taglineParts,
-    displaySubtitle,
-    valueProps,
-    primaryText,
-    primaryUrl,
-    secondaryText,
-    secondaryUrl,
-    categoryCount,
-    postCount,
-    site,
-    imageUrl,
-    imageAlt: imageAlt || (site.niche ? `${site.niche} illustration` : 'Hero image'),
-    backgroundUrl,
-  };
-
-  switch (variant) {
-    case 'minimal':
-      return <HeroMinimal {...sharedContent} />;
-    case 'split':
-      return <HeroSplit {...sharedContent} />;
-    case 'gradient-brand':
-      return <HeroGradientBrand {...sharedContent} />;
-    case 'dark':
-    default:
-      return <HeroDark {...sharedContent} />;
-  }
-}
-
-// ─── Shared Types ───────────────────────────────────────────────────────────
-
-interface HeroContentProps {
-  taglineParts: Array<{ text: string; accent: boolean }>;
-  displaySubtitle: string;
-  valueProps: string[];
-  primaryText: string;
-  primaryUrl: string;
-  secondaryText: string;
-  secondaryUrl: string;
-  categoryCount: number;
-  postCount: number;
-  site: SiteContext;
-  imageUrl?: string;
-  imageAlt?: string;
-  backgroundUrl?: string;
-}
-
-// ─── Variant: Dark (default) ────────────────────────────────────────────────
-
-function HeroDark({
-  taglineParts, displaySubtitle, valueProps,
-  primaryText, primaryUrl, secondaryText, secondaryUrl,
-  categoryCount, postCount, site,
-  backgroundUrl,
-}: HeroContentProps) {
+export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20 lg:py-28">
-      {/* Optional full-bleed backdrop photo — sits under the dimmed gradient + orbs */}
-      {backgroundUrl && (
-        <div
-          className="absolute inset-0 -z-10 bg-cover bg-center opacity-40"
-          style={{ backgroundImage: `url(${backgroundUrl})` }}
-          aria-hidden="true"
-        />
-      )}
-      {/* Decorative blur orbs — hidden on mobile to reduce GPU load */}
-      <div className="hidden sm:block absolute inset-0 -z-0 overflow-hidden" aria-hidden="true">
-        <div
-          className="absolute -top-24 -left-24 w-96 h-96 rounded-full blur-3xl opacity-20"
-          style={{ backgroundColor: 'hsl(var(--primary))' }}
-        />
-        <div
-          className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full blur-3xl opacity-15"
-          style={{ backgroundColor: 'hsl(var(--primary))' }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl opacity-5"
-          style={{ backgroundColor: 'hsl(var(--primary))' }}
-        />
+    <section
+      aria-label="ShowVerdict — spoiler-free TV and film reviews"
+      className="relative isolate overflow-hidden bg-[var(--sv-cream)] text-[var(--sv-ink)]"
+    >
+      {/* Scoped tokens + fonts. Keeps the component drop-in. */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+          --sv-cream:        #F4ECDD;   /* page */
+          --sv-cream-2:      #EADFC8;   /* card / inset */
+          --sv-burgundy:     #5A1A24;   /* primary */
+          --sv-burgundy-2:   #3E1118;   /* primary hover/deep */
+          --sv-brass:        #B8893B;   /* accent */
+          --sv-brass-2:      #8E6822;   /* accent deep */
+          --sv-ink:          #1A1410;   /* body */
+          --sv-ink-soft:     #4A3F36;   /* secondary text */
+          --sv-rule:         rgba(26,20,16,0.18);
+          --sv-rule-soft:    rgba(26,20,16,0.10);
+          --sv-grain:        rgba(26,20,16,0.045);
+        }
+
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --sv-cream:      #14100D;
+            --sv-cream-2:    #1E1813;
+            --sv-burgundy:   #C46A75;
+            --sv-burgundy-2: #E08A95;
+            --sv-brass:      #D4A85A;
+            --sv-brass-2:    #E8C277;
+            --sv-ink:        #ECE3D2;
+            --sv-ink-soft:   #B5A993;
+            --sv-rule:       rgba(236,227,210,0.18);
+            --sv-rule-soft:  rgba(236,227,210,0.10);
+            --sv-grain:      rgba(236,227,210,0.04);
+          }
+        }
+
+        .sv-display { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-feature-settings: "liga","dlig","kern"; letter-spacing: -0.012em; }
+        .sv-sans    { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+
+        /* Subtle paper grain — appropriate for brass/cream editorial */
+        .sv-grain {
+          background-image:
+            radial-gradient(var(--sv-grain) 1px, transparent 1px),
+            radial-gradient(var(--sv-grain) 1px, transparent 1px);
+          background-size: 3px 3px, 7px 7px;
+          background-position: 0 0, 1px 2px;
+        }
+
+        /* Brass hairline accent used on rules and frame */
+        .sv-brass-rule { background: linear-gradient(90deg, transparent, var(--sv-brass) 18%, var(--sv-brass) 82%, transparent); }
+      `}</style>
+
+      {/* Paper grain overlay */}
+      <div aria-hidden className="sv-grain pointer-events-none absolute inset-0 opacity-70" />
+
+      {/* Top masthead rule — editorial signal */}
+      <div aria-hidden className="absolute inset-x-0 top-0 flex items-center gap-3 px-6 pt-5 sm:px-10 lg:px-16">
+        <div className="h-px flex-1 bg-[var(--sv-rule)]" />
+        <span className="sv-sans text-[10px] uppercase tracking-[0.32em] text-[var(--sv-ink-soft)]">
+          Vol. IV · Spring 2026
+        </span>
+        <div className="h-px flex-1 bg-[var(--sv-rule)]" />
       </div>
 
-      <div className="container relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <GlassBadge niche={site.niche} />
-          <TaglineHeading parts={taglineParts} className="text-white" />
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            {displaySubtitle}
-          </p>
-          <ValueProps items={valueProps} className="text-gray-300" checkClassName="bg-primary/30 text-primary" />
-          <CTAButtons
-            primaryText={primaryText} primaryUrl={primaryUrl}
-            secondaryText={secondaryText} secondaryUrl={secondaryUrl}
-            secondaryClassName="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
-          />
-          <HeroStats categoryCount={categoryCount} postCount={postCount} borderClassName="border-white/20" labelClassName="text-gray-400" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Variant: Minimal (clean white, bold type) ─────────────────────────────
-
-function HeroMinimal({
-  taglineParts, displaySubtitle, valueProps,
-  primaryText, primaryUrl, secondaryText, secondaryUrl,
-  categoryCount, postCount, site,
-}: HeroContentProps) {
-  return (
-    <section className="relative py-20 lg:py-28 bg-background">
-      {/* Subtle top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-60" />
-
-      <div className="container">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
-            <Sparkles className="w-4 h-4" />
-            <span>Your trusted {site.niche || 'product'} resource</span>
-          </div>
-          <TaglineHeading parts={taglineParts} className="text-foreground" />
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            {displaySubtitle}
-          </p>
-          <ValueProps items={valueProps} className="text-muted-foreground" checkClassName="bg-primary/10 text-primary" />
-          <CTAButtons
-            primaryText={primaryText} primaryUrl={primaryUrl}
-            secondaryText={secondaryText} secondaryUrl={secondaryUrl}
-            secondaryClassName="border-border text-foreground hover:bg-muted"
-          />
-          <HeroStats categoryCount={categoryCount} postCount={postCount} borderClassName="border-border" labelClassName="text-muted-foreground" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Variant: Split (text left, visual right) ──────────────────────────────
-
-function HeroSplit({
-  taglineParts, displaySubtitle, valueProps,
-  primaryText, primaryUrl, secondaryText, secondaryUrl,
-  site,
-  imageUrl, imageAlt,
-}: HeroContentProps) {
-  return (
-    <section className="relative py-16 lg:py-24 bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left: Content */}
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
-              <Sparkles className="w-4 h-4" />
-              <span>Your trusted {site.niche || 'product'} resource</span>
+      <div className="relative mx-auto max-w-[1280px] px-6 pb-20 pt-20 sm:px-10 sm:pt-24 lg:px-16 lg:pb-28 lg:pt-28">
+        {/* ── Hero grid ───────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-5 lg:gap-14">
+          {/* Text column — 60% (3 of 5) */}
+          <div className="lg:col-span-3">
+            {/* Eyebrow */}
+            <div className="flex items-center gap-3">
+              <span aria-hidden className="inline-block h-2 w-2 rotate-45 bg-[var(--sv-brass)]" />
+              <p className="sv-sans text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--sv-burgundy)]">
+                Reviewed by Critics
+                <span className="mx-2 text-[var(--sv-brass-2)]">·</span>
+                Updated 2026
+              </p>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold tracking-tight text-foreground mb-6">
-              {taglineParts.map((part, i) =>
-                part.accent ? (
-                  <span key={i} className="text-primary">{part.text}</span>
-                ) : (
-                  <span key={i}>{part.text}</span>
-                )
-              )}
+
+            {/* H1 */}
+            <h1 className="sv-display mt-7 text-[44px] font-medium leading-[1.02] text-[var(--sv-ink)] sm:text-[56px] lg:text-[64px] xl:text-[72px]">
+              The weekend you’ve been{" "}
+              <em className="italic text-[var(--sv-burgundy)]">waiting for</em>
+              <span className="text-[var(--sv-brass)]">,</span> reviewed
+              before the credits roll.
             </h1>
-            <p className="text-lg text-muted-foreground mb-8 max-w-lg leading-relaxed">
-              {displaySubtitle}
+
+            {/* Subhead */}
+            <p className="sv-sans mt-7 max-w-[58ch] text-[17px] leading-[1.7] text-[var(--sv-ink-soft)] sm:text-[18px]">
+              Spoiler-free verdicts on every prestige drama, sleeper film, and
+              streaming premiere worth your Saturday night — written by people
+              who actually finished the season.
             </p>
-            <ValueProps items={valueProps} className="text-muted-foreground" checkClassName="bg-primary/10 text-primary" justify="justify-start" />
-            <CTAButtons
-              primaryText={primaryText} primaryUrl={primaryUrl}
-              secondaryText={secondaryText} secondaryUrl={secondaryUrl}
-              secondaryClassName="border-border text-foreground hover:bg-muted"
-              justify="justify-start"
-            />
+
+            {/* CTAs */}
+            <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-5">
+              <a
+                href="/blog"
+                className="sv-sans group inline-flex items-center justify-center gap-2.5 rounded-full bg-[var(--sv-burgundy)] px-7 py-3.5 text-[14px] font-semibold tracking-wide text-[var(--sv-cream)] shadow-[0_1px_0_rgba(0,0,0,0.08),0_10px_24px_-12px_rgba(90,26,36,0.55)] transition-colors hover:bg-[var(--sv-burgundy-2)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sv-brass)]"
+              >
+                Browse Reviews
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </a>
+              <a
+                href="/methodology"
+                className="sv-sans group inline-flex items-center justify-center gap-2.5 rounded-full border border-[var(--sv-rule)] bg-transparent px-7 py-3.5 text-[14px] font-semibold tracking-wide text-[var(--sv-ink)] transition-colors hover:border-[var(--sv-brass)] hover:text-[var(--sv-burgundy)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sv-brass)]"
+              >
+                <Compass className="h-4 w-4 text-[var(--sv-brass-2)]" aria-hidden />
+                How We Test
+              </a>
+            </div>
+
+            {/* Byline / meta */}
+            <p className="sv-sans mt-10 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] uppercase tracking-[0.22em] text-[var(--sv-ink-soft)]">
+              <span>Est. 2021</span>
+              <span aria-hidden className="text-[var(--sv-brass-2)]">◆</span>
+              <span>No spoilers, ever</span>
+              <span aria-hidden className="text-[var(--sv-brass-2)]">◆</span>
+              <span>Independent &amp; ad-light</span>
+            </p>
           </div>
 
-          {/* Right: real photo (if SITE_HERO_IMAGE set) or decorative card stack fallback */}
-          {imageUrl ? (
-            <div className="hidden lg:flex justify-center">
-              <div className="relative w-full max-w-md">
-                <div
-                  className="absolute -top-4 -right-4 w-full h-full rounded-2xl border-2 border-primary/10 bg-primary/5"
-                  aria-hidden="true"
-                />
-                {/* Using <img> instead of next/image to avoid domain allowlist friction across 17 sites */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={imageUrl}
-                  alt={imageAlt ?? ''}
-                  loading="eager"
-                  className="relative rounded-2xl border border-border object-cover w-full aspect-[4/3] shadow-xl"
-                />
-                <div
-                  className="absolute -bottom-4 -left-4 w-full h-full rounded-2xl border border-primary/20 -z-10"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-          ) : (
-          <div className="hidden lg:flex justify-center">
-            <div className="relative w-full max-w-md">
-              {/* Background decorative card */}
-              <div className="absolute -top-4 -right-4 w-full h-full rounded-2xl border-2 border-primary/10 bg-primary/5" />
-              {/* Main card */}
-              <div className="relative rounded-2xl border border-border bg-card p-8 shadow-xl">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-primary" />
+          {/* Photo-frame column — 40% (2 of 5) */}
+          <div className="lg:col-span-2">
+            <figure className="relative">
+              {/* Brass frame */}
+              <div className="relative rounded-2xl bg-[var(--sv-cream-2)] p-2 ring-1 ring-[var(--sv-brass)]/40 shadow-[0_30px_60px_-30px_rgba(26,20,16,0.45)]">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-xl ring-1 ring-[var(--sv-rule)]">
+                  {/* Placeholder image: layered cinema-noir composition rendered in CSS so it works offline.
+                      Swap with <img className="h-full w-full object-cover rounded-xl" src=... alt=... /> when art is ready. */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 h-full w-full object-cover"
+                    style={{
+                      backgroundImage: `
+                        radial-gradient(120% 80% at 30% 20%, rgba(184,137,59,0.35), transparent 55%),
+                        radial-gradient(90% 60% at 80% 90%, rgba(90,26,36,0.55), transparent 60%),
+                        linear-gradient(160deg, #2A1418 0%, #5A1A24 45%, #1A0E11 100%)
+                      `,
+                    }}
+                  />
+                  {/* Faux film-still vignette + grain */}
+                  <div aria-hidden className="absolute inset-0 sv-grain opacity-60" />
+                  <div
+                    aria-hidden
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "radial-gradient(120% 80% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%)",
+                    }}
+                  />
+
+                  {/* Caption block, top-left */}
+                  <div className="absolute left-4 top-4 right-4 flex items-start justify-between gap-3">
+                    <div className="rounded-md bg-[var(--sv-cream)]/92 px-2.5 py-1 backdrop-blur-sm">
+                      <p className="sv-sans text-[9px] font-semibold uppercase tracking-[0.28em] text-[var(--sv-burgundy)]">
+                        Still · Editor’s Pick
+                      </p>
                     </div>
-                    <div>
-                      <div className="font-semibold text-foreground">{site.name}</div>
-                      <div className="text-sm text-muted-foreground">Expert {site.niche || 'Product'} Reviews</div>
+                    <div className="rounded-md border border-[var(--sv-brass)]/60 bg-[var(--sv-ink)]/55 px-2 py-1 backdrop-blur-sm">
+                      <p className="sv-sans text-[10px] font-semibold tracking-[0.18em] text-[var(--sv-brass)]">
+                        Nº 047
+                      </p>
                     </div>
                   </div>
-                  <div className="h-px bg-border" />
-                  {valueProps.map((prop, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-primary text-xs">&#10003;</span>
-                      </div>
-                      <span className="text-muted-foreground">{prop}</span>
+
+                  {/* Filmstrip detail at bottom */}
+                  <div className="absolute inset-x-0 bottom-0">
+                    <div className="flex h-6 items-center justify-between bg-[var(--sv-ink)]/70 px-3 backdrop-blur-sm">
+                      {Array.from({ length: 14 }).map((_, i) => (
+                        <span
+                          key={i}
+                          aria-hidden
+                          className="block h-2 w-2 rounded-[1px] bg-[var(--sv-cream)]/60"
+                        />
+                      ))}
                     </div>
-                  ))}
-                  <div className="h-px bg-border" />
-                  <div className="text-xs text-muted-foreground text-center">
-                    Trusted by readers since {new Date().getFullYear()}
+                  </div>
+
+                  {/* Centered film glyph as placeholder focal point */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Clapperboard
+                      aria-hidden
+                      className="h-14 w-14 text-[var(--sv-cream)]/85"
+                      strokeWidth={1.25}
+                    />
                   </div>
                 </div>
               </div>
-              {/* Bottom offset decorative card */}
-              <div className="absolute -bottom-4 -left-4 w-full h-full rounded-2xl border border-primary/20 -z-10" />
-            </div>
+
+              {/* Pull-quote caption under frame */}
+              <figcaption className="sv-display mt-5 pl-1 pr-2 text-[18px] italic leading-snug text-[var(--sv-ink-soft)]">
+                <span className="text-[var(--sv-brass)]">“</span>
+                A friend whose taste you trust — with the receipts to prove it.
+                <span className="text-[var(--sv-brass)]">”</span>
+                <span className="sv-sans ml-2 align-middle text-[10px] not-italic uppercase tracking-[0.28em] text-[var(--sv-ink-soft)]">
+                  — Reader letter, Nº 312
+                </span>
+              </figcaption>
+            </figure>
           </div>
-          )}
+        </div>
+
+        {/* ── Stat strip ──────────────────────────────────────────────────── */}
+        <div className="relative mt-20 lg:mt-24">
+          {/* brass hairline */}
+          <div aria-hidden className="sv-brass-rule h-px w-full opacity-70" />
+          <div aria-hidden className="mt-1 h-px w-full bg-[var(--sv-rule-soft)]" />
+
+          <dl className="grid grid-cols-2 gap-y-10 pt-10 sm:grid-cols-4 sm:gap-x-8">
+            <Stat
+              icon={<Tv className="h-4 w-4" aria-hidden />}
+              kicker="Series in review"
+              value="1,284"
+              suffix="shows"
+            />
+            <Stat
+              icon={<Film className="h-4 w-4" aria-hidden />}
+              kicker="Seat time logged"
+              value="38,700"
+              suffix="episodes &amp; films"
+            />
+            <Stat
+              icon={<Clapperboard className="h-4 w-4" aria-hidden />}
+              kicker="Streaming services"
+              value="14"
+              suffix="platforms covered"
+            />
+            <Stat
+              icon={<RotateCw className="h-4 w-4" aria-hidden />}
+              kicker="Retest cadence"
+              value="90"
+              suffix="days, every verdict"
+            />
+          </dl>
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Variant: Gradient Brand (full primary color hero) ──────────────────────
-
-function HeroGradientBrand({
-  taglineParts, displaySubtitle, valueProps,
-  primaryText, primaryUrl, secondaryText, secondaryUrl,
-  categoryCount, postCount, site,
-  backgroundUrl,
-}: HeroContentProps) {
-  return (
-    <section className="relative overflow-hidden py-20 lg:py-28 text-white" style={{ background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8), hsl(var(--primary) / 0.6))` }}>
-      {/* Optional full-bleed backdrop — sits under the brand gradient at 25% opacity */}
-      {backgroundUrl && (
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-25"
-          style={{ backgroundImage: `url(${backgroundUrl})` }}
-          aria-hidden="true"
-        />
-      )}
-      {/* Geometric pattern overlay */}
-      <div className="absolute inset-0 opacity-10" aria-hidden="true">
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white/20 blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-black/10 blur-3xl translate-y-1/3 -translate-x-1/4" />
-        <div className="absolute top-1/3 left-1/2 w-64 h-64 rounded-full bg-white/10 blur-2xl" />
-      </div>
-
-      <div className="container relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium rounded-full bg-white/15 backdrop-blur-sm border border-white/25 text-white/90">
-            <Sparkles className="w-4 h-4" />
-            <span>Your trusted {site.niche || 'product'} resource</span>
-          </div>
-          <TaglineHeading parts={taglineParts} className="text-white" accentClassName="text-white underline decoration-white/40 decoration-4 underline-offset-4" />
-          <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed">
-            {displaySubtitle}
-          </p>
-          <ValueProps items={valueProps} className="text-white/80" checkClassName="bg-white/20 text-white" />
-          <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <Button asChild size="lg" className="text-lg px-8 bg-white text-foreground hover:bg-white/90 shadow-lg">
-              <Link href={primaryUrl}>
-                {primaryText}
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 border-white/40 bg-transparent text-white hover:bg-white/15 hover:text-white">
-              <Link href={secondaryUrl}>
-                {secondaryText}
-              </Link>
-            </Button>
-          </div>
-          <HeroStats categoryCount={categoryCount} postCount={postCount} borderClassName="border-white/20" labelClassName="text-white/60" valueClassName="text-white" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Shared Sub-Components ──────────────────────────────────────────────────
-
-function GlassBadge({ niche }: { niche?: string | null }) {
-  return (
-    <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90">
-      <Sparkles className="w-4 h-4 text-primary" />
-      <span>Your trusted {niche || 'product'} resource</span>
-    </div>
-  );
-}
-
-function TaglineHeading({ parts, className, accentClassName }: { parts: Array<{ text: string; accent: boolean }>; className: string; accentClassName?: string }) {
-  return (
-    <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 ${className}`}>
-      {parts.map((part, i) =>
-        part.accent ? (
-          <span key={i} className={accentClassName || 'text-primary'}>{part.text}</span>
-        ) : (
-          <span key={i}>{part.text}</span>
-        )
-      )}
-    </h1>
-  );
-}
-
-function ValueProps({ items, className, checkClassName, justify = 'justify-center' }: { items: string[]; className: string; checkClassName: string; justify?: string }) {
-  return (
-    <div className={`flex flex-wrap ${justify} gap-4 md:gap-6 mb-10`}>
-      {items.map((prop, index) => (
-        <div key={index} className={`flex items-center gap-2 text-sm ${className}`}>
-          <div className={`w-5 h-5 rounded-full flex items-center justify-center ${checkClassName}`}>
-            <span className="text-xs">&#10003;</span>
-          </div>
-          <span>{prop}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function CTAButtons({
-  primaryText, primaryUrl, secondaryText, secondaryUrl, secondaryClassName, justify = 'justify-center',
+/* ── Subcomponent (kept in same file for drop-in convenience) ──────────── */
+function Stat({
+  icon,
+  kicker,
+  value,
+  suffix,
 }: {
-  primaryText: string; primaryUrl: string; secondaryText: string; secondaryUrl: string;
-  secondaryClassName: string; justify?: string;
+  icon: React.ReactNode;
+  kicker: string;
+  value: string;
+  suffix: string;
 }) {
   return (
-    <div className={`flex flex-wrap ${justify} gap-4 mb-12`}>
-      <Button asChild size="lg" className="text-lg px-8">
-        <Link href={primaryUrl}>
-          {primaryText}
-          <ArrowRight className="ml-2 w-5 h-5" />
-        </Link>
-      </Button>
-      <Button asChild variant="outline" size="lg" className={`text-lg px-8 ${secondaryClassName}`}>
-        <Link href={secondaryUrl}>
-          {secondaryText}
-        </Link>
-      </Button>
-    </div>
-  );
-}
-
-function HeroStats({
-  categoryCount, postCount, borderClassName, labelClassName, valueClassName,
-}: {
-  categoryCount: number; postCount: number; borderClassName: string; labelClassName: string; valueClassName?: string;
-}) {
-  if (categoryCount <= 0 && postCount <= 0) return null;
-  return (
-    <div className={`flex justify-center gap-8 pt-8 border-t ${borderClassName}`}>
-      {categoryCount > 0 && (
-        <div className="text-center">
-          <div className={`text-3xl font-bold ${valueClassName || 'text-primary'}`}>{categoryCount}</div>
-          <div className={`text-sm ${labelClassName}`}>Categories</div>
-        </div>
-      )}
-      {postCount > 0 && (
-        <div className="text-center">
-          <div className={`text-3xl font-bold ${valueClassName || 'text-primary'}`}>{postCount}+</div>
-          <div className={`text-sm ${labelClassName}`}>Expert Articles</div>
-        </div>
-      )}
-      <div className="text-center">
-        <div className={`text-3xl font-bold ${valueClassName || 'text-primary'}`}>Free</div>
-        <div className={`text-sm ${labelClassName}`}>Unbiased Reviews</div>
+    <div className="relative pl-5 sm:pl-0 sm:pr-6">
+      {/* Brass tick on mobile (left), divider on desktop (right) */}
+      <span
+        aria-hidden
+        className="absolute left-0 top-1.5 h-7 w-px bg-[var(--sv-brass)] sm:hidden"
+      />
+      <div className="sv-sans flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-[var(--sv-ink-soft)]">
+        <span className="text-[var(--sv-brass-2)]">{icon}</span>
+        <span>{kicker}</span>
       </div>
+      <dd className="sv-display mt-2 text-[42px] font-medium leading-none text-[var(--sv-burgundy)] sm:text-[48px]">
+        {value}
+      </dd>
+      <dt
+        className="sv-sans mt-2 text-[12px] uppercase tracking-[0.22em] text-[var(--sv-ink-soft)]"
+        // suffix may contain a stray entity for ampersand
+        dangerouslySetInnerHTML={{ __html: suffix }}
+      />
     </div>
   );
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
-function buildAccentTagline(tagline: string, accentWord?: string | null): Array<{ text: string; accent: boolean }> {
-  if (accentWord) {
-    const idx = tagline.toLowerCase().lastIndexOf(accentWord.toLowerCase());
-    if (idx !== -1) {
-      return [
-        { text: tagline.slice(0, idx), accent: false },
-        { text: tagline.slice(idx, idx + accentWord.length), accent: true },
-        { text: tagline.slice(idx + accentWord.length), accent: false },
-      ].filter(p => p.text.length > 0);
-    }
-  }
-  const lastSpace = tagline.lastIndexOf(' ');
-  if (lastSpace === -1) return [{ text: tagline, accent: false }];
-  return [
-    { text: tagline.slice(0, lastSpace + 1), accent: false },
-    { text: tagline.slice(lastSpace + 1), accent: true },
-  ];
-}
-
-function getValuePropositions(siteType: string, niche: string | null): string[] {
-  const nicheDisplay = niche || 'products';
-  const propositionsByType: Record<string, string[]> = {
-    affiliate: ['In-depth product reviews', 'Side-by-side comparisons', `Best ${nicheDisplay} deals`],
-    blog: ['Expert-written content', 'Latest industry news', 'Helpful guides & tips'],
-    ecommerce: ['Verified product ratings', 'Best price guarantees', 'Fast shipping options'],
-    reviews: ['Hands-on testing', 'Unbiased ratings', 'Real user feedback'],
-  };
-  return propositionsByType[siteType] || propositionsByType.affiliate;
-}
+export { HeroSection };

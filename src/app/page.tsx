@@ -28,7 +28,8 @@ export default async function HomePage() {
   const hero = getHeroConfig(site);
   const testimonials = getTestimonials();
   const cta = getCTAConfig();
-  const sections = getHomepageSections();
+  // Editorial-only section order (Wave 13a). Skips old utility sections.
+  const sections = ['hero', 'offers', 'categories', 'articles', 'testimonials', 'newsletter', 'cta'];
   const supabase = createServerClient();
 
   // Fetch all homepage data in parallel

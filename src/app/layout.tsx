@@ -8,6 +8,7 @@ import {
   Lexend,
   Oswald,
   Manrope,
+  Cormorant_Garamond,
 } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
@@ -21,6 +22,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 
 // Next.js requires each font loader to be a separate const at module scope
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
+const cormorant = Cormorant_Garamond({ subsets: ['latin'], variable: '--font-cormorant', weight: ['500', '600', '700'], display: 'swap' });
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-heading', weight: ['600', '700', '800'], display: 'swap' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-heading', weight: ['600', '700'], display: 'swap' });
 const libreBaskerville = Libre_Baskerville({ subsets: ['latin'], variable: '--font-heading', weight: ['700'], display: 'swap' });
@@ -89,7 +91,7 @@ export default function RootLayout({
   const themeVars = getSiteThemeVars(site);
   const ga4Id = process.env.NEXT_PUBLIC_GA_ID;
   const headingFont = getHeadingFont();
-  const fontClasses = [inter.variable, headingFont?.variable].filter(Boolean).join(' ');
+  const fontClasses = [inter.variable, cormorant.variable, headingFont?.variable].filter(Boolean).join(' ');
 
   return (
     <html lang="en" className={fontClasses} suppressHydrationWarning>

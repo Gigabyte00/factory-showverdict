@@ -233,3 +233,5 @@ function CategoryGrid({
 }
 
 export default CategoryGrid;
+
+export { CategoryGrid };

@@ -381,3 +381,5 @@ function FeaturedOffers({
 }
 
 export default FeaturedOffers;
+
+export { FeaturedOffers };

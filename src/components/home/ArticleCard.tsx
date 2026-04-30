@@ -15,7 +15,7 @@ import * as React from "react";
  * Server-renderable: no onClick / onError / event handlers.
  *
  * Token contract (define in your global stylesheet):
- *   --sv-burgundy:  #5B1A2B;  /* primary ink */
+ *   --sv-burgundy:  #5B1A2B;  [ primary ink */
  *   --sv-burgundy-2:#7A2336;  /* hover/active */
  *   --sv-cream:     #F4ECDD;  /* surface */
  *   --sv-cream-2:   #EBE0CC;  /* subtle surface */

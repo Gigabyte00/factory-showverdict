@@ -15,15 +15,15 @@ import * as React from "react";
  * Server-renderable: no onClick / onError / event handlers.
  *
  * Token contract (define in your global stylesheet):
- *   --sv-burgundy:  #5B1A2B;  [ primary ink */
- *   --sv-burgundy-2:#7A2336;  /* hover/active */
- *   --sv-cream:     #F4ECDD;  /* surface */
- *   --sv-cream-2:   #EBE0CC;  /* subtle surface */
- *   --sv-brass:     #B8893B;  /* accent */
- *   --sv-brass-2:   #D6A24E;  /* accent hover */
- *   --sv-ink:       #14110F;  /* deep ink for body */
- *   --sv-ink-2:     #3A322D;  /* secondary text */
- *   --sv-rule:      #D9CDB6;  /* hairline rules */
+ *   --sv-burgundy:  #5B1A2B;  [ primary ink ]
+ *   --sv-burgundy-2:#7A2336;  [ hover/active ]
+ *   --sv-cream:     #F4ECDD;  [ surface ]
+ *   --sv-cream-2:   #EBE0CC;  [ subtle surface ]
+ *   --sv-brass:     #B8893B;  [ accent ]
+ *   --sv-brass-2:   #D6A24E;  [ accent hover ]
+ *   --sv-ink:       #14110F;  [ deep ink for body ]
+ *   --sv-ink-2:     #3A322D;  [ secondary text ]
+ *   --sv-rule:      #D9CDB6;  [ hairline rules ]
  */
 
 export interface ArticleCardPost {

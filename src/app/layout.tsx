@@ -136,7 +136,7 @@ export default function RootLayout({
               strategy="afterInteractive"
             />
             <Script id="ga4-init" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga4Id}');`}
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('set',{site_slug:'${process.env.SITE_SLUG||""}',niche:'${process.env.SITE_NICHE||""}'});gtag('config','${ga4Id}');`}
             </Script>
           </>
         )}

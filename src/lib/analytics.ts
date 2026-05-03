@@ -13,6 +13,7 @@ export function trackEvent(name: string, props?: Record<string, string | number>
 export function trackAffiliateClick(brand: string, placement: string) {
   trackEvent('affiliate_click', {
     event_category: 'conversion',
+    affiliate_brand: brand,
     brand,
     placement,
   });
@@ -27,7 +28,7 @@ export function trackToolUsage(toolName: string, action: string = 'calculate') {
 }
 
 export function trackNewsletterSignup(placement: string) {
-  trackEvent('sign_up', {
+  trackEvent('newsletter_signup', {
     event_category: 'conversion',
     method: 'newsletter',
     placement,

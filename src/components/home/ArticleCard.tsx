@@ -23,7 +23,7 @@ import * as React from "react";
  *   --sv-brass-2:   #D6A24E;  
  *   --sv-ink:       #14110F;  
  *   --sv-ink-2:     #3A322D;  
- *   --sv-rule:      #D9CDB6;  /* hairline rules */
+ *   --sv-rule:      #D9CDB6;
  */
 
 export interface ArticleCardPost {

@@ -123,6 +123,4 @@ export default function AffiliateDisclosure({
 }
 
 export type { AffiliateDisclosureProps };
-
-
 export { AffiliateDisclosure };

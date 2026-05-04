@@ -1,7 +1,7 @@
 import { ArrowRight, Compass, Film, Tv, Clapperboard, RotateCw } from "lucide-react";
 
 /**
- * HeroSection — ShowVerdict
+ * HeroEditorial — ShowVerdict
  *
  * Editorial, cinema-noir hero. Burgundy / cream / brass with deep-ink accents.
  * Cormorant Garamond display paired with a crisp sans body.
@@ -10,7 +10,7 @@ import { ArrowRight, Compass, Film, Tv, Clapperboard, RotateCw } from "lucide-re
  * Tailwind only — colors driven by CSS variables defined in the <style> block
  * so this drops into any app and supports dark mode automatically.
  */
-export default function HeroSection() {
+export default function HeroEditorial() {
   return (
     <section
       aria-label="ShowVerdict — spoiler-free TV and film reviews"
@@ -290,5 +290,6 @@ function Stat({
   );
 }
 
-
-export { HeroSection };
+export function HeroSection(_props: Record<string, unknown>) {
+  return <HeroEditorial />;
+}

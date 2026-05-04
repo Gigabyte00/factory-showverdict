@@ -602,6 +602,4 @@ export default function NewsletterSignup({ siteId, niche }: Props) {
     </section>
   );
 }
-
-
 export { NewsletterSignup };

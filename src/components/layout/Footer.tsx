@@ -301,6 +301,4 @@ function LegalSep() {
     </span>
   );
 }
-
-
 export { Footer };

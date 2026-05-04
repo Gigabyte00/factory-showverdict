@@ -1,38 +1,28 @@
-import { getSiteConfig, getHeroConfig, getTestimonials, getCTAConfig, getHomepageSections } from '@/lib/site-config';
+import { getSiteConfig, getTestimonials, getCTAConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
 import type { Post, Category, Offer } from '@/types';
 
 // Homepage components
 import { HeroSection } from '@/components/home/HeroSection';
-import { HowItWorks } from '@/components/home/HowItWorks';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
 import { ArticleCard } from '@/components/home/ArticleCard';
 import { FeaturedOffers } from '@/components/home/FeaturedOffers';
-import { StatsBar } from '@/components/home/StatsBar';
 import { TestimonialGrid } from '@/components/home/TestimonialGrid';
 import { NewsletterSignup } from '@/components/home/NewsletterSignup';
-import { HomepageFAQ } from '@/components/home/HomepageFAQ';
 import { FinalCTA } from '@/components/home/FinalCTA';
 
-// UI components
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 
-/**
- * Homepage with configurable section order via SITE_HOMEPAGE_SECTIONS env var.
- * Each site can show a different set of sections in a different order.
- */
+const sections = ['hero', 'offers', 'categories', 'articles', 'testimonials', 'newsletter', 'cta'];
+
 export default async function HomePage() {
   const site = getSiteConfig();
-  const hero = getHeroConfig(site);
   const testimonials = getTestimonials();
   const cta = getCTAConfig();
-  // Editorial-only section order (Wave 13a). Skips old utility sections.
-  const sections = ['hero', 'offers', 'categories', 'articles', 'testimonials', 'newsletter', 'cta'];
   const supabase = createServerClient();
 
-  // Fetch all homepage data in parallel
   const [categoriesResult, postsResult, offersResult] = await Promise.all([
     supabase
       .from('categories')
@@ -61,44 +51,15 @@ export default async function HomePage() {
   const posts = (postsResult.data || []) as Post[];
   const offers = (offersResult.data || []) as Offer[];
 
-  const categoriesWithCounts = await getCategoryCounts(supabase, site.id, categories);
-  const categoryMap = new Map(categories.map(c => [c.id, c]));
-
   const { count: totalPosts } = await supabase
     .from('posts')
     .select('*', { count: 'exact', head: true })
     .eq('site_id', site.id)
     .eq('status', 'published');
 
-  // Section map — each key maps to a rendered section (or null if data is empty)
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': (
-      <HeroSection
-        key="hero"
-        site={site}
-        categoryCount={categories.length}
-        postCount={totalPosts || posts.length}
-        tagline={hero.tagline}
-        subtitle={hero.subtitle}
-        accentWord={hero.accentWord}
-        variant={hero.variant}
-        ctaPrimaryText={cta.primaryText}
-        ctaPrimaryUrl={cta.primaryUrl}
-        ctaSecondaryText={cta.secondaryText}
-        ctaSecondaryUrl={cta.secondaryUrl}
-      />
-    ),
-
-    'how-it-works': (
-      <div key="how-it-works" className="animate-on-scroll">
-        <HowItWorks />
-      </div>
-    ),
-
-    'stats': (
-      <div key="stats" className="animate-on-scroll">
-        <StatsBar articles={totalPosts || 0} products={offers.length} />
-      </div>
+      <HeroSection key="hero" />
     ),
 
     'offers': offers.some(o => o.is_featured) ? (
@@ -106,8 +67,8 @@ export default async function HomePage() {
         <FeaturedOffers
           offers={offers}
           siteId={site.id}
-          title={`Top ${site.niche || 'Product'} Picks`}
-          subtitle={`Our most recommended ${site.niche?.toLowerCase() || 'products'}, carefully tested and reviewed by our team`}
+          title={`Top ${site.niche || 'Show'} Picks`}
+          subtitle={`Our most recommended ${site.niche?.toLowerCase() || 'shows'}, spoiler-free and reviewed by our team`}
         />
       </div>
     ) : null,
@@ -118,15 +79,14 @@ export default async function HomePage() {
       </div>
     ) : null,
 
-    'categories': categories.length > 0 ? (
+    'categories': (
       <div key="categories" className="animate-on-scroll">
         <CategoryGrid
-          categories={categoriesWithCounts}
-          title={cta.categoriesTitle}
-          subtitle={`Find in-depth guides and reviews across all ${site.niche?.toLowerCase() || 'product'} categories`}
+          categories={categories}
+          heading={cta.categoriesTitle || "Browse by Genre"}
         />
       </div>
-    ) : null,
+    ),
 
     'articles': posts.length > 0 ? (
       <section key="articles" className="py-16 lg:py-20 bg-muted/30 animate-on-scroll">
@@ -134,13 +94,13 @@ export default async function HomePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
             <div>
               <span className="text-xs font-bold uppercase tracking-widest text-primary mb-3 block">
-                {cta.articlesLabel}
+                Latest Reviews
               </span>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
-                {cta.articlesTitle}
+                Fresh from the Screening Room
               </h2>
               <p className="text-lg text-muted-foreground">
-                Fresh reviews, guides, and insights from our experts
+                Spoiler-free reviews, guides, and watchlists from our critics
               </p>
             </div>
             <Button asChild variant="outline">
@@ -155,7 +115,6 @@ export default async function HomePage() {
             {posts[0] && (
               <ArticleCard
                 post={posts[0]}
-                category={posts[0].category_id ? categoryMap.get(posts[0].category_id) ?? null : null}
                 variant="featured"
               />
             )}
@@ -165,7 +124,6 @@ export default async function HomePage() {
                   <ArticleCard
                     key={post.id}
                     post={post}
-                    category={post.category_id ? categoryMap.get(post.category_id) ?? null : null}
                   />
                 ))}
               </div>
@@ -177,13 +135,7 @@ export default async function HomePage() {
 
     'newsletter': (
       <div key="newsletter" className="animate-on-scroll">
-        <NewsletterSignup siteId={site.id} niche={site.niche ?? undefined} />
-      </div>
-    ),
-
-    'faq': (
-      <div key="faq" className="animate-on-scroll">
-        <HomepageFAQ />
+        <NewsletterSignup siteId={site.id} niche={site.niche ?? null} />
       </div>
     ),
 
@@ -206,61 +158,6 @@ export default async function HomePage() {
   return (
     <>
       {sections.map(id => sectionMap[id] ?? null)}
-
-      {/* Fallback offers section when no featured offers but offers exist */}
-      {offers.length > 0 && !offers.some(o => o.is_featured) && sections.includes('offers') && (
-        <section className="py-16 lg:py-20">
-          <div className="container">
-            <div className="text-center mb-10">
-              <span className="text-xs font-bold uppercase tracking-widest text-primary mb-3 block">
-                Our Recommendations
-              </span>
-              <h2 className="text-3xl font-bold text-foreground mb-4">
-                Products We Recommend
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Products we&apos;ve reviewed and recommend
-              </p>
-            </div>
-            <div className="text-center">
-              <Button asChild size="lg">
-                <Link href="/offers">
-                  View All {offers.length} Offers
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-      )}
     </>
   );
-}
-
-/**
- * Get post counts for each category
- */
-async function getCategoryCounts(
-  supabase: ReturnType<typeof createServerClient>,
-  siteId: string,
-  categories: Category[]
-): Promise<Array<Category & { postCount: number }>> {
-  const { data: counts } = await supabase
-    .from('posts')
-    .select('category_id')
-    .eq('site_id', siteId)
-    .eq('status', 'published');
-
-  const countMap = new Map<string, number>();
-  if (counts) {
-    for (const post of counts) {
-      if (post.category_id) {
-        countMap.set(post.category_id, (countMap.get(post.category_id) || 0) + 1);
-      }
-    }
-  }
-
-  return categories.map(category => ({
-    ...category,
-    postCount: countMap.get(category.id) || 0,
-  }));
 }

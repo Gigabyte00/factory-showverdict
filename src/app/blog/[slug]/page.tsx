@@ -93,15 +93,33 @@ export default async function BlogPostPage({ params }: PageProps) {
     category = data;
   }
 
-  // Fetch related posts
-  const { data: relatedPosts } = await supabase
-    .from('posts')
-    .select('id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes')
-    .eq('site_id', site.id)
-    .eq('status', 'published')
-    .neq('id', post.id)
-    .order('published_at', { ascending: false })
-    .limit(4);
+  // Fetch related posts — same category first, fall back to recency
+  const { data: sameCategoryPosts } = post.category_id
+    ? await supabase
+        .from('posts')
+        .select('id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes')
+        .eq('site_id', site.id)
+        .eq('status', 'published')
+        .eq('category_id', post.category_id)
+        .neq('id', post.id)
+        .order('published_at', { ascending: false })
+        .limit(4)
+    : { data: [] };
+
+  let relatedPosts = sameCategoryPosts ?? [];
+
+  if (relatedPosts.length < 4) {
+    const excludeIds = [post.id, ...relatedPosts.map((p) => p.id)];
+    const { data: backfill } = await supabase
+      .from('posts')
+      .select('id, slug, title, excerpt, featured_image_url, published_at, reading_time_minutes')
+      .eq('site_id', site.id)
+      .eq('status', 'published')
+      .not('id', 'in', `(${excludeIds.join(',')})`)
+      .order('published_at', { ascending: false })
+      .limit(4 - relatedPosts.length);
+    relatedPosts = [...relatedPosts, ...(backfill ?? [])];
+  }
 
   // Determine template variant.
   // Priority: 1. Explicit metadata.variant, 2. content_type column, 3. metadata flags,

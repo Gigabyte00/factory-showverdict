@@ -88,7 +88,7 @@ export const getSiteConfig = cache((): SiteContext => {
       features: {
         blog: process.env.SITE_FEATURE_BLOG !== 'false',
         offers: process.env.SITE_FEATURE_OFFERS !== 'false',
-        newsletter: process.env.SITE_FEATURE_NEWSLETTER === 'true',
+        newsletter: process.env.SITE_FEATURE_NEWSLETTER !== 'false',
       },
     };
   }

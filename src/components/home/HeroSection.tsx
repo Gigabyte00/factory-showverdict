@@ -7,8 +7,7 @@ import { ArrowRight, Compass, Film, Tv, Clapperboard, RotateCw } from "lucide-re
  * Cormorant Garamond display paired with a crisp sans body.
  *
  * Server-Component-safe: no event handlers, no client state.
- * Tailwind only — colors driven by CSS variables defined in the <style> block
- * so this drops into any app and supports dark mode automatically.
+ * Tokens and utility classes (sv-*) are defined globally in globals.css.
  */
 export default function HeroEditorial() {
   return (
@@ -16,56 +15,6 @@ export default function HeroEditorial() {
       aria-label="ShowVerdict — spoiler-free TV and film reviews"
       className="relative isolate overflow-hidden bg-[var(--sv-cream)] text-[var(--sv-ink)]"
     >
-      {/* Scoped tokens + fonts. Keeps the component drop-in. */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap');
-
-        :root {
-          --sv-cream:        #F4ECDD;   /* page */
-          --sv-cream-2:      #EADFC8;   /* card / inset */
-          --sv-burgundy:     #5A1A24;   /* primary */
-          --sv-burgundy-2:   #3E1118;   /* primary hover/deep */
-          --sv-brass:        #B8893B;   /* accent */
-          --sv-brass-2:      #8E6822;   /* accent deep */
-          --sv-ink:          #1A1410;   /* body */
-          --sv-ink-soft:     #4A3F36;   /* secondary text */
-          --sv-rule:         rgba(26,20,16,0.18);
-          --sv-rule-soft:    rgba(26,20,16,0.10);
-          --sv-grain:        rgba(26,20,16,0.045);
-        }
-
-        @media (prefers-color-scheme: dark) {
-          :root {
-            --sv-cream:      #14100D;
-            --sv-cream-2:    #1E1813;
-            --sv-burgundy:   #C46A75;
-            --sv-burgundy-2: #E08A95;
-            --sv-brass:      #D4A85A;
-            --sv-brass-2:    #E8C277;
-            --sv-ink:        #ECE3D2;
-            --sv-ink-soft:   #B5A993;
-            --sv-rule:       rgba(236,227,210,0.18);
-            --sv-rule-soft:  rgba(236,227,210,0.10);
-            --sv-grain:      rgba(236,227,210,0.04);
-          }
-        }
-
-        .sv-display { font-family: 'Cormorant Garamond', 'Times New Roman', serif; font-feature-settings: "liga","dlig","kern"; letter-spacing: -0.012em; }
-        .sv-sans    { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
-
-        /* Subtle paper grain — appropriate for brass/cream editorial */
-        .sv-grain {
-          background-image:
-            radial-gradient(var(--sv-grain) 1px, transparent 1px),
-            radial-gradient(var(--sv-grain) 1px, transparent 1px);
-          background-size: 3px 3px, 7px 7px;
-          background-position: 0 0, 1px 2px;
-        }
-
-        /* Brass hairline accent used on rules and frame */
-        .sv-brass-rule { background: linear-gradient(90deg, transparent, var(--sv-brass) 18%, var(--sv-brass) 82%, transparent); }
-      `}</style>
-
       {/* Paper grain overlay */}
       <div aria-hidden className="sv-grain pointer-events-none absolute inset-0 opacity-70" />
 

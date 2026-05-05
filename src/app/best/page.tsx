@@ -63,7 +63,12 @@ export default async function BestPicksIndexPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="mb-4 text-4xl font-bold">Best Picks by Budget</h1>
+        <p className="sv-sans text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--sv-burgundy)] mb-4">
+          <span aria-hidden className="inline-block h-1.5 w-1.5 rotate-45 bg-[var(--sv-brass)] mr-2 align-middle" />
+          Curated Picks
+        </p>
+        <h1 className="mb-2 text-4xl font-bold">Best Picks by Budget</h1>
+        <div aria-hidden className="my-4 h-px max-w-xs sv-brass-rule opacity-60" />
         <p className="text-xl text-muted-foreground">
           Quality products at every price point. Find the perfect balance of features and affordability.
         </p>
@@ -98,7 +103,7 @@ export default async function BestPicksIndexPage() {
                     href={`/best/${slug}/under-${tier.max_price / 100}`}
                     className="group rounded-lg border bg-card p-6 text-center transition-shadow hover:shadow-lg"
                   >
-                    <div className="mb-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                    <div className="mb-2 inline-block rounded-full bg-accent/20 px-3 py-1 text-xs font-medium text-[var(--sv-burgundy)]">
                       Budget Guide
                     </div>
 

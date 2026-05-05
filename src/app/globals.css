@@ -40,48 +40,65 @@
     --font-sans: var(--font-inter, 'Inter'), system-ui, sans-serif;
     --font-serif: var(--font-cormorant, 'Cormorant Garamond'), Georgia, serif;
 
-    /* Claude Design editorial component tokens (Wave 13a) */
-    --color-cream:   #F4ECDD;
-    --color-blush:   #E8D8C0;
-    --color-jade:    #7C2D3C;
-    --color-jade-50: #F1E0E4;
-    --color-ink:     #1F1418;
-    --color-mute:    #7E7268;
-    --color-line:    #EADBC8;
+    /* ShowVerdict editorial palette — light */
+    --sv-cream:        #F4ECDD;
+    --sv-cream-2:      #EADFC8;
+    --sv-burgundy:     #5A1A24;
+    --sv-burgundy-2:   #3E1118;
+    --sv-brass:        #B8893B;
+    --sv-brass-2:      #8E6822;
+    --sv-ink:          #1A1410;
+    --sv-ink-soft:     #4A3F36;
+    --sv-rule:         rgba(26,20,16,0.18);
+    --sv-rule-soft:    rgba(26,20,16,0.10);
+    --sv-grain:        rgba(26,20,16,0.045);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 25 15% 8%;
+    --foreground: 36 20% 88%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 25 12% 11%;
+    --card-foreground: 36 20% 88%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 25 12% 11%;
+    --popover-foreground: 36 20% 88%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 350 45% 58%;
+    --primary-foreground: 25 15% 8%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 25 10% 18%;
+    --secondary-foreground: 36 20% 88%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 25 10% 18%;
+    --muted-foreground: 36 15% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 40 55% 60%;
+    --accent-foreground: 25 15% 8%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 36 20% 88%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 25 12% 18%;
+    --input: 25 12% 18%;
+    --ring: 350 45% 58%;
 
     /* Legacy support */
     --color-primary: hsl(var(--primary));
     --color-accent: hsl(var(--accent));
+
+    /* ShowVerdict editorial palette — dark */
+    --sv-cream:        #14100D;
+    --sv-cream-2:      #1E1813;
+    --sv-burgundy:     #C46A75;
+    --sv-burgundy-2:   #E08A95;
+    --sv-brass:        #D4A85A;
+    --sv-brass-2:      #E8C277;
+    --sv-ink:          #ECE3D2;
+    --sv-ink-soft:     #B5A993;
+    --sv-rule:         rgba(236,227,210,0.18);
+    --sv-rule-soft:    rgba(236,227,210,0.10);
+    --sv-grain:        rgba(236,227,210,0.04);
   }
 }
 
@@ -111,6 +128,24 @@
   }
 }
 
+/* ShowVerdict editorial utility classes */
+.sv-display {
+  font-family: var(--font-serif);
+  font-feature-settings: "liga","dlig","kern";
+  letter-spacing: -0.012em;
+}
+.sv-sans { font-family: var(--font-sans); }
+.sv-grain {
+  background-image:
+    radial-gradient(var(--sv-grain) 1px, transparent 1px),
+    radial-gradient(var(--sv-grain) 1px, transparent 1px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 1px 2px;
+}
+.sv-brass-rule {
+  background: linear-gradient(90deg, transparent, var(--sv-brass) 18%, var(--sv-brass) 82%, transparent);
+}
+
 /* Affiliate link disclosure styling */
 .affiliate-disclosure {
   @apply text-sm text-muted-foreground italic my-4 p-3 bg-muted rounded-lg border-l-4 border-primary;
@@ -127,7 +162,7 @@ h2, .text-section { font-size: clamp(1.75rem, 3.5vw, 2.5rem); }
 
 .prose h1,
 h1, h2, h3 {
-  font-family: var(--font-heading, var(--font-sans));
+  font-family: var(--font-serif);
 }
 
 .prose h1 {

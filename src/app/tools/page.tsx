@@ -161,7 +161,7 @@ export default async function ToolsPage() {
   const baseUrl = site.domain ? `https://${site.domain}` : '';
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <main className="min-h-screen bg-background">
       <JsonLd type="breadcrumb" data={{ items: [
         { name: 'Home', url: baseUrl || '/' },
         { name: 'Tools', url: `${baseUrl}/tools` },
@@ -174,12 +174,17 @@ export default async function ToolsPage() {
       />
 
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+          <p className="sv-sans text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--sv-burgundy)] mb-4">
+            <span aria-hidden className="inline-block h-1.5 w-1.5 rotate-45 bg-[var(--sv-brass)] mr-2 align-middle" />
+            Resources
+          </p>
+          <h1 className="text-4xl font-bold text-foreground">
             Free Tools & Calculators
           </h1>
-          <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <div aria-hidden className="my-4 h-px max-w-xs mx-auto sv-brass-rule opacity-60" />
+          <p className="mt-2 text-xl text-muted-foreground max-w-2xl mx-auto">
             Make smarter decisions with our interactive tools designed for {site.niche?.toLowerCase() || 'you'}.
           </p>
         </div>
@@ -188,11 +193,11 @@ export default async function ToolsPage() {
       <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         {!hasTools ? (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🔧</div>
-            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <div className="text-5xl mb-4 font-serif text-[var(--sv-brass)] opacity-60">◆</div>
+            <h2 className="text-xl font-semibold text-foreground mb-2">
               Tools Coming Soon
             </h2>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-muted-foreground">
               We are building helpful calculators and quizzes. Check back soon!
             </p>
             <div className="mt-6">

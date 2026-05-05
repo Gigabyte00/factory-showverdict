@@ -36,7 +36,12 @@ export default async function ComparisonsIndexPage() {
       ]}} />
       {/* Header */}
       <div className="mb-8">
-        <h1 className="mb-4 text-4xl font-bold">Product Comparisons</h1>
+        <p className="sv-sans text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--sv-burgundy)] mb-4">
+          <span aria-hidden className="inline-block h-1.5 w-1.5 rotate-45 bg-[var(--sv-brass)] mr-2 align-middle" />
+          Side-by-Side Analysis
+        </p>
+        <h1 className="mb-2 text-4xl font-bold">Product Comparisons</h1>
+        <div aria-hidden className="my-4 h-px max-w-xs sv-brass-rule opacity-60" />
         <p className="text-xl text-muted-foreground mb-6">
           Head-to-head comparisons to help you choose the right product. We analyze features, performance, and value.
         </p>
@@ -74,7 +79,7 @@ export default async function ComparisonsIndexPage() {
             >
               <div className="p-6">
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="inline-block rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                  <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                     Comparison
                   </span>
                   {comparison.winner && (

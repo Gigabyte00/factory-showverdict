@@ -44,11 +44,16 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen">
-      <section className="border-b bg-muted/30">
+      <section className="border-b bg-[var(--sv-cream)] text-[var(--sv-ink)]">
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">About {site.name}</h1>
-            <p className="text-xl text-muted-foreground">{heroTagline}</p>
+            <p className="sv-sans text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--sv-burgundy)] mb-5">
+              <span aria-hidden className="inline-block h-1.5 w-1.5 rotate-45 bg-[var(--sv-brass)] mr-2 align-middle" />
+              The Editors
+            </p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">About {site.name}</h1>
+            <div aria-hidden className="my-5 h-px max-w-xs mx-auto sv-brass-rule opacity-60" />
+            <p className="text-xl text-muted-foreground italic font-serif">{heroTagline}</p>
           </div>
         </div>
       </section>

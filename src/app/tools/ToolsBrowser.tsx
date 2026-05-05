@@ -25,8 +25,8 @@ const KIND_META: Record<
   ToolItem['kind'],
   { label: string; Icon: typeof Calculator; color: string }
 > = {
-  calculator: { label: 'Calculators', Icon: Calculator, color: 'text-blue-600 dark:text-blue-400' },
-  quiz: { label: 'Quizzes', Icon: ClipboardList, color: 'text-purple-600 dark:text-purple-400' },
+  calculator: { label: 'Calculators', Icon: Calculator, color: 'text-primary' },
+  quiz: { label: 'Quizzes', Icon: ClipboardList, color: 'text-accent-foreground' },
   reference: { label: 'Reference', Icon: BookOpen, color: 'text-emerald-600 dark:text-emerald-400' },
 };
 

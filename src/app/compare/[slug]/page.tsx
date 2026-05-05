@@ -129,7 +129,7 @@ export default async function ComparisonPage({ params }: Props) {
 
         {/* Header */}
         <header className="mb-8 mt-6">
-          <div className="mb-4 inline-block rounded-full bg-purple-100 px-4 py-1 text-sm font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+          <div className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1 text-sm font-medium text-primary">
             Product Comparison
           </div>
           <h1 className="mb-4 text-4xl font-bold md:text-5xl">{comparison.title}</h1>
@@ -153,7 +153,7 @@ export default async function ComparisonPage({ params }: Props) {
         </div>
 
         {/* VS Header */}
-        <div className="mb-8 rounded-lg border-2 border-purple-200 bg-purple-50 p-6 dark:border-purple-800 dark:bg-purple-950/30">
+        <div className="mb-8 rounded-lg border-2 border-primary/20 bg-primary/5 p-6">
           <div className="flex flex-col items-center justify-center gap-4 md:flex-row md:gap-8">
             <div className="text-center">
               <h2 className="text-2xl font-bold">{comparison.product_a_name}</h2>
@@ -163,7 +163,7 @@ export default async function ComparisonPage({ params }: Props) {
                 </div>
               )}
             </div>
-            <div className="text-4xl font-bold text-purple-600">VS</div>
+            <div className="text-4xl font-bold text-primary">VS</div>
             <div className="text-center">
               <h2 className="text-2xl font-bold">{comparison.product_b_name}</h2>
               {productB?.rating && (

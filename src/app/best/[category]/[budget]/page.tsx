@@ -185,7 +185,7 @@ export default async function PriceTierPage({ params }: Props) {
         {/* Header */}
         <header className="mb-8 mt-6">
           <div className="mb-4 flex flex-wrap gap-2">
-            <span className="inline-block rounded-full bg-blue-100 px-4 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+            <span className="inline-block rounded-full bg-primary/10 px-4 py-1 text-sm font-medium text-primary">
               Budget Guide
             </span>
             <span className="inline-block rounded-full bg-primary/10 px-4 py-1 text-sm font-bold text-primary">

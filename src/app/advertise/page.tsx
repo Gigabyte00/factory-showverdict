@@ -50,8 +50,8 @@ export default async function AdvertisePage() {
     {
       name: 'Newsletter Sponsorship',
       icon: Mail,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      color: 'text-primary',
+      bg: 'bg-primary/10',
       description: `Dedicated mention in our ${niche.toLowerCase()} newsletter. Sent to ${displaySubscribers} active subscribers who opted in for expert recommendations.`,
       includes: [
         'Logo + 2-3 sentence intro copy',

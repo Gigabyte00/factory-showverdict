@@ -77,7 +77,7 @@ export default async function WebStoriesPage() {
   const domain = site.domain || `${site.slug}.vercel.app`;
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <main className="min-h-screen bg-background">
       {/* JSON-LD Structured Data */}
       <WebStoriesJsonLd
         stories={webStories}
@@ -87,12 +87,12 @@ export default async function WebStoriesPage() {
       />
 
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-foreground">
             Web Stories
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-300">
+          <p className="mt-2 text-muted-foreground">
             Swipe through our visual guides and stories on {site.niche?.toLowerCase() || 'trending topics'}.
           </p>
         </div>
@@ -102,11 +102,11 @@ export default async function WebStoriesPage() {
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {webStories.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">📱</div>
-            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <div className="text-4xl mb-4 text-primary">◆</div>
+            <h2 className="text-xl font-semibold text-foreground mb-2">
               No Stories Yet
             </h2>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Check back soon for visual stories and guides!
             </p>
           </div>
@@ -128,10 +128,7 @@ export default async function WebStoriesPage() {
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                   />
                 ) : (
-                  <div
-                    className="absolute inset-0"
-                    style={{ backgroundColor: site.theme_config?.primaryColor || '#3B82F6' }}
-                  />
+                  <div className="absolute inset-0 bg-primary/20" />
                 )}
 
                 {/* Gradient Overlay */}
@@ -139,11 +136,11 @@ export default async function WebStoriesPage() {
 
                 {/* Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-semibold text-sm line-clamp-2 group-hover:text-blue-200 transition-colors">
+                  <h3 className="text-white font-semibold text-sm line-clamp-2 group-hover:text-white/80 transition-colors">
                     {story.title}
                   </h3>
                   {story.impressions > 0 && (
-                    <p className="text-gray-300 text-xs mt-1">
+                    <p className="text-white/60 text-xs mt-1">
                       {story.impressions.toLocaleString()} views
                     </p>
                   )}

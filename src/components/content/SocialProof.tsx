@@ -87,7 +87,7 @@ export function SocialProof({
   }
   if (weeklyReaders != null && weeklyReaders > 0) {
     items.push({
-      icon: <Users className="h-4 w-4 text-blue-500" />,
+      icon: <Users className="h-4 w-4 text-primary" />,
       label: 'readers',
       value: `${formatNumber(weeklyReaders)} readers this week`,
     });

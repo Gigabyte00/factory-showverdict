@@ -359,7 +359,7 @@ export default async function OfferDetailPage({ params }: PageProps) {
                     Independently reviewed
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <RefreshCw className="h-3.5 w-3.5 text-blue-500" />
+                    <RefreshCw className="h-3.5 w-3.5 text-primary" />
                     Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                   </div>
                 </div>

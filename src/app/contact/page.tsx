@@ -39,15 +39,15 @@ export default function ContactPage() {
               <p className="text-muted-foreground text-sm">hello@{site.domain}</p>
             </div>
             <div className="bg-card p-6 rounded-lg border shadow-sm text-center">
-              <div className="inline-flex p-3 bg-blue-100 rounded-full mb-4">
-                <Clock className="h-6 w-6 text-blue-600" />
+              <div className="inline-flex p-3 bg-accent/20 rounded-full mb-4">
+                <Clock className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-bold mb-2">Response Time</h3>
               <p className="text-muted-foreground text-sm">We respond within 48 hours</p>
             </div>
             <div className="bg-card p-6 rounded-lg border shadow-sm text-center">
-              <div className="inline-flex p-3 bg-purple-100 rounded-full mb-4">
-                <Send className="h-6 w-6 text-purple-600" />
+              <div className="inline-flex p-3 bg-primary/10 rounded-full mb-4">
+                <Send className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-bold mb-2">Feedback Welcome</h3>
               <p className="text-muted-foreground text-sm">Help us improve our content</p>

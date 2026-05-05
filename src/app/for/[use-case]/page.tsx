@@ -129,7 +129,7 @@ export default async function UseCasePage({ params }: Props) {
               Use Case Guide
             </span>
             {categoryName && (
-              <span className="inline-block rounded-full bg-gray-100 px-4 py-1 text-sm font-medium text-gray-800 dark:bg-gray-900/30 dark:text-gray-400">
+              <span className="inline-block rounded-full bg-muted px-4 py-1 text-sm font-medium text-muted-foreground">
                 {categoryName}
               </span>
             )}

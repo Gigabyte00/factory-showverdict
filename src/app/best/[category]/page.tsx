@@ -150,7 +150,7 @@ export default async function CategoryBudgetPage({ params }: Props) {
               >
                 <div className="p-6">
                   <div className="mb-4 flex items-center justify-between">
-                    <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                    <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                       Budget Tier {index + 1}
                     </span>
                     <span className="text-3xl font-bold text-primary">{tier.price_label}</span>

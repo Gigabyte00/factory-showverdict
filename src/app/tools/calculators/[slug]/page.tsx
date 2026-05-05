@@ -124,7 +124,7 @@ export default async function CalculatorPage({ params }: PageProps) {
   const baseUrl = site.domain ? `https://${site.domain}` : '';
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <main className="min-h-screen bg-background">
       <JsonLd type="breadcrumb" data={{ items: [
         { name: 'Home', url: baseUrl || '/' },
         { name: 'Tools', url: `${baseUrl}/tools` },
@@ -137,18 +137,18 @@ export default async function CalculatorPage({ params }: PageProps) {
       />
 
       {/* Breadcrumbs */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
-          <nav className="flex text-sm text-gray-500 dark:text-gray-400">
-            <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-200">
+          <nav className="flex text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-foreground transition-colors">
               Home
             </Link>
             <span className="mx-2">/</span>
-            <Link href="/tools" className="hover:text-gray-700 dark:hover:text-gray-200">
+            <Link href="/tools" className="hover:text-foreground transition-colors">
               Tools
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-900 dark:text-white">{typedCalculator.name}</span>
+            <span className="text-foreground">{typedCalculator.name}</span>
           </nav>
         </div>
       </div>

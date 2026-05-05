@@ -136,7 +136,7 @@ function CompactTrustSignals({ articles, products }: { articles: number; product
       )}
       {products > 0 && (
         <div className="hidden sm:flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-blue-500" />
+          <ShieldCheck className="w-4 h-4 text-primary" />
           <span>{products}+ products reviewed</span>
         </div>
       )}

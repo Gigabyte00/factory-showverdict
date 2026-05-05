@@ -144,30 +144,30 @@ export default async function QuizPage({ params }: PageProps) {
   // Check if quiz has enough content
   if (typedQuestions.length === 0) {
     return (
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <main className="min-h-screen bg-background">
+        <div className="bg-card border-b">
           <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
-            <nav className="flex text-sm text-gray-500 dark:text-gray-400">
-              <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-200">
+            <nav className="flex text-sm text-muted-foreground">
+              <Link href="/" className="hover:text-foreground transition-colors">
                 Home
               </Link>
               <span className="mx-2">/</span>
-              <Link href="/tools" className="hover:text-gray-700 dark:hover:text-gray-200">
+              <Link href="/tools" className="hover:text-foreground transition-colors">
                 Tools
               </Link>
               <span className="mx-2">/</span>
-              <span className="text-gray-900 dark:text-white">{typedQuiz.name}</span>
+              <span className="text-foreground">{typedQuiz.name}</span>
             </nav>
           </div>
         </div>
 
         <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🔧</div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="text-4xl mb-4 text-primary">◆</div>
+            <h1 className="text-2xl font-bold text-foreground mb-4">
               {typedQuiz.name}
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-8">
+            <p className="text-muted-foreground mb-8">
               This quiz is being set up. Check back soon!
             </p>
             <Link
@@ -183,7 +183,7 @@ export default async function QuizPage({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <main className="min-h-screen bg-background">
       <QuizJsonLd
         quiz={typedQuiz}
         questions={typedQuestions}
@@ -192,34 +192,34 @@ export default async function QuizPage({ params }: PageProps) {
       />
 
       {/* Breadcrumbs */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
-          <nav className="flex text-sm text-gray-500 dark:text-gray-400">
-            <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-200">
+          <nav className="flex text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-foreground transition-colors">
               Home
             </Link>
             <span className="mx-2">/</span>
-            <Link href="/tools" className="hover:text-gray-700 dark:hover:text-gray-200">
+            <Link href="/tools" className="hover:text-foreground transition-colors">
               Tools
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-900 dark:text-white">{typedQuiz.name}</span>
+            <span className="text-foreground">{typedQuiz.name}</span>
           </nav>
         </div>
       </div>
 
       {/* Quiz Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-card border-b">
         <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-foreground">
             {typedQuiz.name}
           </h1>
           {typedQuiz.description && (
-            <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               {typedQuiz.description}
             </p>
           )}
-          <div className="mt-4 flex items-center justify-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="mt-4 flex items-center justify-center gap-4 text-sm text-muted-foreground">
             <span>{typedQuestions.length} questions</span>
             <span>•</span>
             <span>~{Math.ceil(typedQuestions.length * 0.5)} min</span>

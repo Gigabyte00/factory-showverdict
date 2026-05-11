@@ -136,7 +136,7 @@ export default function RootLayout({
               strategy="afterInteractive"
             />
             <Script id="ga4-init" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('set',{site_slug:'${process.env.SITE_SLUG||""}',niche:'${process.env.SITE_NICHE||""}'});gtag('config','${ga4Id}');document.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var a=t.closest('a[href*="/go/"]');if(!a||!window.gtag)return;var h=a.getAttribute('href')||'';var m=h.match(/\/go\/([^?#]+)/);if(!m)return;var s=m[1];var b=(a.dataset&&a.dataset.brand)||s.split('-').slice(0,2).join(' ');var p=(a.dataset&&a.dataset.placement)||'unknown';window.gtag('event','affiliate_click',{event_category:'conversion',affiliate_brand:b,brand:b,placement:p,slug:s});},true);`}
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('set',{site_slug:'${process.env.SITE_SLUG||""}',niche:'${process.env.SITE_NICHE||""}'});gtag('config','${ga4Id}');document.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var a=t.closest('a[href*="/go/"]');if(!a||!window.gtag)return;var h=a.getAttribute('href')||'';var i=h.indexOf('/go/');if(i<0)return;var rest=h.slice(i+4);var s=rest.split('?')[0].split('#')[0];if(!s)return;var b=(a.dataset&&a.dataset.brand)||s.split('-').slice(0,2).join(' ');var p=(a.dataset&&a.dataset.placement)||'unknown';window.gtag('event','affiliate_click',{event_category:'conversion',affiliate_brand:b,brand:b,placement:p,slug:s});},true);`}
             </Script>
           </>
         )}

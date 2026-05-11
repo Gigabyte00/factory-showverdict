@@ -12,6 +12,7 @@ import type { FAQData } from '@/components/JsonLd';
 import JsonLdTyped from '@/components/JsonLd';
 import { Prose, Callout, LastUpdated } from '@/components/content';
 import { InlineOptIn } from '@/components/content/InlineOptIn';
+import { getLeadMagnet } from '@/lib/lead-magnets';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,8 @@ export default function ComparisonArticle({
   showTOC = false,
   showRelatedPosts = true,
 }: PostDetailTemplateProps) {
+  const magnetSlug = process.env.LEAD_MAGNET_SLUG;
+  const inlineMagnet = magnetSlug ? getLeadMagnet(magnetSlug) : null;
   // Extract comparison data from post metadata
   const comparisonData = post.metadata?.comparison || {
     products: [],
@@ -389,7 +392,7 @@ export default function ComparisonArticle({
           </Prose>
 
           {/* Newsletter opt-in — conversion anchor for comparison posts */}
-          <InlineOptIn siteId={site.id} niche={site.niche} />
+          <InlineOptIn siteId={site.id} niche={site.niche} magnet={inlineMagnet} />
 
           {/* FAQ Section with Schema */}
           {faqs && faqs.length > 0 && (

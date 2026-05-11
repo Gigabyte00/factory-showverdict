@@ -76,6 +76,32 @@ export async function GET(
       ? createHash('sha256').update(ipRaw).digest('hex').slice(0, 32)
       : null;
 
+
+    // ── Bot-block ──────────────────────────────────────────────────────────────
+    const secFetchSite = req.headers.get('sec-fetch-site');
+    const utmSourceParam = url.searchParams.get('utm_source');
+    const isSyntheticMonitor = utmSourceParam === 'synthetic-monitor';
+    const uaDenylistRe = /(\bbot\b|crawl|spider|scrape|headless|phantom|puppeteer|playwright|lighthouse|axios|^curl|^wget|python-?requests|python\/|httpie|node-fetch|go-http|java\/|ruby\/|perl\/|php\/|libwww|okhttp|undici|aiohttp|urllib|facebookexternalhit|slackbot|twitterbot|linkedinbot|whatsapp|telegram|discordbot|semrush|ahrefs|mj12|dotbot|petalbot|amazonbot|gptbot|claudebot|ccbot|perplexity|chatgpt-user|youbot|anthropic|cohere|meta-ai|google-extended)/i;
+    const chromeMatch = (userAgent || '').match(/Chrome\/(\d+)/);
+    const chromeMajor = chromeMatch ? Number.parseInt(chromeMatch[1], 10) : 0;
+    let blockReason: string | null = null;
+    if (!isSyntheticMonitor) {
+      if (!userAgent) blockReason = 'no-ua';
+      else if (uaDenylistRe.test(userAgent)) blockReason = 'ua-denylist';
+      else if (chromeMajor >= 80 && secFetchSite === null) blockReason = 'no-sec-fetch';
+    }
+    if (blockReason) {
+      supabase.from('offer_clicks').insert({
+        offer_id: offer.id, site_id: offer.site_id,
+        referrer: referrer.slice(0, 500), user_agent: (userAgent || '').slice(0, 300),
+        ip_hash: ipHash, utm_source: 'blocked-bot', utm_medium: blockReason, utm_campaign: null,
+      }).then(({ error: e }) => { if (e) console.error('blocked-bot insert failed:', e.message); });
+      const r = NextResponse.redirect(new URL('/', req.url), 302);
+      r.headers.set('Cache-Control', 'no-store');
+      r.headers.set('X-Robots-Tag', 'noindex, nofollow');
+      return r;
+    }
+    // ── End bot-block ─────────────────────────────────────────────────────────
     // Bot filtering: skip click tracking for non-browser user agents
     const isBot = !userAgent
       || /^(axios|curl|wget|python|httpie|node-fetch|go-http|java|ruby|perl|php)/i.test(userAgent)

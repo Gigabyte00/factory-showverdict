@@ -12,6 +12,7 @@ import type { FAQData } from '@/components/JsonLd';
 import JsonLdTyped from '@/components/JsonLd';
 import { Prose, Callout, LastUpdated, ProductCallout, InlineTOC, AudienceFit, Sources, Changelog, type ChangelogEntry } from '@/components/content';
 import { InlineOptIn } from '@/components/content/InlineOptIn';
+import { getLeadMagnet } from '@/lib/lead-magnets';
 import { ComparisonTable } from '@/components/content/ComparisonTable';
 import { PriceHistory } from '@/components/offers/PriceHistory';
 import { StickyMobileBuyBar } from '@/components/offers/StickyMobileBuyBar';
@@ -45,6 +46,8 @@ export default function ReviewArticle({
   showTOC = false,
   showRelatedPosts = true,
 }: PostDetailTemplateProps) {
+  const magnetSlug = process.env.LEAD_MAGNET_SLUG;
+  const inlineMagnet = magnetSlug ? getLeadMagnet(magnetSlug) : null;
   // Extract review data from post metadata
   const reviewData = post.metadata?.review || {
     rating: 0,
@@ -412,7 +415,7 @@ export default function ReviewArticle({
                 )}
 
                 {/* Newsletter opt-in — conversion anchor on review posts */}
-                <InlineOptIn siteId={site.id} niche={site.niche} />
+                <InlineOptIn siteId={site.id} niche={site.niche} magnet={inlineMagnet} />
 
                 {/* FAQ Section with Schema */}
                 {faqs && faqs.length > 0 && (

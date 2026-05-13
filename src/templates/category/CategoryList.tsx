@@ -150,6 +150,7 @@ export default function CategoryList({
                         <OfferButton
                           offerId={offer.id}
                           siteId={site.id}
+                          offerSlug={offer.slug}
                           affiliateUrl={offer.affiliate_url}
                           source="category_list"
                         />

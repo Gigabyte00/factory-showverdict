@@ -7,6 +7,8 @@ interface OfferLinkProps {
   offerId: string;
   siteId: string;
   affiliateUrl: string;
+  /** Offer slug — used to route through /go/[slug] so the bot filter runs */
+  offerSlug?: string;
   source?: string;
   children: React.ReactNode;
   className?: string;
@@ -34,11 +36,16 @@ export function OfferLink({
   offerId,
   siteId,
   affiliateUrl,
+  offerSlug,
   source = 'inline',
   children,
   className,
 }: OfferLinkProps) {
   const [isTracking, setIsTracking] = useState(false);
+
+  // Route through /go/[slug] when a slug is available so the bot filter runs.
+  // Fall back to the raw affiliate URL only when slug is missing.
+  const target = offerSlug ? `/go/${offerSlug}` : affiliateUrl;
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,12 +66,12 @@ export function OfferLink({
         }),
       });
 
-      // Open affiliate URL in new tab
-      window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
+      // Open /go/[slug] in new tab — bot filter + server-side click logging runs there
+      window.open(target, '_blank', 'noopener,noreferrer');
     } catch (error) {
       // Tracking failed - still redirect user
       console.error('Click tracking error:', error);
-      window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
+      window.open(target, '_blank', 'noopener,noreferrer');
     } finally {
       setIsTracking(false);
     }

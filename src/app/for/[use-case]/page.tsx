@@ -82,7 +82,7 @@ export default async function UseCasePage({ params }: Props) {
   if (useCase.recommended_offer_ids && useCase.recommended_offer_ids.length > 0) {
     const { data } = await supabase
       .from('offers')
-      .select('id, name, description, affiliate_url, featured_image_url, rating')
+      .select('id, slug, name, description, affiliate_url, featured_image_url, rating')
       .in('id', useCase.recommended_offer_ids);
     recommendedOffers = data || [];
   }
@@ -199,9 +199,9 @@ export default async function UseCasePage({ params }: Props) {
                         <span className="text-sm">{offer.rating}/5</span>
                       </div>
                     )}
-                    {offer.affiliate_url && (
+                    {offer.affiliate_url && offer.slug && (
                       <a
-                        href={offer.affiliate_url}
+                        href={`/go/${offer.slug}`}
                         target="_blank"
                         rel="noopener noreferrer sponsored"
                         className="block w-full rounded-lg bg-primary py-2 text-center font-semibold text-primary-foreground hover:bg-primary/90"

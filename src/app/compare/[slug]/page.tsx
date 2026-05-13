@@ -83,7 +83,7 @@ export default async function ComparisonPage({ params }: Props) {
   if (comparison.product_a_offer_id) {
     const { data } = await supabase
       .from('offers')
-      .select('name, description, affiliate_url, featured_image_url, rating')
+      .select('slug, name, description, affiliate_url, featured_image_url, rating')
       .eq('id', comparison.product_a_offer_id)
       .single();
     productA = data;
@@ -92,7 +92,7 @@ export default async function ComparisonPage({ params }: Props) {
   if (comparison.product_b_offer_id) {
     const { data } = await supabase
       .from('offers')
-      .select('name, description, affiliate_url, featured_image_url, rating')
+      .select('slug, name, description, affiliate_url, featured_image_url, rating')
       .eq('id', comparison.product_b_offer_id)
       .single();
     productB = data;
@@ -192,9 +192,9 @@ export default async function ComparisonPage({ params }: Props) {
 
         {/* CTA Buttons */}
         <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:justify-center">
-          {productA?.affiliate_url && (
+          {productA?.affiliate_url && productA?.slug && (
             <a
-              href={productA.affiliate_url}
+              href={`/go/${productA.slug}`}
               target="_blank"
               rel="noopener noreferrer sponsored"
               className="rounded-lg bg-primary px-8 py-3 text-center font-semibold text-primary-foreground hover:bg-primary/90"
@@ -202,9 +202,9 @@ export default async function ComparisonPage({ params }: Props) {
               Check {comparison.product_a_name} Price
             </a>
           )}
-          {productB?.affiliate_url && (
+          {productB?.affiliate_url && productB?.slug && (
             <a
-              href={productB.affiliate_url}
+              href={`/go/${productB.slug}`}
               target="_blank"
               rel="noopener noreferrer sponsored"
               className="rounded-lg border border-primary px-8 py-3 text-center font-semibold text-primary hover:bg-primary/10"

@@ -182,6 +182,7 @@ export default function CategoryShowcase({
                   <OfferButton
                     offerId={featuredOffer.id}
                     siteId={site.id}
+                    offerSlug={featuredOffer.slug}
                     affiliateUrl={featuredOffer.affiliate_url}
                     source="category_showcase_featured"
                   />
@@ -235,6 +236,7 @@ export default function CategoryShowcase({
                       <OfferButton
                         offerId={offer.id}
                         siteId={site.id}
+                        offerSlug={offer.slug}
                         affiliateUrl={offer.affiliate_url}
                         source="category_showcase_grid"
                       />

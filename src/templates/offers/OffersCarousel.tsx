@@ -170,6 +170,7 @@ function OfferCard({ offer, categoryMap, siteId }: OfferCardProps) {
             <OfferLink
               offerId={offer.id}
               siteId={siteId}
+              offerSlug={offer.slug}
               affiliateUrl={offer.affiliate_url}
               source="offers_list"
             >

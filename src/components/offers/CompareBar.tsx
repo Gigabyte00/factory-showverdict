@@ -249,6 +249,7 @@ function CompareCard({ offer, categoryMap, siteId, checked, onToggle, disabled }
             <OfferLink
               offerId={offer.id}
               siteId={siteId}
+              offerSlug={offer.slug}
               affiliateUrl={offer.affiliate_url}
               source="offers_page"
             >

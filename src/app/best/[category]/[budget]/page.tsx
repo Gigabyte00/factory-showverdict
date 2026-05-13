@@ -138,7 +138,7 @@ export default async function PriceTierPage({ params }: Props) {
   if (priceTier.offer_ids && priceTier.offer_ids.length > 0) {
     const { data } = await supabase
       .from('offers')
-      .select('id, name, description, affiliate_url, featured_image_url, rating, current_price, original_price, pros, cons')
+      .select('id, slug, name, description, affiliate_url, featured_image_url, rating, current_price, original_price, pros, cons')
       .in('id', priceTier.offer_ids);
     offers = data || [];
     // Sort by the order in offer_ids array (if offer_ids exists)
@@ -321,9 +321,9 @@ export default async function PriceTierPage({ params }: Props) {
                             </span>
                           )}
                         </div>
-                        {offer.affiliate_url && (
+                        {offer.affiliate_url && offer.slug && (
                           <a
-                            href={offer.affiliate_url}
+                            href={`/go/${offer.slug}`}
                             target="_blank"
                             rel="noopener noreferrer sponsored"
                             className="rounded-lg bg-primary px-6 py-2 font-semibold text-primary-foreground hover:bg-primary/90"

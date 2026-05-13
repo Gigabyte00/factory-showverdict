@@ -8,6 +8,8 @@ interface OfferButtonProps {
   offerId: string;
   siteId: string;
   affiliateUrl: string;
+  /** Offer slug — used to route through /go/[slug] so the bot filter runs */
+  offerSlug?: string;
   source?: string;
 }
 
@@ -17,8 +19,12 @@ interface OfferButtonProps {
  * Logs click to revenue_events table via /api/track-click
  * then redirects to affiliate URL
  */
-export function OfferButton({ offerId, siteId, affiliateUrl, source = 'offers_page' }: OfferButtonProps) {
+export function OfferButton({ offerId, siteId, affiliateUrl, offerSlug, source = 'offers_page' }: OfferButtonProps) {
   const [isTracking, setIsTracking] = useState(false);
+
+  // Route through /go/[slug] when a slug is available so the bot filter runs.
+  // Fall back to the raw affiliate URL only when slug is missing.
+  const target = offerSlug ? `/go/${offerSlug}` : affiliateUrl;
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -28,8 +34,8 @@ export function OfferButton({ offerId, siteId, affiliateUrl, source = 'offers_pa
     setIsTracking(true);
 
     try {
-      // Track the click (API redirects to affiliate URL)
-      const response = await fetch('/api/track-click', {
+      // Track the click (fire-and-forget on revenue_events)
+      await fetch('/api/track-click', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -39,21 +45,12 @@ export function OfferButton({ offerId, siteId, affiliateUrl, source = 'offers_pa
         }),
       });
 
-      if (response.redirected) {
-        // API returned a redirect - open in new tab
-        window.open(response.url, '_blank', 'noopener,noreferrer');
-      } else if (response.ok) {
-        // Fallback if no redirect
-        window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
-      } else {
-        // Tracking failed - still redirect user
-        console.error('Click tracking failed:', await response.text());
-        window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
-      }
+      // Open /go/[slug] in new tab — bot filter + server-side click logging runs there
+      window.open(target, '_blank', 'noopener,noreferrer');
     } catch (error) {
       // Network error - still redirect user
       console.error('Click tracking error:', error);
-      window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
+      window.open(target, '_blank', 'noopener,noreferrer');
     } finally {
       setIsTracking(false);
     }

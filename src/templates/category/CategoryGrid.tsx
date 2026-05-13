@@ -297,6 +297,7 @@ function OfferCard({ offer, siteId }: OfferCardProps) {
         <OfferButton
           offerId={offer.id}
           siteId={siteId}
+          offerSlug={offer.slug}
           affiliateUrl={offer.affiliate_url}
           source="category_page"
         />

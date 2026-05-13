@@ -186,6 +186,7 @@ export default function OffersTable({
                             <OfferLink
                               offerId={offer.id}
                               siteId={site.id}
+                              offerSlug={offer.slug}
                               affiliateUrl={offer.affiliate_url}
                               source="offers_table"
                             >
@@ -223,6 +224,7 @@ export default function OffersTable({
                       <OfferLink
                         offerId={offer.id}
                         siteId={site.id}
+                        offerSlug={offer.slug}
                         affiliateUrl={offer.affiliate_url}
                         source="offers_table_additional"
                       >

@@ -172,7 +172,7 @@ export default async function CompareOffersPage({ searchParams }: PageProps) {
                 <h2 className="mb-2 text-lg font-semibold">{offer.name}</h2>
                 <p className="text-sm text-muted-foreground">{offer.short_description}</p>
                 <a
-                  href={offer.affiliate_url}
+                  href={`/go/${offer.slug}`}
                   target="_blank"
                   rel="noopener noreferrer sponsored nofollow"
                   className="mt-4 inline-block text-sm font-medium text-primary hover:underline"

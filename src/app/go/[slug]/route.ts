@@ -96,10 +96,9 @@ export async function GET(
         referrer: referrer.slice(0, 500), user_agent: (userAgent || '').slice(0, 300),
         ip_hash: ipHash, utm_source: 'blocked-bot', utm_medium: blockReason, utm_campaign: null,
       }).then(({ error: e }) => { if (e) console.error('blocked-bot insert failed:', e.message); });
-      const r = NextResponse.redirect(new URL('/', req.url), 302);
-      r.headers.set('Cache-Control', 'no-store');
-      r.headers.set('X-Robots-Tag', 'noindex, nofollow');
-      return r;
+      // owner decision 2026-05-28: log the bot/suspicious click but FORWARD it anyway
+      // (no bounce to home). Accepted Amazon invalid-traffic risk — see
+      // docs/ADVISOR-REVIEW-2026-05-28-v2.md.
     }
     // ── End bot-block ─────────────────────────────────────────────────────────
     // Bot filtering: skip click tracking for non-browser user agents
@@ -108,7 +107,7 @@ export async function GET(
       || /bot|crawl|spider|scrape|headless|phantom|puppeteer|playwright|lighthouse/i.test(userAgent)
       || !/Mozilla|Chrome|Safari|Firefox|Edge|Opera/i.test(userAgent);
 
-    if (!isBot) {
+    if (!isBot && !blockReason) {
       supabase
         .from('offer_clicks')
         .insert({

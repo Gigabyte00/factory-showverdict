@@ -90,7 +90,7 @@ export function ExitIntentPopup({ niche, siteId }: ExitIntentPopupProps) {
 
   // Per-niche copy: headline + body + CTA button text
   const nicheKey = (niche || '').toLowerCase();
-  const nicheCopy: { headline: string; body: string; cta: string } = (() => {
+  const nicheCopy: { headline: string; body: string; cta: string; trial?: { href: string; label: string } } = (() => {
     if (nicheKey.includes('electric bike') || nicheKey.includes('ebike'))
       return { headline: 'Before you go — grab our free eBike Buyers Checklist', body: '47 questions to ask before you spend a dollar. Avoid the #1 mistake new riders make.', cta: 'Get the Free Checklist' };
     if (nicheKey.includes('life insurance'))
@@ -115,8 +115,10 @@ export function ExitIntentPopup({ niche, siteId }: ExitIntentPopupProps) {
       return { headline: 'Before you go — get our free Brew Recipe Log', body: 'Track your recipes, dial in your grind, and never forget a great cup again.', cta: 'Get the Template' };
     if (nicheKey.includes('chocolate') || nicheKey.includes('recipe'))
       return { headline: 'Free: 12 Dubai Chocolate Recipes PDF', body: 'Our most popular recipes — including the viral pistachio stuffed bar — in one download.', cta: 'Get the Recipes' };
-    if (nicheKey.includes('streaming') || nicheKey.includes('show') || nicheKey.includes('book') || nicheKey.includes('audio'))
-      return { headline: 'Which streaming service is worth your money?', body: 'Get our free cost optimizer — enter your viewing habits, see exactly what to cut.', cta: 'Compare Services' };
+    if (nicheKey.includes('streaming') || nicheKey.includes('show') || nicheKey.includes('tv') || nicheKey.includes('movie'))
+      return { headline: 'Before you go — watch something great tonight', body: 'Get our free streaming cost optimizer, then start a free Prime Video trial and stream tonight.', cta: 'Get the Free Optimizer', trial: { href: '/go/prime-video', label: 'Try Prime Video Free' } };
+    if (nicheKey.includes('audiobook') || nicheKey.includes('audio') || nicheKey.includes('book') || nicheKey.includes('listen'))
+      return { headline: 'Before you go — listen free for 30 days', body: 'Get our free Audible Credit Strategy guide, then start a trial and your first audiobook is on the house.', cta: 'Get the Free Guide', trial: { href: '/go/audible', label: 'Try Audible Free' } };
     if (nicheKey.includes('erp') || nicheKey.includes('ecommerce') || nicheKey.includes('saas'))
       return { headline: 'Not sure which ERP is right for your business?', body: 'Get our free vendor comparison guide — built specifically for e-commerce brands.', cta: 'Get the Guide' };
     // Generic fallback
@@ -195,13 +197,23 @@ export function ExitIntentPopup({ niche, siteId }: ExitIntentPopupProps) {
           >
             Browse Top Picks
           </Link>
-          <Link
-            href="/blog"
-            onClick={() => { dismiss(); trackEvent('exit_intent_click', { cta: 'read_guides' }); }}
-            className="flex-1 text-center border border-border text-muted-foreground py-2 rounded-lg text-sm font-medium hover:bg-muted transition"
-          >
-            Read Guides
-          </Link>
+          {nicheCopy.trial ? (
+            <a
+              href={nicheCopy.trial.href}
+              onClick={() => { dismiss(); trackEvent('exit_intent_click', { cta: 'trial' }); }}
+              className="flex-1 text-center border border-primary bg-primary/5 text-primary py-2 rounded-lg text-sm font-semibold hover:bg-primary/10 transition"
+            >
+              {nicheCopy.trial.label}
+            </a>
+          ) : (
+            <Link
+              href="/blog"
+              onClick={() => { dismiss(); trackEvent('exit_intent_click', { cta: 'read_guides' }); }}
+              className="flex-1 text-center border border-border text-muted-foreground py-2 rounded-lg text-sm font-medium hover:bg-muted transition"
+            >
+              Read Guides
+            </Link>
+          )}
         </div>
       </div>
     </div>

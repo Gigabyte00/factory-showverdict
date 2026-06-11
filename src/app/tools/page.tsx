@@ -4,6 +4,7 @@ import type { CalculatorTemplate, QuizTemplate } from '@/types';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import JsonLd from '@/components/JsonLd';
+import { canonicalUrl } from '@/lib/seo';
 import { ToolsBrowser, type ToolItem } from './ToolsBrowser';
 
 export const revalidate = 3600; // Revalidate every hour
@@ -14,6 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: `Free Tools & Calculators`,
     description: `Use our free ${site.niche?.toLowerCase() || ''} calculators and quizzes to make smarter decisions. Interactive tools designed to help you.`,
+    alternates: { canonical: canonicalUrl('/tools') },
     openGraph: {
       title: `Free Tools & Calculators`,
       description: `Interactive tools and calculators for ${site.niche?.toLowerCase() || 'smarter decisions'}`,
@@ -115,6 +117,16 @@ export default async function ToolsPage() {
 
   // Assemble unified tool list for the client browser.
   const tools: ToolItem[] = [
+    // Bespoke tools (code-defined, not DB-driven)
+    {
+      id: 'bespoke-sports-streaming-finder',
+      name: 'Sports Streaming Stack Finder',
+      description:
+        'Pick your leagues (NFL, NBA, MLB, NHL, CFB, Premier League, F1, UFC) and get the cheapest streaming stack that covers them — 2026 rights and prices, with out-of-market caveats.',
+      href: '/tools/sports-streaming-finder',
+      kind: 'calculator' as const,
+      metrics: null,
+    },
     ...calculatorList.map((calc) => ({
       id: `calc-${calc.id}`,
       name: calc.name,

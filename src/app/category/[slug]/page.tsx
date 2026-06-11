@@ -1,6 +1,7 @@
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
 import { getTemplate, getDefaultVariant } from '@/lib/templates/registry';
+import { canonicalUrl } from '@/lib/seo';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 3600; // Revalidate every hour
@@ -139,5 +140,6 @@ export async function generateMetadata({ params }: CategoryPageProps) {
   return {
     title: category.name,
     description: category.description || `Browse ${category.name} content at ${site.name}`,
+    alternates: { canonical: canonicalUrl(`/category/${slug}`) },
   };
 }

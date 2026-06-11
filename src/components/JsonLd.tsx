@@ -1,5 +1,3 @@
-import Script from 'next/script';
-
 // ============================================================================
 // Type Definitions
 // ============================================================================
@@ -307,7 +305,9 @@ function generateBreadcrumbSchema(data: BreadcrumbData) {
  * - howto: Step-by-step guides
  * - breadcrumb: Navigation breadcrumbs
  *
- * Uses Next.js Script component for safe JSON-LD injection.
+ * Rendered as a plain inline <script> so the JSON-LD is present in the
+ * server-rendered HTML (next/script afterInteractive injected it client-side,
+ * which crawlers that don't execute JS never saw).
  */
 export default function JsonLd({ type, data }: JsonLdProps) {
   const generateSchema = (): Record<string, unknown> | null => {
@@ -338,9 +338,11 @@ export default function JsonLd({ type, data }: JsonLdProps) {
   const cleanSchema = JSON.parse(JSON.stringify(schema));
 
   return (
-    <Script id={`jsonld-${type ?? (data as Record<string, unknown>)['@type'] ?? 'raw'}`} type="application/ld+json" strategy="afterInteractive">
-      {JSON.stringify(cleanSchema)}
-    </Script>
+    <script
+      type="application/ld+json"
+      // Escape `<` so content can never break out of the script tag
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(cleanSchema).replace(/</g, '\\u003c') }}
+    />
   );
 }
 

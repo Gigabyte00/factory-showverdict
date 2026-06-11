@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
+import { canonicalUrl } from '@/lib/seo';
 
 export const revalidate = 3600;
 
@@ -27,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Best ${category.name} by Budget`,
     description: `Find the best ${category.name.toLowerCase()} at every price point. Budget-friendly options without compromising on quality.`,
+    alternates: { canonical: canonicalUrl(`/best/${categorySlug}`) },
   };
 }
 

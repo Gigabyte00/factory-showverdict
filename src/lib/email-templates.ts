@@ -113,6 +113,44 @@ You're receiving this because ${escapeHtml(email)} was subscribed to our newslet
 `, 'welcome');
 }
 
+// ─── Lead Magnet Delivery ───────────────────────────────────
+
+/**
+ * "Your download" email sent when a visitor requests a lead magnet.
+ * Magnet title, big download button, one-line description, standard footer.
+ */
+export function buildLeadMagnetEmailHtml(
+  magnet: { title: string; description: string; downloadLabel: string },
+  downloadUrl: string
+): string {
+  const { primaryColor } = getSiteInfo();
+  // One-line description — first sentence, capped for scannability
+  const firstSentenceEnd = magnet.description.indexOf('.');
+  const shortDescription =
+    firstSentenceEnd > 0 && firstSentenceEnd < 180
+      ? magnet.description.slice(0, firstSentenceEnd + 1)
+      : magnet.description.slice(0, 180);
+
+  return layout(`Your download: ${magnet.title}`, `
+<h2 style="margin:0 0 16px;color:#18181b;font-size:20px">Your download is ready</h2>
+<p style="margin:0 0 8px;color:#18181b;font-size:16px;font-weight:600">${escapeHtml(magnet.title)}</p>
+<p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.6">${escapeHtml(shortDescription)}</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px">
+<tr>
+<td style="background:${primaryColor};border-radius:6px;padding:14px 32px">
+<a href="${escapeHtml(downloadUrl)}" style="color:#ffffff;text-decoration:none;font-size:16px;font-weight:700">Download ${escapeHtml(magnet.downloadLabel)}</a>
+</td>
+</tr>
+</table>
+
+<p style="margin:0;color:#6b7280;font-size:13px">
+Trouble with the button? Copy this link into your browser:<br>
+<a href="${escapeHtml(downloadUrl)}" style="color:#6b7280;text-decoration:underline;word-break:break-all">${escapeHtml(downloadUrl)}</a>
+</p>
+`, 'transactional');
+}
+
 // ─── Sequence Step (DB-driven drip) ────────────────────────
 
 /**

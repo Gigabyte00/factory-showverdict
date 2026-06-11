@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 
@@ -16,54 +15,45 @@ interface OfferButtonProps {
 /**
  * Tracked affiliate link button
  *
- * Logs click to revenue_events table via /api/track-click
- * then redirects to affiliate URL
+ * Renders a REAL <a href> (crawlable, middle-clickable, works without JS)
+ * pointing at /go/[slug], which performs bot filtering, server-side click
+ * logging (revenue_events), and the affiliate redirect. The onClick
+ * analytics call is fire-and-forget (keepalive) and never blocks navigation.
  */
 export function OfferButton({ offerId, siteId, affiliateUrl, offerSlug, source = 'offers_page' }: OfferButtonProps) {
-  const [isTracking, setIsTracking] = useState(false);
-
   // Route through /go/[slug] when a slug is available so the bot filter runs.
   // Fall back to the raw affiliate URL only when slug is missing.
-  const target = offerSlug ? `/go/${offerSlug}` : affiliateUrl;
+  const href = offerSlug ? `/go/${offerSlug}` : affiliateUrl;
 
-  const handleClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    // Prevent double-clicks
-    if (isTracking) return;
-    setIsTracking(true);
-
+  const handleClick = () => {
+    // Fire-and-forget analytics — keepalive lets it complete during navigation
     try {
-      // Track the click (fire-and-forget on revenue_events)
-      await fetch('/api/track-click', {
+      fetch('/api/track-click', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
         body: JSON.stringify({
           offer_id: offerId,
           site_id: siteId,
           source,
         }),
-      });
-
-      // Open /go/[slug] in new tab — bot filter + server-side click logging runs there
-      window.open(target, '_blank', 'noopener,noreferrer');
-    } catch (error) {
-      // Network error - still redirect user
-      console.error('Click tracking error:', error);
-      window.open(target, '_blank', 'noopener,noreferrer');
-    } finally {
-      setIsTracking(false);
+      }).catch(() => {});
+    } catch {
+      // Tracking must never block the user
     }
   };
 
   return (
-    <Button
-      className="w-full"
-      onClick={handleClick}
-      disabled={isTracking}
-    >
-      {isTracking ? 'Loading...' : 'View Offer'}
-      <ExternalLink className="ml-2 h-4 w-4" />
+    <Button asChild className="w-full">
+      <a
+        href={href}
+        target="_blank"
+        rel="sponsored nofollow noopener"
+        onClick={handleClick}
+      >
+        View Offer
+        <ExternalLink className="ml-2 h-4 w-4" />
+      </a>
     </Button>
   );
 }

@@ -188,7 +188,23 @@ export function getLeadMagnet(slug: string): LeadMagnet | null {
   return LEAD_MAGNETS[slug] || null;
 }
 
-/** Get the download URL for a magnet (from env var) */
+/**
+ * Get the download URL for a magnet.
+ *
+ * Resolution order:
+ * 1. LEAD_MAGNET_URL env var (explicit per-site override)
+ * 2. Convention: the site's /cdn proxy into the `factory-magnets` storage
+ *    bucket — https://<domain>/cdn/factory-magnets/<domain>/<slug>.pdf
+ *    (only for the configured LEAD_MAGNET_SLUG; requires a domain)
+ */
 export function getLeadMagnetDownloadUrl(slug: string): string | null {
-  return process.env.LEAD_MAGNET_URL || null;
+  if (process.env.LEAD_MAGNET_URL) return process.env.LEAD_MAGNET_URL;
+
+  const configuredSlug = process.env.LEAD_MAGNET_SLUG?.trim();
+  if (!configuredSlug || configuredSlug !== slug) return null;
+
+  const domain = process.env.SITE_DOMAIN?.trim();
+  if (!domain) return null;
+
+  return `https://${domain}/cdn/factory-magnets/${domain}/${configuredSlug}.pdf`;
 }

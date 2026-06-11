@@ -82,6 +82,8 @@ export default async function StandardArticle({
 }: PostDetailTemplateProps) {
   const siteId = (site as any).id as string;
   const [contentBefore, contentAfter] = splitMarkdown(post.content || '', 4);
+  // Lead magnet banner goes above the fold — right after the intro paragraphs
+  const [intro, afterIntro] = splitMarkdown(contentBefore, 2);
   const wordCount = (post.content || '').split(/\s+/).filter(Boolean).length;
   const showInlineToc = wordCount >= 1200;
   const audienceFit = (post.metadata as any)?.audienceFit as
@@ -308,15 +310,27 @@ export default async function StandardArticle({
               {/* Inline TOC for medium-length posts (LongformArticle has its own sidebar TOC) */}
               {showInlineToc && <InlineTOC articleSelector="article" />}
 
-              {/* Content — split with inline opt-in after paragraph 4 */}
+              {/* Content — lead magnet banner after the intro, inline opt-in after paragraph 4 */}
               <Prose>
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={affiliateLinkComponents(post.slug)}
                 >
-                  {contentBefore}
+                  {intro}
                 </ReactMarkdown>
               </Prose>
+              {/* Renders null unless LEAD_MAGNET_SLUG is configured — single placement */}
+              <LeadMagnetCTA variant="banner" />
+              {afterIntro && (
+                <Prose>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={affiliateLinkComponents(post.slug)}
+                  >
+                    {afterIntro}
+                  </ReactMarkdown>
+                </Prose>
+              )}
               {contentAfter && (
                 <>
                   <InlineOptIn siteId={siteId} niche={site.niche} />
@@ -403,13 +417,11 @@ export default async function StandardArticle({
           </Card>
         </article>
 
-        <LeadMagnetCTA variant="card" />
-
+        {/* Single inline newsletter at article end — the sticky overlay variant
+            is rendered once globally in the root layout */}
         <div className="mt-8">
-          <NewsletterSignup siteId={siteId} niche={site.niche} variant="default" />
+          <NewsletterSignup siteId={siteId} niche={site.niche} />
         </div>
-
-        <NewsletterSignup siteId={siteId} niche={site.niche} variant="sticky" />
 
         {showRelatedPosts && relatedPosts.length > 0 && (
           <section className="mt-10">

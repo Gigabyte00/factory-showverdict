@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { isRenderableImageSrc } from "@/lib/utils";
 
 /**
  * FeaturedOffers — ShowVerdict
@@ -123,7 +124,14 @@ function Star({ kind }: { kind: "full" | "half" | "empty" }) {
 /* ------------------------------------------------------------------ */
 
 function OfferCard({ offer }: { offer: Offer }) {
-  const imgSrc = offer.image_url || offer.featured_image_url;
+  // Guard against empty/non-renderable image values ('' would crash next/image)
+  const imgSrc = isRenderableImageSrc(offer.image_url)
+    ? offer.image_url
+    : isRenderableImageSrc(offer.featured_image_url)
+      ? offer.featured_image_url
+      : isRenderableImageSrc(offer.logo_url)
+        ? offer.logo_url
+        : null;
   const prosCount = offer.pros?.length ?? 0;
 
   return (
@@ -162,13 +170,23 @@ function OfferCard({ offer }: { offer: Offer }) {
         style={{ background: "var(--sv-ink, #14110f)" }}
         aria-label={`${offer.name} — view details`}
       >
-        <Image
-          src={imgSrc}
-          alt={offer.name}
-          fill
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-        />
+        {imgSrc ? (
+          <Image
+            src={imgSrc}
+            alt={offer.name}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 flex items-center justify-center font-serif text-5xl font-semibold"
+            style={{ color: "var(--sv-brass-soft, #d6b274)" }}
+          >
+            {offer.name.charAt(0)}
+          </span>
+        )}
         {/* noir vignette */}
         <div
           aria-hidden="true"
@@ -179,7 +197,7 @@ function OfferCard({ offer }: { offer: Offer }) {
           }}
         />
         {/* logo chip */}
-        {offer.logo_url && (
+        {isRenderableImageSrc(offer.logo_url) && (
           <div
             className="absolute bottom-3 left-3 flex h-9 w-9 items-center justify-center overflow-hidden rounded-md ring-1"
             style={{

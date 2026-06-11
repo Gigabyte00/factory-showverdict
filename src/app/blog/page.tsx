@@ -1,11 +1,19 @@
+import type { Metadata } from 'next';
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
 import { selectTemplateVariant } from '@/lib/templates/selector';
 import { getTemplate, getDefaultVariant } from '@/lib/templates/registry';
+import { canonicalUrl } from '@/lib/seo';
 import type { Post, Category } from '@/types';
 import type { BlogListTemplateConfig } from '@/lib/templates/config';
 
 export const revalidate = 3600; // Revalidate every hour
+
+export function generateMetadata(): Metadata {
+  return {
+    alternates: { canonical: canonicalUrl('/blog') },
+  };
+}
 
 interface BlogPageProps {
   searchParams: Promise<{

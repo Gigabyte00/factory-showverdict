@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
+import { canonicalUrl } from '@/lib/seo';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import AffiliateDisclosure from '@/components/AffiliateDisclosure';
 import ShareButtons from '@/components/ShareButtons';
@@ -36,6 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    alternates: { canonical: canonicalUrl(`/compare/${slug}`) },
     openGraph: {
       title,
       description,

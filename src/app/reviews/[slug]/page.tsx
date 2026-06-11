@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -6,7 +6,7 @@ interface Props {
 
 export default async function ReviewsRedirectPage({ params }: Props) {
   const { slug } = await params;
-  redirect(`/blog/${slug}`);
+  permanentRedirect(`/blog/${slug}`);
 }
 
 export async function generateMetadata({ params }: Props) {

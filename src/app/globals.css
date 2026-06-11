@@ -247,7 +247,13 @@ h1, h2, h3 {
   }
 }
 
-/* ── Scroll-driven fade-in (CSS only, progressive enhancement) ── */
+/* ── Scroll-driven fade-in (progressive enhancement, JS-gated) ──
+   Content is fully visible by default (SSR, no-JS, reduced-motion, old
+   browsers). The <ScrollReveal /> client component first marks everything
+   already in the viewport as .is-revealed, THEN adds `js-anim` to <html>,
+   so enabling the hidden state can never blank visible content. Remaining
+   elements are revealed by IntersectionObserver (generous rootMargin) with
+   a 2s failsafe that reveals everything. Elements are never re-hidden. */
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -259,28 +265,31 @@ h1, h2, h3 {
   }
 }
 
-/* Chrome/Edge: scroll-driven animation. Safari/Firefox: static (graceful degradation) */
-@supports (animation-timeline: view()) {
-  .animate-on-scroll {
-    animation: fade-in-up 0.6s ease-out both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 30%;
-  }
+html.js-anim .animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+}
+html.js-anim .animate-on-scroll.is-revealed {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
-/* Stagger children in grids */
-@supports (animation-timeline: view()) {
-  .stagger-children > * {
-    animation: fade-in-up 0.5s ease-out both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 25%;
-  }
-  .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
-  .stagger-children > *:nth-child(3) { animation-delay: 0.2s; }
-  .stagger-children > *:nth-child(4) { animation-delay: 0.3s; }
-  .stagger-children > *:nth-child(5) { animation-delay: 0.4s; }
-  .stagger-children > *:nth-child(6) { animation-delay: 0.5s; }
+/* Stagger children in grids — container is observed, children cascade in */
+html.js-anim .stagger-children > * {
+  opacity: 0;
+  transform: translateY(16px);
 }
+html.js-anim .stagger-children.is-revealed > * {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+html.js-anim .stagger-children.is-revealed > *:nth-child(2) { transition-delay: 0.1s; }
+html.js-anim .stagger-children.is-revealed > *:nth-child(3) { transition-delay: 0.2s; }
+html.js-anim .stagger-children.is-revealed > *:nth-child(4) { transition-delay: 0.3s; }
+html.js-anim .stagger-children.is-revealed > *:nth-child(5) { transition-delay: 0.4s; }
+html.js-anim .stagger-children.is-revealed > *:nth-child(6) { transition-delay: 0.5s; }
 
 /* ── Hero-to-content wave divider ── */
 .section-divider-wave {
@@ -293,17 +302,6 @@ h1, h2, h3 {
   width: 100%;
   height: 48px;
   background: linear-gradient(to bottom, hsl(var(--foreground) / 0.12), transparent);
-}
-
-/* ── Scroll animation Safari/Firefox fallback ── */
-/* Content is always visible in browsers without animation-timeline support */
-.animate-on-scroll {
-  opacity: 1;
-}
-@supports (animation-timeline: view()) {
-  .animate-on-scroll {
-    opacity: 0; /* Chrome/Edge: starts hidden, scroll animation reveals it */
-  }
 }
 
 /* ── Reduced motion — WCAG 2.1 AA compliance ── */

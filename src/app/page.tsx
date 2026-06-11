@@ -1,5 +1,7 @@
+import type { Metadata } from 'next';
 import { getSiteConfig, getTestimonials, getCTAConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
+import { canonicalUrl } from '@/lib/seo';
 import type { Post, Category, Offer } from '@/types';
 
 // Homepage components
@@ -14,6 +16,12 @@ import { FinalCTA } from '@/components/home/FinalCTA';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+
+export function generateMetadata(): Metadata {
+  return {
+    alternates: { canonical: canonicalUrl('/') },
+  };
+}
 
 const sections = ['hero', 'offers', 'categories', 'articles', 'testimonials', 'newsletter', 'cta'];
 
@@ -75,6 +83,7 @@ export default async function HomePage() {
 
     'testimonials': testimonials.length > 0 ? (
       <div key="testimonials" className="animate-on-scroll">
+        {/* Component does not take a title prop — heading is baked into the redesigned grid */}
         <TestimonialGrid testimonials={testimonials} />
       </div>
     ) : null,

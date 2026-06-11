@@ -220,7 +220,7 @@ export default function ArticleCard({
   href,
   className,
 }: ArticleCardProps) {
-  const url = href ?? `/reviews/${post.slug}`;
+  const url = href ?? `/blog/${post.slug}`;
   const firstTag = post.tags?.[0];
 
   /* ----------------------------------- featured ---------------------------- */

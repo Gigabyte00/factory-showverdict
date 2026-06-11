@@ -516,25 +516,27 @@ export function Calculator({ template, siteId }: CalculatorProps) {
     if (!email || !results) return;
 
     try {
-      const { data: subscriber } = await supabase
-        .from('newsletter_subscribers')
-        .upsert({
-          site_id: siteId,
-          email,
-          source: 'calculator',
-          metadata: { calculator_slug: template.slug, results },
-        })
-        .select()
-        .single();
+      // Route through /api/newsletter so a real email is sent (Resend welcome
+      // + drip enrollment). The previous direct upsert sent nothing despite
+      // the "report sent" claim.
+      const resultsSummary = Object.entries(results)
+        .map(([key, value]) => `${key}: ${formatNumber(value)}`)
+        .join(', ');
 
-      if (subscriber) {
-        await supabase
-          .from('calculator_responses')
-          .update({ subscriber_id: subscriber.id, email_captured: true })
-          .eq('template_id', template.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
-      }
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          site_id: siteId,
+          source: `calculator_${template.slug}`,
+          metadata: {
+            calculator_slug: template.slug,
+            results_summary: resultsSummary,
+          },
+        }),
+      });
+      if (!response.ok) throw new Error('Subscription failed');
 
       setEmailSubmitted(true);
       setShowEmailCapture(false);
@@ -592,7 +594,7 @@ export function Calculator({ template, siteId }: CalculatorProps) {
           )}
           {emailSubmitted && (
             <span className="text-sm text-green-600 dark:text-green-400 flex items-center">
-              Report sent to your email!
+              Check your inbox — we&apos;ve emailed your report link.
             </span>
           )}
         </div>

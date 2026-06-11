@@ -51,6 +51,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.9,
     },
+    // Bespoke tools
+    {
+      url: `${baseUrl}/tools/sports-streaming-finder`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
     // pSEO index pages
     {
       url: `${baseUrl}/compare`,
@@ -64,12 +71,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
-    {
-      url: `${baseUrl}/best`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
+    // NOTE: /best is added conditionally below — only when the site has
+    // published price tiers (otherwise it's an empty, noindexed stub).
     // AI Crawler Manifests (Answer Engine Optimization)
     {
       url: `${baseUrl}/llms.txt`,
@@ -109,7 +112,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const categoryUrls: MetadataRoute.Sitemap =
     categories?.map((category) => ({
-      url: `${baseUrl}/${category.slug}`,
+      // /category/[slug] is the canonical category URL (the top-level
+      // /[slug] route canonicalizes to it)
+      url: `${baseUrl}/category/${category.slug}`,
       lastModified: new Date(category.updated_at || new Date()),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
@@ -177,6 +182,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const addedBestCategoryPages = new Set<string>();
 
   if (priceTiers && priceTiers.length > 0) {
+    // /best index only earns a sitemap entry when budget guides exist
+    priceTierUrls.push({
+      url: `${baseUrl}/best`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    });
     const tierCategoryIds = [...new Set(priceTiers.map((pt) => pt.category_id).filter(Boolean))];
     const { data: tierCats } = await supabase
       .from('categories')

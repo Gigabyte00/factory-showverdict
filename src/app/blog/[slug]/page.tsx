@@ -4,6 +4,8 @@ import type { Post, Category } from '@/types';
 import { notFound } from 'next/navigation';
 import { getTemplate, getDefaultVariant } from '@/lib/templates/registry';
 import JsonLd from '@/components/JsonLd';
+import { canonicalUrl } from '@/lib/seo';
+import { normalizeArticleHeadings, rewriteAmazonLinksToGo } from '@/lib/article-content';
 
 /** Extract FAQ Q&A pairs from markdown content (detects ## FAQ / ## Frequently Asked Questions sections). */
 function extractFaqs(content: string): Array<{ question: string; answer: string }> {
@@ -50,13 +52,24 @@ export async function generateMetadata({ params }: PageProps) {
     return { title: 'Post Not Found' };
   }
 
+  const url = canonicalUrl(`/blog/${slug}`);
+  // Always provide a social image: featured image, else the site's OG image route
+  const ogImage = post.featured_image_url || canonicalUrl('/opengraph-image');
+
   return {
     title: post.meta_title || post.title,
     description: post.meta_description || post.excerpt || `Read ${post.title} on ${site.name}`,
+    alternates: { canonical: url },
     openGraph: {
       title: post.meta_title || post.title,
       description: post.meta_description || post.excerpt || undefined,
-      images: post.featured_image_url ? [post.featured_image_url] : undefined,
+      type: 'article',
+      url,
+      images: [ogImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      images: [ogImage],
     },
   };
 }
@@ -81,6 +94,21 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   // Cast to our extended Post type with metadata support
   const post = postData as Post;
+
+  // Normalize body headings (single h1 per page) and route in-content Amazon
+  // dp-links through /go/<slug> for click tracking when they match an offer.
+  if (post.content) {
+    let content = normalizeArticleHeadings(post.content, post.title);
+    if (content.includes('amazon.com')) {
+      const { data: offerLinks } = await supabase
+        .from('offers')
+        .select('slug, affiliate_url')
+        .eq('site_id', site.id)
+        .eq('is_active', true);
+      content = rewriteAmazonLinksToGo(content, offerLinks || []);
+    }
+    post.content = content;
+  }
 
   // Fetch category if exists
   let category: Category | null = null;

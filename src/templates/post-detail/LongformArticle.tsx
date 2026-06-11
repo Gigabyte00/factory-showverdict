@@ -13,7 +13,6 @@ import { Prose, Callout, LastUpdated, ProductCallout, LeadMagnetCTA, AudienceFit
 import { ReadingProgress } from '@/components/content/ReadingProgress';
 import { ArticleSidebar } from '@/components/content/ArticleSidebar';
 import { InlineOptIn } from '@/components/content/InlineOptIn';
-import { NewsletterSignup } from '@/components/home/NewsletterSignup';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ShareButtons from '@/components/ShareButtons';
@@ -62,6 +61,8 @@ export default function LongformArticle({
   // For long-form, insert opt-ins at paragraph 4 and paragraph 8
   const [part1, rest] = splitMarkdown(post.content || '', 4);
   const [part2, part3] = splitMarkdown(rest, 4);
+  // Lead magnet banner goes above the fold — right after the intro paragraphs
+  const [intro, afterIntro] = splitMarkdown(part1, 2);
   const audienceFit = (post.metadata as any)?.audienceFit as
     | { forYou?: string[]; notForYou?: string[] }
     | undefined;
@@ -248,12 +249,21 @@ export default function LongformArticle({
                   </div>
                 </div>
 
-                {/* Content — split with inline opt-ins at paragraphs 4 and 8 */}
+                {/* Content — lead magnet banner after the intro, opt-ins at paragraphs 4 and 8 */}
                 <Prose className="prose-lg">
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={affiliateLinkComponents(post.slug)}>
-                    {part1}
+                    {intro}
                   </ReactMarkdown>
                 </Prose>
+                {/* Renders null unless LEAD_MAGNET_SLUG is configured — single placement */}
+                <LeadMagnetCTA variant="banner" />
+                {afterIntro && (
+                  <Prose className="prose-lg">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={affiliateLinkComponents(post.slug)}>
+                      {afterIntro}
+                    </ReactMarkdown>
+                  </Prose>
+                )}
                 {part2 && (
                   <>
                     <InlineOptIn siteId={siteId} niche={site.niche} />
@@ -331,11 +341,8 @@ export default function LongformArticle({
               </CardContent>
             </Card>
 
-            {/* Lead magnet CTA — shown if LEAD_MAGNET_SLUG env var is set */}
-            <LeadMagnetCTA variant="card" />
-
-            {/* Sticky bottom bar */}
-            <NewsletterSignup siteId={siteId} niche={site.niche} variant="sticky" />
+            {/* Sticky newsletter bar is rendered once globally in the root
+                layout; the sidebar carries this template's inline opt-in */}
 
             {/* Related Posts */}
             {showRelatedPosts && relatedPosts.length > 0 && (

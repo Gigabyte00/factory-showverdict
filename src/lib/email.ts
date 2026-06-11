@@ -3,7 +3,8 @@
 
 import { Resend } from 'resend';
 import { getSiteConfig } from './site-config';
-import { buildNewsletterWelcomeHtml, buildDripEmail2Html, buildDripEmail3Html, buildSequenceStepHtml } from './email-templates';
+import { buildNewsletterWelcomeHtml, buildLeadMagnetEmailHtml, buildDripEmail2Html, buildDripEmail3Html, buildSequenceStepHtml } from './email-templates';
+import { getLeadMagnetDownloadUrl, type LeadMagnet } from './lead-magnets';
 
 function getFromEmail(): string {
   const senderEmail = process.env.SENDER_EMAIL;
@@ -57,6 +58,24 @@ export function sendNewsletterWelcome(email: string, name?: string): void {
     to: email,
     subject: `Welcome to ${site.name}`,
     html: buildNewsletterWelcomeHtml(email, name),
+  });
+}
+
+/**
+ * "Your download" delivery email for lead magnet signups.
+ * Fire-and-forget; silently skipped when no download URL resolves
+ * (no LEAD_MAGNET_URL and no domain-convention fallback).
+ */
+export function sendLeadMagnetEmail(email: string, magnet: LeadMagnet): void {
+  const downloadUrl = getLeadMagnetDownloadUrl(magnet.slug);
+  if (!downloadUrl) {
+    console.log('[email] No lead magnet download URL resolvable — skipping delivery email');
+    return;
+  }
+  sendEmail({
+    to: email,
+    subject: `Your download: ${magnet.title}`,
+    html: buildLeadMagnetEmailHtml(magnet, downloadUrl),
   });
 }
 

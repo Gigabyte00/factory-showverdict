@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
+import { canonicalUrl } from '@/lib/seo';
 import type { Category } from '@/types';
 import { getTemplate, getDefaultVariant } from '@/lib/templates/registry';
 import { OfferFilters } from '@/components/offers/OfferFilters';
@@ -16,6 +17,7 @@ export function generateMetadata(): Metadata {
   return {
     title: `Best ${site.niche || 'Deals'} Offers`,
     description: `Compare the top ${(site.niche || 'product').toLowerCase()} offers, deals, and recommendations — curated by ${site.name}.`,
+    alternates: { canonical: canonicalUrl('/offers') },
   };
 }
 

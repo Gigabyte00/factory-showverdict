@@ -162,17 +162,22 @@ export function QuizWizard({ template, questions, results, siteId }: QuizWizardP
     try {
       // Update response with email if provided
       if (email && responseId) {
-        // Add to newsletter
-        const { data: subscriber } = await supabase
-          .from('newsletter_subscribers')
-          .upsert({
-            site_id: siteId,
+        // Route through /api/newsletter so a real welcome email is sent and
+        // the subscriber is enrolled in the drip sequence (the previous
+        // direct upsert stored the email but sent nothing).
+        await fetch('/api/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             email,
-            source: 'quiz',
-            metadata: { quiz_slug: template.slug, result: matchedResult?.result_key },
-          })
-          .select()
-          .single();
+            site_id: siteId,
+            source: `quiz_${template.slug}`,
+            metadata: {
+              quiz_slug: template.slug,
+              result: matchedResult?.result_key || '',
+            },
+          }),
+        }).catch(() => {});
 
         // Update quiz response
         await supabase

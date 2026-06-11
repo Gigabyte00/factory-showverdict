@@ -112,7 +112,7 @@ export function OfferFilters({ availableAwards = [], className }: OfferFiltersPr
               className={cn(
                 'w-full text-left text-sm px-3 py-2 rounded-lg transition',
                 sort === opt.value
-                  ? 'bg-primary/10 text-primary font-medium'
+                  ? 'bg-[rgba(107,31,42,0.08)] text-[var(--sv-burgundy,#6B1F2A)] font-medium'
                   : 'hover:bg-muted text-muted-foreground hover:text-foreground'
               )}
             >
@@ -136,7 +136,7 @@ export function OfferFilters({ availableAwards = [], className }: OfferFiltersPr
               className={cn(
                 'w-full flex items-center gap-2 text-left text-sm px-3 py-2 rounded-lg transition',
                 minRating === r
-                  ? 'bg-primary/10 text-primary font-medium'
+                  ? 'bg-[rgba(107,31,42,0.08)] text-[var(--sv-burgundy,#6B1F2A)] font-medium'
                   : 'hover:bg-muted text-muted-foreground hover:text-foreground'
               )}
             >
@@ -162,7 +162,7 @@ export function OfferFilters({ availableAwards = [], className }: OfferFiltersPr
                 className={cn(
                   'text-xs px-2.5 py-1 rounded-full border transition',
                   award === a
-                    ? 'border-primary bg-primary/10 text-primary font-medium'
+                    ? 'border-[var(--sv-burgundy,#6B1F2A)] bg-[rgba(107,31,42,0.08)] text-[var(--sv-burgundy,#6B1F2A)] font-medium'
                     : 'border-border text-muted-foreground hover:border-primary hover:text-foreground'
                 )}
               >

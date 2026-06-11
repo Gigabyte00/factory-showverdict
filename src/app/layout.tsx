@@ -15,9 +15,9 @@ import './globals.css';
 import { getSiteConfig, getSiteThemeVars } from '@/lib/site-config';
 import { Header, Footer } from '@/components/layout';
 import { ThemeProvider } from '@/components/providers';
+import { ScrollReveal } from '@/components/providers/ScrollReveal';
 import { ExitIntentPopup } from '@/components/ExitIntentPopup';
 import { BackToTop } from '@/components/ui/back-to-top';
-import { NewsletterSignup } from '@/components/home/NewsletterSignup';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 // Next.js requires each font loader to be a separate const at module scope
@@ -154,12 +154,12 @@ export default function RootLayout({
             <main id="main-content" className="flex-1">{children}</main>
             <Footer />
           </div>
-          {/* Sticky newsletter bar — slides up after 60% scroll */}
-          <NewsletterSignup siteId={site.id} niche={site.niche} variant="sticky" />
           {/* Exit intent popup — 30s minimum, 48h cookie suppression */}
           <ExitIntentPopup niche={site.niche} siteId={site.id} />
           {/* Back to top — appears after 400px scroll */}
           <BackToTop />
+          {/* Scroll-reveal animations — progressive enhancement, see globals.css */}
+          <ScrollReveal />
         </ThemeProvider>
         <SpeedInsights />
       </body>

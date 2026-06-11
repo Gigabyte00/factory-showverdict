@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/rate-limit';
 import { createServerClient } from '@/lib/supabase';
 import { getSiteConfig } from '@/lib/site-config';
-import { sendNewsletterWelcome } from '@/lib/email';
+import { sendNewsletterWelcome, sendLeadMagnetEmail } from '@/lib/email';
+import { getLeadMagnet } from '@/lib/lead-magnets';
 import { z } from 'zod';
 
 const subscribeSchema = z.object({
@@ -57,6 +58,15 @@ export async function POST(request: Request) {
         { success: false, error: 'Failed to subscribe' },
         { status: 500 }
       );
+    }
+
+    // Lead magnet signups also get a "Your download" delivery email —
+    // sent even for existing subscribers (they asked for the download)
+    const source = data.source || '';
+    if (source.startsWith('lead_magnet_') || source.startsWith('inline_magnet_')) {
+      const magnetSlug = process.env.LEAD_MAGNET_SLUG?.trim();
+      const magnet = magnetSlug ? getLeadMagnet(magnetSlug) : null;
+      if (magnet) sendLeadMagnetEmail(data.email, magnet);
     }
 
     // Only send welcome email for genuinely new subscribers

@@ -46,7 +46,7 @@ const StarRating = React.forwardRef<HTMLDivElement, StarRatingProps>(
           {Array.from({ length: adjustedFullStars }).map((_, i) => (
             <Star
               key={`full-${i}`}
-              className={cn(sizeClasses[size], "fill-primary text-primary")}
+              className={cn(sizeClasses[size], "fill-[var(--sv-brass,#B8893B)] text-[var(--sv-brass,#B8893B)]")}
             />
           ))}
 
@@ -58,7 +58,7 @@ const StarRating = React.forwardRef<HTMLDivElement, StarRatingProps>(
               />
               <div className="absolute inset-0 overflow-hidden w-1/2">
                 <Star
-                  className={cn(sizeClasses[size], "fill-primary text-primary")}
+                  className={cn(sizeClasses[size], "fill-[var(--sv-brass,#B8893B)] text-[var(--sv-brass,#B8893B)]")}
                 />
               </div>
             </div>

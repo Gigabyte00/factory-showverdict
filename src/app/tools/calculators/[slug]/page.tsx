@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import JsonLd from '@/components/JsonLd';
+import { canonicalUrl } from '@/lib/seo';
 
 export const revalidate = 3600;
 
@@ -36,6 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    alternates: { canonical: canonicalUrl(`/tools/calculators/${slug}`) },
     openGraph: {
       title,
       description,

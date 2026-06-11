@@ -2,15 +2,27 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
+import { canonicalUrl } from '@/lib/seo';
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
+  const supabase = createServerClient();
+
+  // When a site has no published budget guides this page is an empty stub —
+  // keep it out of the index (it's also excluded from sitemap.ts in that case)
+  const { count } = await supabase
+    .from('price_tiers')
+    .select('id', { count: 'exact', head: true })
+    .eq('site_id', site.id)
+    .eq('status', 'published');
 
   return {
     title: `Best Picks by Budget`,
     description: `Find quality products at every price point. Budget-friendly recommendations without sacrificing quality.`,
+    alternates: { canonical: canonicalUrl('/best') },
+    ...(count ? {} : { robots: { index: false, follow: true } }),
   };
 }
 

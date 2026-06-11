@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { StarRating } from '@/components/ui/star-rating';
 import { OfferLink } from '@/components/offers/offer-link';
+import { isRenderableImageSrc } from '@/lib/utils';
 import type { Offer, Category } from '@/types';
 
 const MAX_COMPARE = 4;
@@ -173,11 +174,16 @@ interface CompareCardProps {
 
 function CompareCard({ offer, categoryMap, siteId, checked, onToggle, disabled }: CompareCardProps) {
   const category = offer.category_id ? categoryMap[offer.category_id] : null;
+  const imageSrc = isRenderableImageSrc(offer.featured_image_url)
+    ? offer.featured_image_url
+    : isRenderableImageSrc(offer.logo_url)
+      ? offer.logo_url
+      : null;
 
   return (
     <Card
       className={`relative overflow-hidden border transition-shadow ${
-        checked ? 'ring-2 ring-primary shadow-md' : ''
+        checked ? 'ring-2 ring-[var(--sv-brass,#B8893B)] shadow-md' : ''
       }`}
     >
       {/* Compare toggle */}
@@ -195,15 +201,22 @@ function CompareCard({ offer, categoryMap, siteId, checked, onToggle, disabled }
         </span>
       </label>
 
-      {offer.featured_image_url && (
-        <div className="relative h-44 overflow-hidden">
+      {imageSrc ? (
+        <div className="relative h-44 overflow-hidden bg-muted">
           <Image
-            src={offer.featured_image_url}
+            src={imageSrc}
             alt={offer.name}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
             className="object-cover transition-transform duration-500 hover:scale-105"
           />
+        </div>
+      ) : (
+        /* Styled placeholder only when the offer truly has no image */
+        <div className="flex h-44 items-center justify-center bg-muted" aria-hidden="true">
+          <span className="text-4xl font-bold text-muted-foreground/40">
+            {offer.name.charAt(0)}
+          </span>
         </div>
       )}
 
@@ -245,7 +258,11 @@ function CompareCard({ offer, categoryMap, siteId, checked, onToggle, disabled }
         ) : null}
 
         <div className="mt-4 flex flex-col gap-2">
-          <Button asChild size="sm" className="w-full">
+          <Button
+            asChild
+            size="sm"
+            className="w-full bg-[var(--sv-burgundy,#6B1F2A)] text-[var(--sv-cream,#F5EFE4)] hover:bg-[var(--sv-ink,#14110F)] border border-[var(--sv-brass,#B8893B)]"
+          >
             <OfferLink
               offerId={offer.id}
               siteId={siteId}

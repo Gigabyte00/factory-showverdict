@@ -12,7 +12,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BookmarkButton } from '@/components/ui/bookmark-button';
 import { OfferRating } from '@/components/offers/OfferRating';
 import { PriceHistory } from '@/components/offers/PriceHistory';
-import { cn } from '@/lib/utils';
+import { canonicalUrl } from '@/lib/seo';
+import { cn, isRenderableImageSrc } from '@/lib/utils';
 
 export const revalidate = 3600;
 
@@ -39,6 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description: offer.description?.slice(0, 160) || `Read our in-depth review of ${offer.name}.`,
+    alternates: { canonical: canonicalUrl(`/offers/${slug}`) },
     openGraph: {
       title,
       images: (offer.featured_image_url || offer.logo_url) ? [(offer.featured_image_url || offer.logo_url)!] : undefined,
@@ -127,7 +129,12 @@ export default async function OfferDetailPage({ params }: PageProps) {
   const hasProsCons = pros.length > 0 || cons.length > 0;
   const featureMatrix = (offer as any).feature_matrix as Record<string, number> | null;
   const hasMatrix = featureMatrix && Object.keys(featureMatrix).length > 0;
-  const heroImage = offer.featured_image_url ?? offer.logo_url;
+  // Guard against empty-string image values (`??` lets '' through → <img> with no src)
+  const heroImage = isRenderableImageSrc(offer.featured_image_url)
+    ? offer.featured_image_url
+    : isRenderableImageSrc(offer.logo_url)
+      ? offer.logo_url
+      : null;
   const nameInitial = offer.name?.charAt(0).toUpperCase() || '?';
 
   const productSchema: Record<string, unknown> = {
@@ -419,9 +426,11 @@ export default async function OfferDetailPage({ params }: PageProps) {
               {relatedOffers.map((alt) => (
                 <Card key={alt.id} className="hover:shadow-md transition">
                   <CardContent className="p-4">
-                    {(alt.featured_image_url ?? alt.logo_url) ? (
+                    {/* isRenderableImageSrc guards empty strings — `??` let
+                        '' through, producing <img> tags with no src */}
+                    {(isRenderableImageSrc(alt.featured_image_url) || isRenderableImageSrc(alt.logo_url)) ? (
                       <Image
-                        src={(alt.featured_image_url ?? alt.logo_url)!}
+                        src={(isRenderableImageSrc(alt.featured_image_url) ? alt.featured_image_url : alt.logo_url)!}
                         alt={alt.name}
                         width={60}
                         height={60}

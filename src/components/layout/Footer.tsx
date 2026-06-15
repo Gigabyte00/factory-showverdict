@@ -85,7 +85,7 @@ export default function Footer() {
             <FooterLink href="/faq">FAQ</FooterLink>
             <FooterLink href="/glossary">Glossary</FooterLink>
             <FooterLink href="/authors">Authors</FooterLink>
-            <FooterLink href="/editorial-standards">
+            <FooterLink href="/about">
               Editorial standards
             </FooterLink>
           </FooterColumn>
@@ -96,7 +96,7 @@ export default function Footer() {
             <FooterLink href="/contact">Contact</FooterLink>
             <FooterLink href="/privacy">Privacy</FooterLink>
             <FooterLink href="/terms">Terms</FooterLink>
-            <FooterLink href="/affiliate-disclosure">
+            <FooterLink href="/about">
               Affiliate disclosure
             </FooterLink>
           </FooterColumn>
@@ -198,9 +198,9 @@ export default function Footer() {
             <LegalSep />
             <LegalLink href="/terms">Terms</LegalLink>
             <LegalSep />
-            <LegalLink href="/affiliate-disclosure">Disclosure</LegalLink>
+            <LegalLink href="/about">Disclosure</LegalLink>
             <LegalSep />
-            <LegalLink href="/sitemap">Sitemap</LegalLink>
+            <LegalLink href="/sitemap.xml">Sitemap</LegalLink>
           </nav>
         </div>
       </div>

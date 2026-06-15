@@ -71,6 +71,29 @@ export async function GET(
     }
 
     if (error || !offer) {
+      // Salvage dead-slug clicks (404s) the same way we salvage inactive offers:
+      // redirect to a TAGGED Amazon search so the click still monetizes via the one
+      // channel that's wired up. No offer row exists here, so there is nothing to
+      // attribute — we omit the offer_clicks insert and use the SITE's Amazon tag.
+      // Self-gates to the original 404 when the site has no Amazon presence.
+      const amazonTag = await getSiteAmazonTag(site.id);
+      if (amazonTag) {
+        const searchTerm = slug
+          .replace(/-[a-z0-9]{6}$/i, '')
+          .replace(/-/g, ' ')
+          .split(/\s+/)
+          .slice(0, 6)
+          .join(' ')
+          .trim();
+        if (searchTerm) {
+          const searchUrl = `https://www.amazon.com/s?k=${encodeURIComponent(searchTerm)}&tag=${amazonTag}`;
+          const fb = NextResponse.redirect(searchUrl, 302);
+          fb.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+          fb.headers.set('X-Robots-Tag', 'noindex, nofollow');
+          fb.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
+          return fb;
+        }
+      }
       return new Response(
         `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Link Not Found</title>
 <style>body{font-family:system-ui,-apple-system,sans-serif;max-width:600px;margin:100px auto;padding:20px;text-align:center}h1{color:#ef4444}p{color:#6b7280}a{color:#3b82f6;text-decoration:none}a:hover{text-decoration:underline}</style>

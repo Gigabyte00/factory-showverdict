@@ -51,7 +51,9 @@ export interface FeaturedOffersProps {
 /*  Star rating                                                        */
 /* ------------------------------------------------------------------ */
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({ rating }: { rating: number | null | undefined }) {
+  // Offers (e.g. streaming titles) may have no rating — render nothing rather than crash.
+  if (rating == null || !Number.isFinite(rating)) return null;
   // Round to nearest half for visual rendering
   const rounded = Math.round(rating * 2) / 2;
   const stars = [1, 2, 3, 4, 5].map((i) => {

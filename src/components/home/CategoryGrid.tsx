@@ -32,7 +32,8 @@ type CategoryGridProps = {
   subhead?: string;
 };
 
-const formatCount = (n: number): string => {
+const formatCount = (n: number | null | undefined): string => {
+  if (n == null || !Number.isFinite(n)) return '0';
   if (n >= 1000) {
     const k = n / 1000;
     // 1.2K, 12K — drop trailing .0

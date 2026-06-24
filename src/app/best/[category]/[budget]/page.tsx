@@ -309,20 +309,8 @@ export default async function PriceTierPage({ params }: Props) {
                         )}
                       </div>
 
-                      {/* Price & CTA */}
-                      <div className="flex items-center justify-between">
-                        <div>
-                          {offer.current_price && (
-                            <span className="text-2xl font-bold text-primary">
-                              ${(offer.current_price / 100).toFixed(0)}
-                            </span>
-                          )}
-                          {offer.original_price && offer.original_price > offer.current_price && (
-                            <span className="ml-2 text-muted-foreground line-through">
-                              ${(offer.original_price / 100).toFixed(0)}
-                            </span>
-                          )}
-                        </div>
+                      {/* CTA */}
+                      <div className="flex items-center justify-end">
                         {offer.affiliate_url && offer.slug && (
                           <a
                             href={`/go/${offer.slug}`}

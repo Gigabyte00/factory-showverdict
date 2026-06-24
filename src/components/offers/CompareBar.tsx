@@ -233,13 +233,7 @@ function CompareCard({ offer, categoryMap, siteId, checked, onToggle, disabled }
         </div>
 
         <div className="mb-2">
-          {(offer as any).price_usd ? (
-            <span className="text-lg font-bold text-foreground">
-              ${(offer as any).price_usd}
-            </span>
-          ) : (
-            <span className="text-sm text-muted-foreground italic">Check current price</span>
-          )}
+          <span className="text-sm text-muted-foreground italic">Check current price</span>
         </div>
 
         {offer.short_description && (

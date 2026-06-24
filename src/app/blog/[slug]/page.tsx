@@ -179,10 +179,8 @@ export default async function BlogPostPage({ params }: PageProps) {
       .single();
 
     if (offer) {
-      const rawPrice = (offer as any).current_price ?? (offer as any).price_usd ?? '';
-      const priceStr = rawPrice
-        ? (typeof rawPrice === 'number' ? `$${rawPrice}` : String(rawPrice))
-        : '';
+      // Live prices dropped (one-time API snapshot, no refresh) — omit from review schema/UI.
+      const priceStr = '';
       (post as any).metadata = {
         ...((post.metadata as any) || {}),
         isReview: true,

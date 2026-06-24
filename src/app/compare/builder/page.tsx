@@ -39,9 +39,8 @@ export default async function ComparisonBuilderPage() {
     description: (o.description as string | null) ?? null,
     image: (o.featured_image_url || o.logo_url) as string | null,
     rating: o.rating as number | null,
-    // offers.price_usd is numeric in the DB; format to a display string here
-    // so downstream components (SideBySide) get the expected string type.
-    price: o.price_usd != null ? `$${o.price_usd}` : null,
+    // Live prices dropped — price_usd is a stale 06-24 API snapshot (no refresh).
+    price: null,
     affiliateUrl: o.affiliate_url as string | null,
     award: o.award as string | null,
     pros: (o.pros as string[] | null) ?? [],

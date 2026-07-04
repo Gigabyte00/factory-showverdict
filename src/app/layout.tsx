@@ -79,10 +79,6 @@ export function generateMetadata(): Metadata {
       title: site.name,
       description,
     },
-    // TEMPORARY: FlexOffers site verification. Remove after verified.
-    other: {
-      'fo-verify': '7b4306a0-daae-4473-a8cf-365c4c6fa7d4',
-    },
   };
 }
 

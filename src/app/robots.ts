@@ -2,128 +2,82 @@ import { MetadataRoute } from 'next';
 import { getSiteConfig } from '@/lib/site-config';
 
 /**
- * Dynamic Robots.txt Generation
+ * Dynamic robots.txt — optimized for traditional SEO + AI search citation (GEO).
  *
- * Optimized for both traditional SEO and AI Search (Answer Engine Optimization):
- * - Allow all crawlers to access content
- * - Explicitly welcome AI crawlers for citation opportunities
- * - Block only non-indexable routes
- * - Reference sitemap and llms.txt for AI discovery
+ * Policy (2026-07, evidence-based — see factory-seo-loop/data/geo-research-2026-07-04.md):
+ * - ALLOW every search-index + live-fetch AI agent: these power citations in
+ *   ChatGPT search, Claude, Perplexity, Copilot, Gemini. Blocking them removes us
+ *   from AI answers; blocking training bots does NOT (BuzzStream 2026) — and fleet
+ *   law forwards all traffic anyway, so everything stays allowed.
+ * - UA tokens current as of 2026-07: OAI-SearchBot/ChatGPT-User (OpenAI),
+ *   ClaudeBot/Claude-SearchBot/Claude-User (Anthropic — legacy "Claude-Web" retired),
+ *   PerplexityBot/Perplexity-User, Google-Extended (Gemini grounding token),
+ *   DuckAssistBot, MistralAI-User, Amzn-SearchBot, meta-externalfetcher.
+ * - /go/ stays disallowed for index crawlers (redirect endpoints, no content);
+ *   user-triggered fetchers ignore robots for user actions by design — that's fine.
  */
 export default function robots(): MetadataRoute.Robots {
   const site = getSiteConfig();
 
-  // Base URL from site config or fallback
   const baseUrl = site.domain
     ? `https://${site.domain}`
     : `https://${site.slug}.vercel.app`;
 
-  // Routes that should not be indexed
   const disallowedPaths = [
-    '/api/',        // API routes
-    '/search',      // Search results pages
-    '/_next/',      // Next.js internal routes
-    '/go/',         // Affiliate redirect pages
+    '/api/',   // API routes
+    '/search', // Search results pages
+    '/_next/', // Next.js internals
+    '/go/',    // Affiliate redirect endpoints
+  ];
+
+  const contentAllow = ['/', '/blog/', '/offers/', '/compare/', '/tools/', '/best/', '/faq/', '/glossary/'];
+
+  // Citation-critical: search-index + live-fetch agents (answer engines).
+  const aiSearchAgents = [
+    'OAI-SearchBot',       // OpenAI — ChatGPT search index (critical)
+    'ChatGPT-User',        // OpenAI — live user-triggered fetch
+    'ClaudeBot',           // Anthropic — crawler (replaces legacy Claude-Web)
+    'Claude-SearchBot',    // Anthropic — search index
+    'Claude-User',         // Anthropic — live user-triggered fetch
+    'PerplexityBot',       // Perplexity — search index
+    'Perplexity-User',     // Perplexity — live user-triggered fetch
+    'Google-Extended',     // Google — Gemini grounding + training token
+    'DuckAssistBot',       // DuckDuckGo AI
+    'MistralAI-User',      // Mistral live fetch
+    'Amzn-SearchBot',      // Amazon search/assistant
+    'meta-externalfetcher',// Meta live fetch
+    'Applebot',            // Apple — Siri/Spotlight index
+  ];
+
+  // Training/dataset crawlers — allowed (fleet keep-bots policy; no citation impact either way).
+  const aiTrainingAgents = [
+    'GPTBot',
+    'CCBot',
+    'Amazonbot',
+    'Applebot-Extended',
+    'Meta-ExternalAgent',
+    'cohere-ai',
   ];
 
   return {
     rules: [
-      // ================================================================
-      // AI Crawlers - Explicitly ALLOW for Answer Engine Optimization
-      // These bots power AI assistants and search features
-      // ================================================================
-      {
-        userAgent: 'GPTBot',           // OpenAI ChatGPT
-        allow: [
-          '/',
-          '/blog/',
-          '/offers/',
-          '/compare/',
-          '/tools/',
-          '/llms.txt',
-        ],
+      ...aiSearchAgents.map((userAgent) => ({
+        userAgent,
+        allow: contentAllow,
         disallow: disallowedPaths,
-      },
-      {
-        userAgent: 'Claude-Web',       // Anthropic Claude
-        allow: [
-          '/',
-          '/blog/',
-          '/offers/',
-          '/compare/',
-          '/tools/',
-          '/llms.txt',
-        ],
-        disallow: disallowedPaths,
-      },
-      {
-        userAgent: 'Google-Extended',  // Google AI (Gemini/Bard)
-        allow: [
-          '/',
-          '/blog/',
-          '/offers/',
-          '/compare/',
-          '/tools/',
-          '/llms.txt',
-        ],
-        disallow: disallowedPaths,
-      },
-      {
-        userAgent: 'PerplexityBot',    // Perplexity AI
-        allow: [
-          '/',
-          '/blog/',
-          '/offers/',
-          '/compare/',
-          '/tools/',
-          '/llms.txt',
-        ],
-        disallow: disallowedPaths,
-      },
-      {
-        userAgent: 'Amazonbot',        // Amazon Alexa
+      })),
+      ...aiTrainingAgents.map((userAgent) => ({
+        userAgent,
         allow: '/',
         disallow: disallowedPaths,
-      },
-      {
-        userAgent: 'Applebot-Extended', // Apple AI features
-        allow: '/',
-        disallow: disallowedPaths,
-      },
-      {
-        userAgent: 'cohere-ai',        // Cohere AI
-        allow: '/',
-        disallow: disallowedPaths,
-      },
-      {
-        userAgent: 'Meta-ExternalAgent', // Meta AI
-        allow: '/',
-        disallow: disallowedPaths,
-      },
-      // ================================================================
-      // Traditional Search Engines
-      // ================================================================
-      {
-        userAgent: 'Googlebot',
-        allow: '/',
-        disallow: disallowedPaths,
-      },
-      {
-        userAgent: 'Bingbot',
-        allow: '/',
-        disallow: disallowedPaths,
-      },
-      // ================================================================
-      // Default rule for all other crawlers
-      // ================================================================
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: disallowedPaths,
-      },
+      })),
+      // Traditional search engines (feed Copilot + AI Overviews — never restrict)
+      { userAgent: 'Googlebot', allow: '/', disallow: disallowedPaths },
+      { userAgent: 'Bingbot', allow: '/', disallow: disallowedPaths },
+      // Default
+      { userAgent: '*', allow: '/', disallow: disallowedPaths },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
-    // Host directive helps AI crawlers identify canonical domain
     host: baseUrl,
   };
 }

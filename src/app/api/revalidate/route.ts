@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
+import { pingIndexNow } from '@/lib/indexnow';
 
 function requireRevalidationSecret() {
   const expectedSecret = process.env.REVALIDATION_SECRET;
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     if (path) {
       revalidatePath(path);
+      await pingIndexNow([path]); // GEO: IndexNow ping (fire-and-forget safe)
       return NextResponse.json({
         revalidated: true,
         type: 'path',

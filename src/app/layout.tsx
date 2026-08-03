@@ -61,6 +61,7 @@ export function generateMetadata(): Metadata {
   const siteUrl = site.domain ? `https://${site.domain}` : undefined;
 
   return {
+    other: { verification: '0b7c65375e530873256d4824d71cea75' },
     title: {
       default: defaultTitle,
       template: `%s | ${site.name}`,

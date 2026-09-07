@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,100 @@ import type { CalculatorTemplate, CalculatorInputField } from '@/types';
 interface CalculatorProps {
   template: CalculatorTemplate;
   siteId: string;
+}
+
+// EVAL_SIMPLE_STEPS v4 — safe evaluator for calculation_formula = {type:'simple', steps:[{name, formula}]}
+// Grammar: numbers, identifiers (inputs + earlier steps), + - * / ( ), unary minus, max/min/round/ceil/floor/abs.
+// No eval/Function. Unknown identifiers resolve to 0; division by zero yields 0.
+// A step is either an arithmetic expression or a lookup:
+//   { name, formula }                      -> evaluated with the grammar below
+//   { name, map: { on, cases, default } }  -> `on` is an input name (or a list of them, joined with
+//                                             "|") whose STRING value selects a case. Lets a select
+//                                             field drive text output — an ingredient-compatibility
+//                                             verdict, a tempering temperature — without bespoke
+//                                             TypeScript per calculator.
+function evaluateSimpleSteps(
+  steps: Array<{ name: string; formula?: string; map?: { on: string | string[]; cases: Record<string, number | string>; default?: number | string } }>,
+  inputs: Record<string, number | string>
+): Record<string, number | string> {
+  const scope: Record<string, number | string> = { ...inputs };
+  const results: Record<string, number | string> = {};
+  const FUNCS: Record<string, (...a: number[]) => number> = {
+    max: (...a) => Math.max(...a), min: (...a) => Math.min(...a), round: (a) => Math.round(a),
+    ceil: (a) => Math.ceil(a), floor: (a) => Math.floor(a), abs: (a) => Math.abs(a),
+    pow: (a, b) => Math.pow(a, b), sqrt: (a) => Math.sqrt(Math.max(0, a)), exp: (a) => Math.exp(a),
+    ln: (a) => (a > 0 ? Math.log(a) : 0),
+  };
+  let unsupported = false;   // set when a formula uses a function this build cannot evaluate
+  const evalExpr = (src: string): number => {
+    const tokens = src.match(/\d+(?:\.\d+)?|[A-Za-z_][A-Za-z0-9_]*|[-+*/(),]/g) || [];
+    let i = 0;
+    const peek = () => tokens[i];
+    const next = () => tokens[i++];
+    const primary = (): number => {
+      const t = next();
+      if (t === undefined) return 0;
+      if (t === '(') { const v = expr(); if (peek() === ')') next(); return v; }
+      if (t === '-') return -primary();
+      if (t === '+') return primary();
+      if (/^\d/.test(t)) return parseFloat(t);
+      if (/^[A-Za-z_]/.test(t)) {
+        if (peek() === '(') {
+          // ALWAYS consume the argument list, even for an unknown name. The first version bailed
+          // out without consuming, so `1 + pow(2,3) + 5` evaluated to 1 — a confident wrong number
+          // rather than a visible failure. On the betting page that rendered "Risk of Ruin 0%".
+          next(); const args: number[] = [];
+          if (peek() !== ')') { args.push(expr()); while (peek() === ',') { next(); args.push(expr()); } }
+          if (peek() === ')') next();
+          if (!FUNCS[t]) { unsupported = true; return NaN; }
+          return FUNCS[t](...args);
+        }
+        // A non-numeric string in scope (a lookup verdict) coerces to 0 in arithmetic.
+        const v = scope[t]; const n = typeof v === 'number' ? v : parseFloat(String(v ?? '')); return isFinite(n) ? n : 0;
+      }
+      return 0;
+    };
+    const term = (): number => {
+      let v = primary();
+      while (peek() === '*' || peek() === '/') {
+        const op = next(); const r = primary();
+        v = op === '*' ? v * r : (r === 0 ? 0 : v / r);
+      }
+      return v;
+    };
+    const expr = (): number => {
+      let v = term();
+      while (peek() === '+' || peek() === '-') { const op = next(); const r = term(); v = op === '+' ? v + r : v - r; }
+      return v;
+    };
+    const out = expr();
+    // NaN propagates out of an unsupported call so a caller can suppress the line rather than
+    // rendering a fabricated 0. Division by zero still yields 0 (documented, money-safe here).
+    if (unsupported) return NaN;
+    return isFinite(out) ? out : 0;
+  };
+  for (const step of steps) {
+    if (!step || !step.name) continue;
+    if (step.map && step.map.cases) {
+      const on = Array.isArray(step.map.on) ? step.map.on : [step.map.on];
+      const key = on.map((k) => String(scope[k] ?? '')).join('|');
+      const hit = Object.prototype.hasOwnProperty.call(step.map.cases, key)
+        ? step.map.cases[key]
+        : (step.map.default ?? '');
+      scope[step.name] = hit; results[step.name] = hit;
+      continue;
+    }
+    if (typeof step.formula !== 'string') continue;
+    const v = evalExpr(step.formula);
+    scope[step.name] = v; results[step.name] = v;
+  }
+  return results;
+}
+
+// RENDER_INLINE — minimal inline markdown for result templates (**bold**, leading "- " bullets)
+function renderInline(line: string): ReactNode[] {
+  const text = line.replace(/^\s*-\s+/, '\u2022 ');
+  return text.split(/\*\*(.+?)\*\*/g).map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part));
 }
 
 /**
@@ -452,8 +546,9 @@ function safeCalculate(
 }
 
 export function Calculator({ template, siteId }: CalculatorProps) {
-  const [inputs, setInputs] = useState<Record<string, number>>({});
-  const [results, setResults] = useState<Record<string, number> | null>(null);
+  // STRING_RESULTS: a select's value may be a word, not a number.
+  const [inputs, setInputs] = useState<Record<string, number | string>>({});
+  const [results, setResults] = useState<Record<string, number | string> | null>(null);
   const [loading, setLoading] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [email, setEmail] = useState('');
@@ -466,7 +561,7 @@ export function Calculator({ template, siteId }: CalculatorProps) {
 
   // Initialize inputs with default values
   useEffect(() => {
-    const defaults: Record<string, number> = {};
+    const defaults: Record<string, number | string> = {};
     template.input_fields.forEach((field: CalculatorInputField) => {
       defaults[field.name] = field.default_value;
     });
@@ -476,7 +571,8 @@ export function Calculator({ template, siteId }: CalculatorProps) {
   const handleInputChange = (fieldName: string, value: string) => {
     setInputs((prev) => ({
       ...prev,
-      [fieldName]: parseFloat(value) || 0,
+      // Numeric strings still become numbers; a word stays a word so a lookup can key on it.
+      [fieldName]: value === '' ? 0 : (isFinite(Number(value)) ? Number(value) : value),
     }));
   };
 
@@ -485,7 +581,10 @@ export function Calculator({ template, siteId }: CalculatorProps) {
 
     try {
       // Use safe calculation based on calculator_type
-      const calculatedResults = safeCalculate(template.calculator_type, inputs);
+      const simpleFormula = (template as any).calculation_formula as { type?: string; steps?: Array<any> } | null;
+      const calculatedResults: Record<string, any> = simpleFormula && simpleFormula.type === 'simple' && Array.isArray(simpleFormula.steps)
+        ? { ...inputs, ...evaluateSimpleSteps(simpleFormula.steps, inputs) }
+        : safeCalculate(template.calculator_type, inputs as Record<string, number>);
       setResults(calculatedResults);
 
       // Track usage
@@ -520,7 +619,7 @@ export function Calculator({ template, siteId }: CalculatorProps) {
       // + drip enrollment). The previous direct upsert sent nothing despite
       // the "report sent" claim.
       const resultsSummary = Object.entries(results)
-        .map(([key, value]) => `${key}: ${formatNumber(value)}`)
+        .map(([key, value]) => `${key}: ${typeof value === 'string' ? value : formatNumber(value)}`)
         .join(', ');
 
       const response = await fetch('/api/newsletter', {
@@ -546,10 +645,11 @@ export function Calculator({ template, siteId }: CalculatorProps) {
   };
 
   const formatNumber = (num: number): string => {
-    if (Math.abs(num) >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (Math.abs(num) >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    if (Number.isInteger(num)) return String(num);
-    return num.toFixed(2);
+    // FORMAT_MONEY: these are money and counts, not dashboard stats — "$75.5K" where the
+    // template said "$${total_cost}" drops precision the reader is entitled to.
+    if (!isFinite(num)) return '—';
+    if (Number.isInteger(num)) return num.toLocaleString('en-US');
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const renderResults = () => {
@@ -559,13 +659,17 @@ export function Calculator({ template, siteId }: CalculatorProps) {
     let formattedText = template.result_template || '';
 
     Object.entries(results).forEach(([key, value]) => {
-      const formatted = formatNumber(value);
-      formattedText = formattedText.replace(new RegExp(`{{${key}}}`, 'g'), formatted);
+      const formatted = typeof value === 'string' ? value : formatNumber(value);
+      const rk = key.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
+      formattedText = formattedText.replace(new RegExp(`{{${rk}}}`, 'g'), () => formatted); // REPLACE_FN
+      formattedText = formattedText.replace(new RegExp(`\\$\\{${rk}\\}`, 'g'), () => formatted);
     });
 
     // Also replace inputs in template
     Object.entries(inputs).forEach(([key, value]) => {
-      formattedText = formattedText.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
+      const rk = key.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
+      formattedText = formattedText.replace(new RegExp(`{{${rk}}}`, 'g'), () => String(value));
+      formattedText = formattedText.replace(new RegExp(`\\$\\{${rk}\\}`, 'g'), () => String(value));
     });
 
     return (
@@ -575,7 +679,7 @@ export function Calculator({ template, siteId }: CalculatorProps) {
         </h3>
         <div className="prose prose-sm dark:prose-invert max-w-none">
           {formattedText.split('\n').map((line, index) => (
-            <p key={index} className="mb-2">{line}</p>
+            <p key={index} className="mb-2">{renderInline(line)}</p>
           ))}
         </div>
 
@@ -618,7 +722,22 @@ export function Calculator({ template, siteId }: CalculatorProps) {
                 {field.label}
                 {field.unit && <span className="text-muted-foreground ml-1">({field.unit})</span>}
               </Label>
-              {field.type === 'range' ? (
+              {/* SELECT_FIELD: without this branch a select rendered as a bare number input and its
+                  options were dropped entirely, leaving an unlabelled empty box. */}
+              {field.type === 'select' && Array.isArray((field as any).options) ? (
+                <select
+                  id={field.name}
+                  value={String(inputs[field.name] ?? field.default_value ?? '')}
+                  onChange={(e) => handleInputChange(field.name, e.target.value)}
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  {((field as any).options as Array<any>).map((opt, i) => {
+                    const value = typeof opt === 'object' && opt !== null ? String(opt.value) : String(opt);
+                    const label = typeof opt === 'object' && opt !== null ? String(opt.label ?? opt.value) : String(opt);
+                    return <option key={i} value={value}>{label}</option>;
+                  })}
+                </select>
+              ) : field.type === 'range' ? (
                 <div className="space-y-1">
                   <input
                     id={field.name}

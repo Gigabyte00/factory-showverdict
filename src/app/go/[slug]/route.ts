@@ -44,6 +44,16 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  // prefetch-guard v1 (2026-09-07): Next.js <Link> viewport prefetch and browser speculative loads hit this
+  // route with no user intent. Log nothing, hit no merchant, answer 204 so a real click re-fetches normally.
+  // Keyed ONLY on prefetch signals — never on the RSC header / _rsc param, which real navigations also carry.
+  {
+    const __h = req.headers;
+    if (__h.get('next-router-prefetch') === '1' || /prefetch/i.test(__h.get('purpose') ?? '') || /prefetch/i.test(__h.get('sec-purpose') ?? '')) {
+      return new NextResponse(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
+    }
+  }
+
   const { slug } = await params;
   const site = getSiteConfig();
 

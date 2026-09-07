@@ -134,7 +134,7 @@ export default async function QuizPage({ params }: PageProps) {
     .from('quiz_results')
     .select('*')
     .eq('template_id', quiz.id)
-    .order('priority', { ascending: false });
+    .order('priority', { ascending: true, nullsFirst: false });
 
   // Cast through unknown since DB Row types use generic Json for JSONB columns
   const typedQuiz = quiz as unknown as QuizTemplate;

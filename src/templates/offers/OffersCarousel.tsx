@@ -38,7 +38,7 @@ export default function OffersCarousel({
       default:
         if (a.is_featured && !b.is_featured) return -1;
         if (!a.is_featured && b.is_featured) return 1;
-        return (b.priority || 0) - (a.priority || 0);
+        return (a.priority ?? 999) - (b.priority ?? 999);
     }
   });
 

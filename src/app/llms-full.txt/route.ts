@@ -45,7 +45,7 @@ export async function GET() {
     .select('name, slug, short_description, rating, pros, cons')
     .eq('site_id', site.id)
     .eq('is_active', true)
-    .order('priority', { ascending: false })
+    .order('priority', { ascending: true, nullsFirst: false })
     .limit(30);
 
   // Build categories section

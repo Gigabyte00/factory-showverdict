@@ -53,9 +53,9 @@ export default async function OffersPage({ searchParams }: PageProps) {
   } else if (sort === 'price_desc') {
     offersQuery = offersQuery.order('price_usd', { ascending: false, nullsFirst: false });
   } else if (sort === 'most_clicked') {
-    offersQuery = offersQuery.order('priority', { ascending: false });
+    offersQuery = offersQuery.order('priority', { ascending: true, nullsFirst: false });
   } else {
-    offersQuery = offersQuery.order('priority', { ascending: false }).order('name');
+    offersQuery = offersQuery.order('priority', { ascending: true, nullsFirst: false }).order('name');
   }
 
   const [offersResult, categoriesResult, awardsResult] = await Promise.all([

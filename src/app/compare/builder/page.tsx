@@ -29,7 +29,7 @@ export default async function ComparisonBuilderPage() {
     )
     .eq('site_id', site.id)
     .eq('is_active', true)
-    .order('priority', { ascending: false })
+    .order('priority', { ascending: true, nullsFirst: false })
     .limit(50);
 
   const offers = (offersRaw || []).map((o: any) => ({

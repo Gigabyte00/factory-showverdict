@@ -45,7 +45,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     .eq('site_id', site.id)
     .eq('category_id', category.id)
     .eq('is_active', true)
-    .order('priority', { ascending: false });
+    .order('priority', { ascending: true, nullsFirst: false });
 
   // Determine template variant
   // Priority: 1. Site settings, 2. Auto-detect based on content type, 3. Default

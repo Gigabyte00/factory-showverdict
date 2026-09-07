@@ -110,7 +110,7 @@ export default async function OfferDetailPage({ params }: PageProps) {
     .eq('site_id', site.id)
     .eq('is_active', true)
     .neq('id', offer.id)
-    .order('priority', { ascending: false })
+    .order('priority', { ascending: true, nullsFirst: false })
     .limit(3);
 
   const { data: faqs } = await supabase

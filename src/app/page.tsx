@@ -17,6 +17,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 
+export const revalidate = 3600; // ISR: homepage reads offers from Supabase (2026-09-12)
+
 export function generateMetadata(): Metadata {
   return {
     alternates: { canonical: canonicalUrl('/') },

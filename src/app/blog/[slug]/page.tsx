@@ -11,7 +11,10 @@ import { normalizeArticleHeadings, rewriteAmazonLinksToGo } from '@/lib/article-
 /** Extract FAQ Q&A pairs from markdown content (detects ## FAQ / ## Frequently Asked Questions sections). */
 function extractFaqs(content: string): Array<{ question: string; answer: string }> {
   // Find the start of an FAQ section
-  const faqMatch = content.match(/^##\s+(frequently\s+asked\s+questions|faq|common\s+questions|faqs)/im);
+  // Match any H2 that IS an FAQ heading, not just the four canonical spellings: sites ship
+  // "Quick FAQ", "Viewer FAQ", "Pre-roll FAQ, desk edition", numbered/anchored headings.
+  // 21 published posts emitted no FAQPage purely because their heading was worded differently.
+  const faqMatch = content.match(/^##\s+(?:<a[^>]*><\/a>\s*)?(?:\d+[.)]\s*)?[^\n]*\b(faqs?|frequently\s+asked\s+questions|common\s+questions)\b[^\n]*$/im);
   if (!faqMatch || faqMatch.index === undefined) return [];
   const faqSection = content.slice(faqMatch.index);
 

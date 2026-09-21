@@ -5,6 +5,7 @@
   "description": "Factory-generated affiliate/blog site - standalone Next.js 15 template",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/build_go_map.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

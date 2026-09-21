@@ -2,12 +2,99 @@ import { createHash } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSiteConfig } from '@/lib/site-config';
+import goMapJson from '@/generated/go-map.json';
 
 // Service role client for both reads (bypasses RLS site scoping) and click logging
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+// ---- outage hardening (2026-09-16) --------------------------------------------------------------
+// An ~80-minute Supabase saturation hung every /go redirect on the fleet: this route awaited the
+// offer lookup with no timeout, so database latency became a hung redirect and every click was
+// lost. Now the lookup has a hard budget, and when the database is slow or down the route answers
+// from the build-time snapshot (scripts/build_go_map.mjs → src/generated/go-map.json).
+const LOOKUP_BUDGET_MS = 2500;
+
+interface GoMapEntry { u: string; a: boolean; n: string }
+interface GoMap { meta: { amazon_tag: string | null; empty: boolean }; offers: Record<string, GoMapEntry> }
+const GO_MAP = goMapJson as unknown as GoMap;
+
+class DbUnavailable extends Error {}
+
+/** Await a query within the remaining budget; DB error or timeout → DbUnavailable (never a hang). */
+async function withBudget(
+  q: PromiseLike<{ data: unknown; error: { message: string } | null }>,
+  deadline: number
+): Promise<unknown> {
+  const ms = deadline - Date.now();
+  if (ms <= 0) throw new DbUnavailable('budget exhausted');
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, rej) => {
+    timer = setTimeout(() => rej(new DbUnavailable('db-timeout')), ms);
+  });
+  try {
+    const res = await Promise.race([Promise.resolve(q), timeout]);
+    if (res.error) throw new DbUnavailable(res.error.message);
+    return res.data;
+  } catch (e) {
+    throw e instanceof DbUnavailable ? e : new DbUnavailable(e instanceof Error ? e.message : String(e));
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * TODO(owner): the ONE policy choice in this route. When the database is unavailable:
+ *   redirect    — the snapshot has this slug and it was active at the last build → 302 to the merchant
+ *   salvage     — unknown/inactive slug on an Amazon-tagged site → tagged Amazon search (as today)
+ *   unavailable — nothing to send the visitor to → fast 503 that retries itself; never a hang
+ * A stale snapshot can redirect to an offer deactivated since the last build (dead merchant page,
+ * but the click still reaches the network). Change the first test to `snap?.u` for always-redirect,
+ * or delete that branch for never-redirect.
+ */
+function fallbackPolicy(
+  slug: string
+): { kind: 'redirect'; url: string; name: string } | { kind: 'salvage'; tag: string; term: string } | { kind: 'unavailable' } {
+  const snap = GO_MAP.offers[slug];
+  if (snap?.a && snap.u) return { kind: 'redirect', url: snap.u, name: snap.n };
+  const tag = GO_MAP.meta.amazon_tag;
+  if (tag) {
+    const base = snap?.n ?? slug.replace(/-[a-z0-9]{6}$/i, '').replace(/-/g, ' ');
+    const term = base.split(/\s*[:\-/(,]/)[0].trim().split(/\s+/).slice(0, 6).join(' ');
+    return { kind: 'salvage', tag, term: term || slug };
+  }
+  return { kind: 'unavailable' };
+}
+
+function unavailableResponse(): Response {
+  return new Response(
+    `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="5"><title>One moment…</title>
+<style>body{font-family:system-ui,sans-serif;color:#222;max-width:560px;margin:96px auto;padding:24px;text-align:center}h1{font-size:1.4rem}</style>
+</head><body><h1>One moment — reconnecting this link</h1><p>This page retries automatically in a few seconds.</p><p><a href="/offers">See our current picks</a></p></body></html>`,
+    { status: 503, headers: { 'Content-Type': 'text/html', 'Retry-After': '5', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' } }
+  );
+}
+
+interface GoOffer { id: string; affiliate_url: string | null; site_id: string; name: string; is_active: boolean; price_usd: number | null }
+const OFFER_COLS = 'id, affiliate_url, site_id, name, is_active, price_usd';
+
+/** Site-scoped lookup by one column, inside the shared budget. 0 rows → null (not an error). */
+async function lookupOffer(col: 'slug' | 'pretty_slug', value: string, siteId: string, signal: AbortSignal, deadline: number): Promise<GoOffer | null> {
+  return ((await withBudget(
+    supabase.from('offers').select(OFFER_COLS).eq(col, value).eq('site_id', siteId).abortSignal(signal).maybeSingle(),
+    deadline
+  )) as GoOffer | null) ?? null;
+}
+
+function amazonSearchRedirect(term: string, tag: string): NextResponse {
+  const fb = NextResponse.redirect(`https://www.amazon.com/s?k=${encodeURIComponent(term)}&tag=${tag}`, 302);
+  fb.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  fb.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  fb.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
+  return fb;
+}
 
 /**
  * Derive this site's Amazon Associates tag from any active Amazon offer.
@@ -18,13 +105,24 @@ const supabase = createClient(
  * self-gate out of the fallback and keep the original behavior.
  */
 async function getSiteAmazonTag(siteId: string): Promise<string | null> {
-  const { data } = await supabase
-    .from('offers')
-    .select('affiliate_url')
-    .eq('site_id', siteId)
-    .eq('is_active', true)
-    .ilike('affiliate_url', '%amazon.%tag=%')
-    .limit(1);
+  // Snapshot first: no round-trip, and the salvage path can never hang on an outage.
+  if (GO_MAP.meta.amazon_tag) return GO_MAP.meta.amazon_tag;
+  let data: { affiliate_url: string }[] | null = null;
+  try {
+    data = (await withBudget(
+      supabase
+        .from('offers')
+        .select('affiliate_url')
+        .eq('site_id', siteId)
+        .eq('is_active', true)
+        .ilike('affiliate_url', '%amazon.%tag=%')
+        .limit(1)
+        .abortSignal(AbortSignal.timeout(LOOKUP_BUDGET_MS)),
+      Date.now() + LOOKUP_BUDGET_MS
+    )) as { affiliate_url: string }[] | null;
+  } catch {
+    return null;
+  }
   const url = data?.[0]?.affiliate_url as string | undefined;
   if (!url) return null;
   const m = /[?&]tag=([^&]+)/.exec(url);
@@ -59,28 +157,34 @@ export async function GET(
 
   try {
     // Lookup offer by slug scoped to this site (prevents multi-row error when slug exists on multiple sites)
-    let { data: offer, error } = await supabase
-      .from('offers')
-      .select('id, affiliate_url, site_id, name, is_active, price_usd')
-      .eq('slug', slug)
-      .eq('site_id', site.id)
-      .single();
-
-    if (error || !offer) {
-      const fallback = await supabase
-        .from('offers')
-        .select('id, affiliate_url, site_id, name, is_active, price_usd')
-        .eq('pretty_slug', slug)
-        .eq('site_id', site.id)
-        .single();
-
-      if (!fallback.error && fallback.data) {
-        offer = fallback.data;
-        error = null;
+    let offer: GoOffer | null = null;
+    try {
+      // One budget covers both lookups; the shared signal cancels whichever is in flight.
+      const deadline = Date.now() + LOOKUP_BUDGET_MS;
+      const signal = AbortSignal.timeout(LOOKUP_BUDGET_MS);
+      offer = await lookupOffer('slug', slug, site.id, signal, deadline);
+      if (!offer) offer = await lookupOffer('pretty_slug', slug, site.id, signal, deadline);
+    } catch (e) {
+      if (!(e instanceof DbUnavailable)) throw e;
+      // Database slow or down. Answer from the snapshot; nothing in this branch awaits the DB.
+      const fb = fallbackPolicy(slug);
+      console.warn(`[go] db-fallback slug=${slug} kind=${fb.kind} reason=${e.message}`);
+      if (fb.kind === 'redirect') {
+        const attr = Buffer.from(
+          JSON.stringify({ offer_slug: slug, offer_name: fb.name, clicked_at: new Date().toISOString(), fallback: true })
+        ).toString('base64url');
+        const res = NextResponse.redirect(fb.url, 302);
+        res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+        res.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
+        res.headers.set('Set-Cookie', `__fattr=${attr}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`);
+        return res;
       }
+      if (fb.kind === 'salvage') return amazonSearchRedirect(fb.term, fb.tag);
+      return unavailableResponse();
     }
 
-    if (error || !offer) {
+    if (!offer) {
       // Salvage dead-slug clicks (404s) the same way we salvage inactive offers:
       // redirect to a TAGGED Amazon search so the click still monetizes via the one
       // channel that's wired up. No offer row exists here, so there is nothing to

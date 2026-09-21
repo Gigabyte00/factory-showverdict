@@ -716,7 +716,7 @@ export function Calculator({ template, siteId }: CalculatorProps) {
         <div className="mt-6 flex flex-wrap gap-3">
           {template.cta_url && (
             <Button asChild>
-              <a href={template.cta_url} rel="nofollow sponsored">
+              <a href={template.cta_url} rel={/^(\/go\/|https?:)/.test(template.cta_url) ? 'nofollow sponsored' : undefined}>
                 {template.cta_text || 'View Recommendations'}
               </a>
             </Button>

@@ -545,10 +545,43 @@ function safeCalculate(
   return results;
 }
 
+// DEFAULT_RENDER v1 (2026-09-20, Block 12 §2): the result block — and the CTA inside it — used to exist
+// only after a click, so no crawler, assistant or non-interacting reader ever saw a worked answer.
+// Next.js SSRs a client component's INITIAL state, so seeding inputs and results from
+// input_fields[].default_value puts the worked example and the CTA into the crawlable HTML.
+// Pure and deterministic (no DB write, no tracking, no Date/random): the server and client first
+// renders must match byte-for-byte or React discards the SSR'd tree. A non-finite value (NaN from an
+// unsupported formula function) or an empty result means NO block — never a confident wrong number.
+function defaultInputsOf(template: CalculatorTemplate): Record<string, number | string> {
+  const out: Record<string, number | string> = {};
+  for (const f of ((template.input_fields ?? []) as CalculatorInputField[])) {
+    if (f && f.name != null && f.default_value !== undefined && f.default_value !== null) {
+      out[f.name] = f.default_value as number | string;
+    }
+  }
+  return out;
+}
+function computeResults(template: CalculatorTemplate, inputs: Record<string, number | string>): Record<string, any> {
+  const simpleFormula = (template as any).calculation_formula as { type?: string; steps?: Array<any> } | null;
+  return simpleFormula && simpleFormula.type === 'simple' && Array.isArray(simpleFormula.steps)
+    ? { ...inputs, ...evaluateSimpleSteps(simpleFormula.steps, inputs) }
+    : safeCalculate(template.calculator_type, inputs as Record<string, number>);
+}
+function defaultResultsOf(template: CalculatorTemplate): Record<string, number | string> | null {
+  const inputs = defaultInputsOf(template);
+  if (Object.keys(inputs).length === 0) return null;
+  let r: Record<string, any>;
+  try { r = computeResults(template, inputs); } catch { return null; }
+  const vals = Object.values(r);
+  if (vals.length === 0) return null;
+  if (vals.some((v) => typeof v === 'number' && !Number.isFinite(v))) return null;
+  return r as Record<string, number | string>;
+}
+
 export function Calculator({ template, siteId }: CalculatorProps) {
   // STRING_RESULTS: a select's value may be a word, not a number.
-  const [inputs, setInputs] = useState<Record<string, number | string>>({});
-  const [results, setResults] = useState<Record<string, number | string> | null>(null);
+  const [inputs, setInputs] = useState<Record<string, number | string>>(() => defaultInputsOf(template));
+  const [results, setResults] = useState<Record<string, number | string> | null>(() => defaultResultsOf(template));
   const [loading, setLoading] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [email, setEmail] = useState('');
@@ -581,10 +614,7 @@ export function Calculator({ template, siteId }: CalculatorProps) {
 
     try {
       // Use safe calculation based on calculator_type
-      const simpleFormula = (template as any).calculation_formula as { type?: string; steps?: Array<any> } | null;
-      const calculatedResults: Record<string, any> = simpleFormula && simpleFormula.type === 'simple' && Array.isArray(simpleFormula.steps)
-        ? { ...inputs, ...evaluateSimpleSteps(simpleFormula.steps, inputs) }
-        : safeCalculate(template.calculator_type, inputs as Record<string, number>);
+      const calculatedResults: Record<string, any> = computeResults(template, inputs);
       setResults(calculatedResults);
 
       // Track usage
@@ -686,7 +716,7 @@ export function Calculator({ template, siteId }: CalculatorProps) {
         <div className="mt-6 flex flex-wrap gap-3">
           {template.cta_url && (
             <Button asChild>
-              <a href={template.cta_url}>
+              <a href={template.cta_url} rel="nofollow sponsored">
                 {template.cta_text || 'View Recommendations'}
               </a>
             </Button>

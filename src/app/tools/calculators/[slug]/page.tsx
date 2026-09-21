@@ -1,6 +1,7 @@
 import { getSiteConfig } from '@/lib/site-config';
 import { createServerClient } from '@/lib/supabase';
 import { Calculator } from '@/components/tools';
+import { ToolLanding } from '@/components/tools/ToolLanding';
 import type { CalculatorTemplate } from '@/types';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -125,6 +126,14 @@ export default async function CalculatorPage({ params }: PageProps) {
 
   const baseUrl = site.domain ? `https://${site.domain}` : '';
 
+  // TOOL_LANDING v1 (Block 12 §2): crawlable intro + FAQ from the nullable columns; description is the
+  // intro fallback; an absent/invalid faqs value renders no FAQ section and no FAQPage JSON-LD.
+  const calcIntro: string = String((typedCalculator as any).intro_md ?? typedCalculator.description ?? '').trim();
+  const calcFaqs: { q: string; a: string }[] = Array.isArray((typedCalculator as any).faqs)
+    ? ((typedCalculator as any).faqs as any[])
+        .filter((x) => x && typeof x.q === 'string' && typeof x.a === 'string' && x.q.trim() && x.a.trim())
+        .map((x) => ({ q: x.q.trim(), a: x.a.trim() }))
+    : [];
   return (
     <main className="min-h-screen bg-background">
       <JsonLd type="breadcrumb" data={{ items: [
@@ -156,20 +165,11 @@ export default async function CalculatorPage({ params }: PageProps) {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <Calculator template={typedCalculator} siteId={site.id} />
+      <div>
+        <ToolLanding title={typedCalculator.name} intro={calcIntro} faq={calcFaqs}>
+          <Calculator template={typedCalculator} siteId={site.id} />
+        </ToolLanding>
 
-        {/* SEO Content */}
-        {typedCalculator.target_keyword && (
-          <div className="mt-12 prose dark:prose-invert max-w-none">
-            <h2>About This {typedCalculator.name}</h2>
-            <p>
-              Use our free {typedCalculator.name.toLowerCase()} to make informed decisions.
-              This tool is designed to help you understand your options and find the best
-              solution for your needs.
-            </p>
-          </div>
-        )}
 
         {/* Related Tools */}
         <div className="mt-12 text-center">

@@ -337,7 +337,7 @@ export default async function OfferDetailPage({ params }: PageProps) {
                   <Button asChild className="w-full gap-2 mb-3" size="lg">
                     <a
                       href={`/go/${offer.slug}`}
-                      rel="noopener noreferrer sponsored"
+                      rel="noopener sponsored"
                       target="_blank"
                       className="min-w-0"
                     >

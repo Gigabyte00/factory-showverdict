@@ -59,7 +59,7 @@ function affiliateLinkComponents(slug: string) {
           <a
             href={`${href}${sep}utm_source=blog&utm_medium=affiliate&utm_campaign=${slug}`}
             target="_blank"
-            rel="noopener noreferrer sponsored"
+            rel="noopener sponsored"
             {...props}
           >
             {children}

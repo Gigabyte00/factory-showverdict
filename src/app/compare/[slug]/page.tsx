@@ -198,7 +198,7 @@ export default async function ComparisonPage({ params }: Props) {
             <a
               href={`/go/${productA.slug}`}
               target="_blank"
-              rel="noopener noreferrer sponsored"
+              rel="noopener sponsored"
               className="rounded-lg bg-primary px-8 py-3 text-center font-semibold text-primary-foreground hover:bg-primary/90"
             >
               Check {comparison.product_a_name} Price
@@ -208,7 +208,7 @@ export default async function ComparisonPage({ params }: Props) {
             <a
               href={`/go/${productB.slug}`}
               target="_blank"
-              rel="noopener noreferrer sponsored"
+              rel="noopener sponsored"
               className="rounded-lg border border-primary px-8 py-3 text-center font-semibold text-primary hover:bg-primary/10"
             >
               Check {comparison.product_b_name} Price

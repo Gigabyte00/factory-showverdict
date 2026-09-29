@@ -315,7 +315,7 @@ export default async function PriceTierPage({ params }: Props) {
                           <a
                             href={`/go/${offer.slug}`}
                             target="_blank"
-                            rel="noopener noreferrer sponsored"
+                            rel="noopener sponsored"
                             className="rounded-lg bg-primary px-6 py-2 font-semibold text-primary-foreground hover:bg-primary/90"
                           >
                             Check Price

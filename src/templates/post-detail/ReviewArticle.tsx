@@ -280,7 +280,7 @@ export default function ReviewArticle({
                           <Link
                             href={affiliateUrl}
                             target="_blank"
-                            rel="noopener noreferrer nofollow"
+                            rel="noopener nofollow"
                           >
                             <ExternalLink className="mr-2 h-4 w-4" />
                             Check Price
@@ -380,7 +380,7 @@ export default function ReviewArticle({
                           const sep = href.includes('?') ? '&' : '?';
                           const utmHref = `${href}${sep}utm_source=blog&utm_medium=affiliate&utm_campaign=${post.slug}`;
                           return (
-                            <a href={utmHref} target="_blank" rel="noopener noreferrer sponsored" {...props}>
+                            <a href={utmHref} target="_blank" rel="noopener sponsored" {...props}>
                               {children}
                             </a>
                           );

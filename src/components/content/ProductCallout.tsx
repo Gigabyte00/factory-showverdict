@@ -126,7 +126,7 @@ export function ProductCallout({
 
           {/* CTA */}
           <Button asChild size="sm">
-            <a href={href} rel="noopener noreferrer sponsored">
+            <a href={href} rel="noopener sponsored">
               {ctaText}
               <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
             </a>

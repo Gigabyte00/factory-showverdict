@@ -336,7 +336,7 @@ export function ComparisonMatrix({
                 <td key={product.id} className="p-3 text-center">
                   {product.affiliateUrl ? (
                     <Button asChild size="sm" className="w-full max-w-[130px] text-xs h-8">
-                      <a href={product.affiliateUrl} rel="noopener noreferrer sponsored">
+                      <a href={product.affiliateUrl} rel="noopener sponsored">
                         {ctaText}
                         <ExternalLink className="ml-1 h-3 w-3" />
                       </a>

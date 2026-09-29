@@ -203,7 +203,7 @@ export default async function UseCasePage({ params }: Props) {
                       <a
                         href={`/go/${offer.slug}`}
                         target="_blank"
-                        rel="noopener noreferrer sponsored"
+                        rel="noopener sponsored"
                         className="block w-full rounded-lg bg-primary py-2 text-center font-semibold text-primary-foreground hover:bg-primary/90"
                       >
                         Check Price

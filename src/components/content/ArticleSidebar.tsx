@@ -181,7 +181,7 @@ export function ArticleSidebar({
             </div>
           )}
           <Button asChild size="sm" className="w-full gap-1.5 text-xs">
-            <a href={featuredOffer.href} rel="noopener noreferrer sponsored" target="_blank">
+            <a href={featuredOffer.href} rel="noopener sponsored" target="_blank">
               View Deal
               <ExternalLink className="h-3 w-3" />
             </a>

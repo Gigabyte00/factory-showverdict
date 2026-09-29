@@ -36,7 +36,7 @@ function affiliateLinkComponents(slug: string) {
       if (href?.startsWith('/go/')) {
         const sep = href.includes('?') ? '&' : '?';
         return (
-          <a href={`${href}${sep}utm_source=blog&utm_medium=affiliate&utm_campaign=${slug}`} target="_blank" rel="noopener noreferrer sponsored" {...props}>
+          <a href={`${href}${sep}utm_source=blog&utm_medium=affiliate&utm_campaign=${slug}`} target="_blank" rel="noopener sponsored" {...props}>
             {children}
           </a>
         );

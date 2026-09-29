@@ -227,14 +227,14 @@ export function BestForWidget({
 
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" className="flex-1 min-w-[120px]">
-                <a href={result.offerHref} rel="noopener noreferrer sponsored">
+                <a href={result.offerHref} rel="noopener sponsored">
                   View {result.offerName}
                   <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
                 </a>
               </Button>
               {result.secondaryName && result.secondaryHref && (
                 <Button asChild variant="outline" size="sm" className="flex-1 min-w-[120px]">
-                  <a href={result.secondaryHref} rel="noopener noreferrer sponsored">
+                  <a href={result.secondaryHref} rel="noopener sponsored">
                     Also consider: {result.secondaryName}
                   </a>
                 </Button>

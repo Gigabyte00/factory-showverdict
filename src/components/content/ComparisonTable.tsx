@@ -158,7 +158,7 @@ export function ComparisonTable({
                   <Button asChild size="sm" className="w-full max-w-[140px]">
                     <a
                       href={product.affiliateUrl.startsWith('/go/') ? product.affiliateUrl : `/go/${product.id}`}
-                      rel="noopener noreferrer sponsored"
+                      rel="noopener sponsored"
                     >
                       {ctaText}
                       <ExternalLink className="ml-1 h-3 w-3" />

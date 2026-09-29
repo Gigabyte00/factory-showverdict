@@ -174,7 +174,7 @@ export default async function CompareOffersPage({ searchParams }: PageProps) {
                 <a
                   href={`/go/${offer.slug}`}
                   target="_blank"
-                  rel="noopener noreferrer sponsored nofollow"
+                  rel="noopener sponsored nofollow"
                   className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
                 >
                   Visit {offer.name} &rarr;

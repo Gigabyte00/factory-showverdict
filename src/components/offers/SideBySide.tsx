@@ -180,7 +180,7 @@ export function SideBySide({
               <td key={offer.id} className="p-3 text-center">
                 {offer.affiliateUrl && offer.slug ? (
                   <Button asChild size="sm" className="w-full max-w-[120px] text-xs h-8 gap-1">
-                    <a href={`/go/${offer.slug}`} rel="noopener noreferrer sponsored" target="_blank">
+                    <a href={`/go/${offer.slug}`} rel="noopener sponsored" target="_blank">
                       {ctaText}
                       <ExternalLink className="h-3 w-3" />
                     </a>

@@ -285,7 +285,7 @@ export default function ComparisonArticle({
                                   <Link
                                     href={product.affiliateUrl}
                                     target="_blank"
-                                    rel="noopener noreferrer nofollow"
+                                    rel="noopener nofollow"
                                   >
                                     <ExternalLink className="mr-1 h-3 w-3" />
                                     View Deal
@@ -378,7 +378,7 @@ export default function ComparisonArticle({
                     const sep = href.includes('?') ? '&' : '?';
                     const utmHref = `${href}${sep}utm_source=blog&utm_medium=affiliate&utm_campaign=${post.slug}`;
                     return (
-                      <a href={utmHref} target="_blank" rel="noopener noreferrer sponsored" {...props}>
+                      <a href={utmHref} target="_blank" rel="noopener sponsored" {...props}>
                         {children}
                       </a>
                     );

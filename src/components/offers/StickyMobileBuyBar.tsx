@@ -64,7 +64,7 @@ export function StickyMobileBuyBar({
           </div>
         </div>
         <Button asChild size="sm" className="shrink-0">
-          <a href={affiliateUrl} target="_blank" rel="noopener noreferrer sponsored">
+          <a href={affiliateUrl} target="_blank" rel="noopener sponsored">
             {ctaLabel}
             <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
           </a>

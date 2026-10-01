@@ -140,7 +140,7 @@ export default async function PriceTierPage({ params }: Props) {
   if (priceTier.offer_ids && priceTier.offer_ids.length > 0) {
     const { data } = await supabase
       .from('offers')
-      .select('id, slug, name, description, affiliate_url, featured_image_url, rating, current_price, original_price, pros, cons')
+      .select('id, slug, name, description, affiliate_url, featured_image_url, rating, current_price, original_price, price_usd, pros, cons')
       .in('id', priceTier.offer_ids);
     offers = data || [];
     // Sort by the order in offer_ids array (if offer_ids exists)

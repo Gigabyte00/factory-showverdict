@@ -39,6 +39,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     .order('published_at', { ascending: false });
 
   // Fetch offers in this category
+  // AMZ-2 leak fix (2026-10-02): the templates below get each offer's /go path, never the raw affiliate URL.
   const { data: offers } = await supabase
     .from('offers')
     .select('*')
@@ -85,7 +86,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <DefaultTemplate
         category={category}
         posts={posts || []}
-        offers={offers || []}
+        offers={(offers || []).map((o) => ({ ...o, affiliate_url: o.affiliate_url ? `/go/${o.slug}` : o.affiliate_url }))}
         site={site}
       />
     );
@@ -95,7 +96,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     <Template
       category={category}
       posts={posts || []}
-      offers={offers || []}
+      offers={(offers || []).map((o) => ({ ...o, affiliate_url: o.affiliate_url ? `/go/${o.slug}` : o.affiliate_url }))}
       site={site}
     />
   );

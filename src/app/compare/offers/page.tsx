@@ -50,7 +50,7 @@ function offerToCompareItem(offer: Offer): OfferCompareItem {
     price: null,
     rating: offer.rating ?? null,
     reviewCount: null,
-    affiliateUrl: offer.affiliate_url,
+    affiliateUrl: offer.affiliate_url ? `/go/${offer.slug}` : offer.affiliate_url, // AMZ-2 leak fix (2026-10-02): /go path only
     award: null,
     features: buildFeatures(offer),
   };

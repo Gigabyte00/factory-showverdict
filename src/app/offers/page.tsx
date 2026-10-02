@@ -70,7 +70,9 @@ export default async function OffersPage({ searchParams }: PageProps) {
       .not('award', 'is', null),
   ]);
 
-  const offers = offersResult.data || [];
+  // Affiliate URLs never reach the client payload: CompareBar/OfferLink are client components and every link already goes
+  // through /go/<slug>, so each row carries its /go path instead of the raw tracking URL; empty stays empty (AMZ-2 leak fix, 2026-10-02).
+  const offers = (offersResult.data || []).map((o) => ({ ...o, affiliate_url: o.affiliate_url ? `/go/${o.slug}` : o.affiliate_url }));
   const categories = categoriesResult.data || [];
 
   // Collect distinct awards for filter UI

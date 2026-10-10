@@ -193,7 +193,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           productName: (offer as any).name || post.title,
           affiliateUrl: `/go/${(offer as any).slug}`,
           price: priceStr,
-          rating: (offer as any).rating ?? 4.5,
+          rating: (offer as any).rating ?? undefined,
           maxRating: 5,
           pros: Array.isArray((offer as any).pros) ? (offer as any).pros.slice(0, 6) : [],
           cons: Array.isArray((offer as any).cons) ? (offer as any).cons.slice(0, 6) : [],

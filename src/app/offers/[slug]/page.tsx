@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookmarkButton } from '@/components/ui/bookmark-button';
 import { OfferRating } from '@/components/offers/OfferRating';
-import { PriceHistory } from '@/components/offers/PriceHistory';
 import { canonicalUrl } from '@/lib/seo';
 import { cn, isRenderableImageSrc } from '@/lib/utils';
 
@@ -388,12 +387,6 @@ export default async function OfferDetailPage({ params }: PageProps) {
               </CardContent>
             </Card>
 
-            {/* Observed price trend — filled in automatically as clicks roll in */}
-            <Card>
-              <CardContent className="p-5">
-                <PriceHistory offerId={offer.id} />
-              </CardContent>
-            </Card>
 
             {relatedOffers && relatedOffers.length > 0 && (
               <Card>

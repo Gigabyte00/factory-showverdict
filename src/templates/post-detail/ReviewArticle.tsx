@@ -14,7 +14,6 @@ import { Prose, Callout, LastUpdated, ProductCallout, InlineTOC, AudienceFit, So
 import { InlineOptIn } from '@/components/content/InlineOptIn';
 import { getLeadMagnet } from '@/lib/lead-magnets';
 import { ComparisonTable } from '@/components/content/ComparisonTable';
-import { PriceHistory } from '@/components/offers/PriceHistory';
 import { StickyMobileBuyBar } from '@/components/offers/StickyMobileBuyBar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -78,7 +77,6 @@ export default function ReviewArticle({
     | undefined;
   const changelog = (post.metadata as any)?.changelog as ChangelogEntry[] | undefined;
   // Optional enhancements: each renders only if its metadata opts in.
-  const reviewOfferId = (post.metadata as any)?.review?.offer_id as string | undefined;
   const comparison = (post.metadata as any)?.comparison as
     | {
         products: Array<{
@@ -113,11 +111,9 @@ export default function ReviewArticle({
           }
         : undefined,
     },
-    reviewRating: {
-      '@type': 'Rating',
-      ratingValue: rating,
-      bestRating: maxRating,
-    },
+    ...(rating > 0
+      ? { reviewRating: { '@type': 'Rating', ratingValue: rating, bestRating: maxRating } }
+      : {}),
     author: {
       '@type': 'Person',
       name: post.author_name || site.name,
@@ -264,17 +260,19 @@ export default function ReviewArticle({
                 <Card className="mb-8 border-2 border-primary/20 bg-primary/5">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <div className="mb-2 flex items-center gap-1">
-                          {renderStars()}
+                      {rating > 0 ? (
+                        <div>
+                          <div className="mb-2 flex items-center gap-1">
+                            {renderStars()}
+                          </div>
+                          <p className="text-2xl font-bold text-foreground">
+                            {rating.toFixed(1)} / {maxRating}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Overall Rating
+                          </p>
                         </div>
-                        <p className="text-2xl font-bold text-foreground">
-                          {rating.toFixed(1)} / {maxRating}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Overall Rating
-                        </p>
-                      </div>
+                      ) : <div />}
                       {affiliateUrl && (
                         <Button asChild size="lg">
                           <Link
@@ -393,12 +391,6 @@ export default function ReviewArticle({
                   </ReactMarkdown>
                 </Prose>
 
-                {/* Price history chart — only renders if review metadata carries an offer_id */}
-                {reviewOfferId && (
-                  <div className="mt-8">
-                    <PriceHistory offerId={reviewOfferId} />
-                  </div>
-                )}
 
                 {/* Comparison table — renders only when post.metadata.comparison is populated */}
                 {comparison && comparison.products && comparison.products.length > 0 && (

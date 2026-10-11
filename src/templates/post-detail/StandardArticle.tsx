@@ -79,6 +79,7 @@ export default async function StandardArticle({
   site,
   showTOC = false,
   showRelatedPosts = true,
+  topBuyBox,
 }: PostDetailTemplateProps) {
   const siteId = (site as any).id as string;
   const [contentBefore, contentAfter] = splitMarkdown(post.content || '', 4);
@@ -199,6 +200,9 @@ export default async function StandardArticle({
 
               {/* Title */}
               <h1 className="mb-4 text-3xl font-bold md:text-4xl">{post.title}</h1>
+
+              {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
+              {topBuyBox}
 
               {/* Author card + post meta */}
               <div className="mb-6 border-b pb-6">

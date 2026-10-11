@@ -56,6 +56,7 @@ export default function LongformArticle({
   copy,
   showTOC = true,
   showRelatedPosts = true,
+  topBuyBox,
 }: PostDetailTemplateProps) {
   const siteId = (site as any).id as string;
   // For long-form, insert opt-ins at paragraph 4 and paragraph 8
@@ -169,6 +170,9 @@ export default function LongformArticle({
                 <h1 className="mb-4 text-3xl font-bold md:text-4xl lg:text-5xl">
                   {post.title}
                 </h1>
+
+                {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
+                {topBuyBox}
 
                 {/* Meta Information */}
                 <div className="mb-6 flex flex-wrap items-center gap-4 border-b pb-6 text-sm text-muted-foreground">

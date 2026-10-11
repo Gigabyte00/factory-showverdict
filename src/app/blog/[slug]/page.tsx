@@ -3,6 +3,49 @@ import { createServerClient } from '@/lib/supabase';
 import type { Post, Category } from '@/types';
 import { notFound } from 'next/navigation';
 import { getTemplate, getDefaultVariant } from '@/lib/templates/registry';
+import { TopBuyBox } from '@/components/offers/TopBuyBox';
+import { StickyMobileBuyBar } from '@/components/offers/StickyMobileBuyBar';
+
+// AMZ-2 topbuybox (2026-10-11): merchant-aware price-CTA label. Ported from the AMZ-2 store-label.ts pattern
+// (storeName/priceCtaLabel) used elsewhere in the fleet; this repo has no src/lib/store-label.ts of its
+// own, so the derivation is inlined. Never invents a merchant name; active-offers-only, so there is no
+// "inactive" wording branch here.
+function amz2StoreName(offer: { affiliate_url?: string | null; affiliate_program?: string | null }): string | null {
+  let host: string | null = null;
+  try {
+    host = offer.affiliate_url ? new URL(offer.affiliate_url).hostname.toLowerCase() : null;
+  } catch {
+    host = null;
+  }
+  const program = offer.affiliate_program?.trim() || null;
+  if ((host && /amazon\./.test(host)) || (program && /amazon/i.test(program))) return 'Amazon';
+  if ((host && /ebay\./.test(host)) || (program && /ebay/i.test(program))) return 'eBay';
+  if (program) {
+    const stripped = program.replace(/\s*\([^()]*\)\s*$/, '').trim().split(' | ')[0].trim();
+    return stripped || null;
+  }
+  return null;
+}
+
+function amz2PriceCtaLabel(offer: { affiliate_url?: string | null; affiliate_program?: string | null }): string {
+  const store = amz2StoreName(offer);
+  if (store === 'Amazon') return 'Check price on Amazon';
+  if (store) return `Check price at ${store}`;
+  return 'Check price';
+}
+
+// AMZ-2 topbuybox (2026-10-11): CTA-integrity law -- a product may surface in the box only if the post body
+// actually discusses it. Checks for a /go/<slug> link terminated by )?"/# , whitespace, or end, so
+// /go/abc never matches /go/abcd. Tried against both slug and pretty_slug (either may be the one
+// linked in the body).
+function amz2MentionedInBody(content: string, slugs: Array<string | null | undefined>): boolean {
+  for (const raw of slugs) {
+    if (!raw) continue;
+    const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp(`/go/${escaped}(?:[)?"/#\s]|$)`).test(content)) return true;
+  }
+  return false;
+}
 import RelatedOffersRail from '@/components/offers/RelatedOffersRail';
 import JsonLd from '@/components/JsonLd';
 import { canonicalUrl } from '@/lib/seo';
@@ -207,6 +250,50 @@ export default async function BlogPostPage({ params }: PageProps) {
   // Get template component
   const Template = getTemplate('post-detail', variant);
 
+  // AMZ-2 topbuybox (2026-10-11): resolve up to 3 ACTIVE offers (featured_offer_id first, then
+  // related_offer_ids), same site, with the supabase client this page already uses, KEEPING ONLY
+  // offers the post body actually links via /go/<slug or pretty_slug> (CTA-integrity law -- a rail
+  // offer the body never mentions must not show as a "where to buy" pick). Only {slug, name, label}
+  // ever reach TopBuyBox -- never the row, never affiliate_url -- and the sticky bar gets a
+  // precomputed /go path, never a raw URL. Nothing renders on protected EPN-pilot posts (in-body
+  // /go/ebay-used-* or /go/used-*-on-ebay links) or when no candidate survives the mention filter.
+  const topBuyBoxIds = Array.from(
+    new Set(
+      [
+        (post as any).featured_offer_id as string | null,
+        ...(Array.isArray((post as any).related_offer_ids) ? ((post as any).related_offer_ids as string[]) : []),
+      ].filter((id): id is string => !!id)
+    )
+  );
+  const topBuyBoxProtected =
+    !!post.content &&
+    (post.content.includes('/go/ebay-used-') || /\/go\/used-[a-z0-9-]*-on-ebay/.test(post.content));
+  let topBuyBoxOffers: { slug: string; name: string; label: string }[] = [];
+  let stickyBarOffer: { name: string; goPath: string; label: string } | null = null;
+  if (!topBuyBoxProtected && topBuyBoxIds.length > 0) {
+    const { data: topBuyBoxRows } = await supabase
+      .from('offers')
+      .select('id, slug, pretty_slug, name, affiliate_url, affiliate_program')
+      .in('id', topBuyBoxIds)
+      .eq('site_id', site.id)
+      .eq('is_active', true);
+    const topBuyBoxOrder = new Map(topBuyBoxIds.map((id, i) => [id, i]));
+    const topBuyBoxSorted = (topBuyBoxRows ?? [])
+      .sort((a, b) => (topBuyBoxOrder.get(a.id) ?? 99) - (topBuyBoxOrder.get(b.id) ?? 99))
+      .filter((o) => amz2MentionedInBody(post.content ?? '', [o.slug, o.pretty_slug]))
+      .slice(0, 3);
+    topBuyBoxOffers = topBuyBoxSorted.map((o) => ({ slug: o.slug, name: o.name, label: amz2PriceCtaLabel(o) }));
+    if (topBuyBoxSorted.length > 0) {
+      const topBuyBoxFirst = topBuyBoxSorted[0];
+      stickyBarOffer = {
+        name: topBuyBoxFirst.name,
+        goPath: `/go/${topBuyBoxFirst.slug}?utm_source=sticky&utm_medium=affiliate&utm_campaign=${encodeURIComponent(post.slug)}`,
+        label: amz2PriceCtaLabel(topBuyBoxFirst),
+      };
+    }
+  }
+  const topBuyBoxNode = topBuyBoxOffers.length > 0 ? <TopBuyBox offers={topBuyBoxOffers} postSlug={post.slug} /> : null;
+
   const baseUrl = site.domain ? `https://${site.domain}` : '';
   const breadcrumbItems = [
     { name: 'Home', url: baseUrl || '/' },
@@ -234,7 +321,15 @@ export default async function BlogPostPage({ params }: PageProps) {
           category={category}
           relatedPosts={relatedPosts || []}
           site={site}
+          topBuyBox={topBuyBoxNode}
         />
+        {defaultVariant !== 'review' && stickyBarOffer ? (
+          <StickyMobileBuyBar
+            productName={stickyBarOffer.name}
+            affiliateUrl={stickyBarOffer.goPath}
+            ctaLabel={stickyBarOffer.label}
+          />
+        ) : null}
         <RelatedOffersRail relatedOfferIds={(post as any).related_offer_ids} siteId={site.id} />
       </>
     );
@@ -249,7 +344,15 @@ export default async function BlogPostPage({ params }: PageProps) {
         category={category}
         relatedPosts={relatedPosts || []}
         site={site}
+        topBuyBox={topBuyBoxNode}
       />
+      {variant !== 'review' && stickyBarOffer ? (
+        <StickyMobileBuyBar
+          productName={stickyBarOffer.name}
+          affiliateUrl={stickyBarOffer.goPath}
+          ctaLabel={stickyBarOffer.label}
+        />
+      ) : null}
       <RelatedOffersRail relatedOfferIds={(post as any).related_offer_ids} siteId={site.id} />
     </>
   );

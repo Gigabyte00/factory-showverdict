@@ -44,6 +44,7 @@ export default function ReviewArticle({
   copy,
   showTOC = false,
   showRelatedPosts = true,
+  topBuyBox,
 }: PostDetailTemplateProps) {
   const magnetSlug = process.env.LEAD_MAGNET_SLUG;
   const inlineMagnet = magnetSlug ? getLeadMagnet(magnetSlug) : null;
@@ -208,6 +209,9 @@ export default function ReviewArticle({
                 <h1 className="mb-4 text-3xl font-bold md:text-4xl">
                   {post.title}
                 </h1>
+
+                {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
+                {topBuyBox}
 
                 {/* Meta Information */}
                 <div className="mb-6 flex flex-wrap items-center gap-4 border-b pb-6 text-sm text-muted-foreground">

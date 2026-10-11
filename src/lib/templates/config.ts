@@ -255,6 +255,9 @@ export interface PostDetailTemplateProps extends PostDetailTemplateConfig {
   relatedPosts?: Post[];
   site: SiteContext;
   faqs?: Array<{ question: string; answer: string }>;
+  /** AMZ-2 topbuybox (2026-10-11): above-the-fold "Where to buy" box, rendered directly under the <h1>.
+   * Pre-built by page.tsx (data fetch + payload-leak-safe label live there, not here). */
+  topBuyBox?: React.ReactNode;
 }
 
 export interface OffersTemplateProps extends OffersTemplateConfig {

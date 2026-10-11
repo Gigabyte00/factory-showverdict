@@ -328,7 +328,7 @@ html.js-anim .stagger-children.is-revealed > *:nth-child(6) { transition-delay: 
 /* ── Page load fade-in (progressive enhancement, Chrome 117+) ── */
 @supports (animation-timeline: scroll()) {
   main {
-    animation: fade-in-up 0.3s ease-out both;
+    animation: fade-in-up 0.3s ease-out backwards; /* AMZ-2 sticky-buybar 2026-10-11: not 'both' - a lingering transform on main breaks position:fixed children */
   }
 }
 
@@ -363,5 +363,16 @@ html.js-anim .stagger-children.is-revealed > *:nth-child(6) { transition-delay: 
   h2,
   h3 {
     page-break-after: avoid;
+  }
+}
+
+/* AMZ-2 sticky-buybar 2026-10-11: on phones the article's sticky buy bar owns the bottom edge while it shows - the sticky
+   newsletter bar stays hidden and back-to-top sits above the bar. */
+@media (max-width: 767px) {
+  body:has([data-sticky-buybar][aria-hidden="false"]) [data-newsletter-sticky] {
+    display: none;
+  }
+  body:has([data-sticky-buybar][aria-hidden="false"]) [data-back-to-top] {
+    bottom: 5.5rem;
   }
 }

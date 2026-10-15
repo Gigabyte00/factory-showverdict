@@ -283,8 +283,11 @@ export default async function BlogPostPage({ params }: PageProps) {
       .filter((o) => amz2MentionedInBody(post.content ?? '', [o.slug, o.pretty_slug]))
       .slice(0, 3);
     topBuyBoxOffers = topBuyBoxSorted.map((o) => ({ slug: o.slug, name: o.name, label: amz2PriceCtaLabel(o) }));
-    if (topBuyBoxSorted.length > 0) {
-      const topBuyBoxFirst = topBuyBoxSorted[0];
+    // AMZ-2 sticky-layer 2026-10-11: Associates Participation Requirements (o) bar Special Links in layer ads, so the floating
+    // bar never carries an Amazon/Audible offer - it takes the box's first non-Amazon offer, else it does not render.
+    const stickyCandidate = topBuyBoxSorted.find((o) => !/(^|\.)(amazon|audible)\.|amzn\.to/i.test(String(o.affiliate_url ?? '').split('/')[2] ?? ''));
+    if (stickyCandidate) {
+      const topBuyBoxFirst = stickyCandidate;
       stickyBarOffer = {
         name: topBuyBoxFirst.name,
         goPath: `/go/${topBuyBoxFirst.slug}?utm_source=sticky&utm_medium=affiliate&utm_campaign=${encodeURIComponent(post.slug)}`,

@@ -31,7 +31,7 @@ if (!SITE_ID || !BASE || !KEY) {
 }
 
 async function page(offset) {
-  const q = `${BASE}/rest/v1/offers?select=slug,pretty_slug,name,affiliate_url,is_active&site_id=eq.${SITE_ID}&limit=1000&offset=${offset}`;
+  const q = `${BASE}/rest/v1/offers?select=slug,pretty_slug,name,affiliate_url,is_active,tags&site_id=eq.${SITE_ID}&limit=1000&offset=${offset}`;
   let last;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -61,7 +61,7 @@ try {
     const rec = { u, a: !!o.is_active, n: o.name ?? '' };
     if (o.slug) offers[o.slug] = rec;                              // slug wins over a colliding pretty_slug,
     if (o.pretty_slug && !offers[o.pretty_slug]) offers[o.pretty_slug] = rec; // matching the route's lookup order
-    if (!amazonTag && o.is_active && /amazon\./.test(u)) {
+    if (!amazonTag && o.is_active && /amazon\./.test(u) && !(o.tags ?? []).includes('cc-campaign-link')) {   // 10-24 (10-17 rule): campaign rows carry the store tag, never the site's
       const m = /[?&]tag=([^&]+)/.exec(u);
       if (m) amazonTag = m[1];
     }

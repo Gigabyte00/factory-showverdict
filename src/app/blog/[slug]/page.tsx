@@ -78,6 +78,34 @@ function extractFaqs(content: string): Array<{ question: string; answer: string 
 
 export const revalidate = 3600; // Revalidate every hour
 
+// post-isr 2026-10-21: without generateStaticParams Next 15 renders this [slug] route on every request (ƒ) despite `revalidate`;
+// listing the site's most-visited posts prebuilds them at deploy (owner 10-22: most-visited first); every other post renders on
+// its first visit, then is cached and refreshed every `revalidate` seconds (on-demand revalidation by _submit.py keeps working).
+export async function generateStaticParams() {
+  return [
+    { slug: "best-free-streaming-services-2026" },
+    { slug: "lg-s40tr-4-1-channel-soundbar-with-rear-speakers-review-cppl85" },
+    { slug: "best-sci-fi-shows-streaming-2026" },
+    { slug: "tcl-65-t7-4k-qled-hdr-tv-2025-review-t5b1c3" },
+    { slug: "best-true-crime-documents-2026" },
+    { slug: "best-limited-series-2026-binge-worthy" },
+    { slug: "roku-ultra-vs-fire-tv-cube" },
+    { slug: "fire-tv-stick-4k-max-vs-roku-streaming-stick-4k" },
+    { slug: "cheapest-streaming-bundle-for-sports-fans" },
+    { slug: "best-streaming-devices-2026-comparison" },
+    { slug: "best-streaming-devices-2026" },
+    { slug: "invincible-prime-video-review" },
+    { slug: "best-soundbars-under-300-2026" },
+    { slug: "xiaomi-tv-stick-4k-2nd-gen-google-tv-streaming-device-review-n6nrtz" },
+    { slug: "the-last-of-us-season-2-review" },
+    { slug: "roku-vs-fire-tv-vs-google-tv-for-an-older-relative" },
+    { slug: "netflix-vs-max-vs-hulu-vs-disney-plus-comparison" },
+    { slug: "lutron-caseta-original-smart-light-switch-kit-review-rpjfxq" },
+    { slug: "govee-tv-backlight-3-lite-rgbicw-wi-fi-review-znnj1r" },
+    { slug: "disney-plus-vs-netflix-2026" },
+  ];
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

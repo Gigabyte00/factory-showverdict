@@ -199,114 +199,118 @@ export default async function StandardArticle({
               )}
 
               {/* Title */}
-              <h1 className="mb-4 text-3xl font-bold md:text-4xl">{post.title}</h1>
-
-              {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
-              {topBuyBox}
-
-              {/* Author card + post meta */}
-              <div className="mb-6 border-b pb-6">
-                {author ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <AuthorCard
-                      name={author.name}
-                      slug={author.slug}
-                      title={author.title}
-                      credentials={author.credentials}
-                      avatarUrl={author.avatar_url}
-                      expertise={author.expertise}
-                      publishedAt={post.published_at}
-                      updatedAt={post.updated_at}
-                    />
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground shrink-0">
-                      {post.reading_time_minutes && (
-                        <span>{post.reading_time_minutes} min read</span>
-                      )}
-                      <BookmarkButton
-                        variant="labeled"
-                        bookmark={{
-                          id: `post-${post.slug}`,
-                          type: 'post',
-                          title: post.title,
-                          url: `/blog/${post.slug}`,
-                          image: post.featured_image_url ?? undefined,
-                          excerpt: post.excerpt ?? undefined,
-                        }}
-                      />
-                      <ShareButtons
-                        url={`${site.domain ? `https://${site.domain}` : ''}/blog/${post.slug}`}
-                        title={post.title}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    {post.published_at && (
-                      <time dateTime={post.published_at}>
-                        {new Date(post.published_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </time>
-                    )}
-                    {post.reading_time_minutes && <span>{post.reading_time_minutes} min read</span>}
-                    {post.author_name && <span>By {post.author_name}</span>}
-                    <div className="ml-auto flex items-center gap-2">
-                      <BookmarkButton
-                        variant="labeled"
-                        bookmark={{
-                          id: `post-${post.slug}`,
-                          type: 'post',
-                          title: post.title,
-                          url: `/blog/${post.slug}`,
-                          image: post.featured_image_url ?? undefined,
-                          excerpt: post.excerpt ?? undefined,
-                        }}
-                      />
-                      <ShareButtons
-                        url={`${site.domain ? `https://${site.domain}` : ''}/blog/${post.slug}`}
-                        title={post.title}
-                      />
-                    </div>
-                  </div>
+              {/* AMZ-2 snippet order (2026-10-24): the H1, then the dek, then the buy box and byline in the DOM — ChatGPT keeps the title plus ~200 characters
+                  from the H1. A flex column with CSS order keeps the visual order readers know (title, buy box, byline, dek). */}
+              <div className="flex flex-col">
+                <h1 className="order-1 mb-4 text-3xl font-bold md:text-4xl">{post.title}</h1>
+                {/* Excerpt */}
+                {post.excerpt && (
+                  <p className="order-3 mb-6 text-lg font-medium italic text-muted-foreground">
+                    {post.excerpt}
+                  </p>
                 )}
+                <div className="order-2 [&>aside:first-child]:mt-2">
+                  {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
+                  {topBuyBox}
+
+                  {/* Author card + post meta */}
+                  <div className="mb-6 border-b pb-6">
+                    {author ? (
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <AuthorCard
+                          name={author.name}
+                          slug={author.slug}
+                          title={author.title}
+                          credentials={author.credentials}
+                          avatarUrl={author.avatar_url}
+                          expertise={author.expertise}
+                          publishedAt={post.published_at}
+                          updatedAt={post.updated_at}
+                        />
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground shrink-0">
+                          {post.reading_time_minutes && (
+                            <span>{post.reading_time_minutes} min read</span>
+                          )}
+                          <BookmarkButton
+                            variant="labeled"
+                            bookmark={{
+                              id: `post-${post.slug}`,
+                              type: 'post',
+                              title: post.title,
+                              url: `/blog/${post.slug}`,
+                              image: post.featured_image_url ?? undefined,
+                              excerpt: post.excerpt ?? undefined,
+                            }}
+                          />
+                          <ShareButtons
+                            url={`${site.domain ? `https://${site.domain}` : ''}/blog/${post.slug}`}
+                            title={post.title}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                        {post.published_at && (
+                          <time dateTime={post.published_at}>
+                            {new Date(post.published_at).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </time>
+                        )}
+                        {post.reading_time_minutes && <span>{post.reading_time_minutes} min read</span>}
+                        {post.author_name && <span>By {post.author_name}</span>}
+                        <div className="ml-auto flex items-center gap-2">
+                          <BookmarkButton
+                            variant="labeled"
+                            bookmark={{
+                              id: `post-${post.slug}`,
+                              type: 'post',
+                              title: post.title,
+                              url: `/blog/${post.slug}`,
+                              image: post.featured_image_url ?? undefined,
+                              excerpt: post.excerpt ?? undefined,
+                            }}
+                          />
+                          <ShareButtons
+                            url={`${site.domain ? `https://${site.domain}` : ''}/blog/${post.slug}`}
+                            title={post.title}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Last Updated */}
+                  {post.updated_at && (
+                    <LastUpdated
+                      date={post.updated_at}
+                      publishedDate={post.published_at}
+                      showRelative
+                      className="mb-6"
+                    />
+                  )}
+
+                  {/* Revision log — opt-in via post.metadata.changelog */}
+                  {changelog && changelog.length > 0 && <Changelog entries={changelog} />}
+
+                  {/* Featured Product Callout */}
+                  {post.metadata?.featuredProduct && (
+                    <ProductCallout
+                      name={post.metadata.featuredProduct.name}
+                      description={post.metadata.featuredProduct.description}
+                      image={post.metadata.featuredProduct.image}
+                      rating={post.metadata.featuredProduct.rating}
+                      price={post.metadata.featuredProduct.price}
+                      highlights={post.metadata.featuredProduct.highlights}
+                      href={post.metadata.featuredProduct.href}
+                      badge={post.metadata.featuredProduct.badge}
+                      ctaText={post.metadata.featuredProduct.ctaText || 'View Deal'}
+                    />
+                  )}
+                </div>
               </div>
-
-              {/* Last Updated */}
-              {post.updated_at && (
-                <LastUpdated
-                  date={post.updated_at}
-                  publishedDate={post.published_at}
-                  showRelative
-                  className="mb-6"
-                />
-              )}
-
-              {/* Revision log — opt-in via post.metadata.changelog */}
-              {changelog && changelog.length > 0 && <Changelog entries={changelog} />}
-
-              {/* Featured Product Callout */}
-              {post.metadata?.featuredProduct && (
-                <ProductCallout
-                  name={post.metadata.featuredProduct.name}
-                  description={post.metadata.featuredProduct.description}
-                  image={post.metadata.featuredProduct.image}
-                  rating={post.metadata.featuredProduct.rating}
-                  price={post.metadata.featuredProduct.price}
-                  highlights={post.metadata.featuredProduct.highlights}
-                  href={post.metadata.featuredProduct.href}
-                  badge={post.metadata.featuredProduct.badge}
-                  ctaText={post.metadata.featuredProduct.ctaText || 'View Deal'}
-                />
-              )}
-
-              {/* Excerpt */}
-              {post.excerpt && (
-                <p className="mb-6 text-lg font-medium italic text-muted-foreground">
-                  {post.excerpt}
-                </p>
-              )}
 
               {/* Audience fit callout — "this is for you if / skip if" */}
               {audienceFit && <AudienceFit data={audienceFit} />}

@@ -174,46 +174,50 @@ export default function ComparisonArticle({
           )}
 
           {/* Title */}
-          <h1 className="mb-4 text-3xl font-bold md:text-4xl lg:text-5xl">
-            {post.title}
-          </h1>
-
-          {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
-          {topBuyBox}
-
-          {/* Meta Information */}
-          <div className="mb-6 flex flex-wrap items-center gap-4 border-b pb-6 text-sm text-muted-foreground">
-            {post.published_at && (
-              <time dateTime={post.published_at}>
-                {new Date(post.published_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </time>
+          {/* AMZ-2 snippet order (2026-10-24): the H1, then the dek, then the buy box and byline in the DOM — ChatGPT keeps the title plus ~200 characters
+              from the H1. A flex column with CSS order keeps the visual order readers know (title, buy box, byline, dek). */}
+          <div className="flex flex-col">
+            <h1 className="order-1 mb-4 text-3xl font-bold md:text-4xl lg:text-5xl">
+              {post.title}
+            </h1>
+            {/* Excerpt */}
+            {post.excerpt && (
+              <p className="order-3 mb-8 text-xl font-medium text-muted-foreground leading-relaxed">
+                {post.excerpt}
+              </p>
             )}
-            {post.reading_time_minutes && (
-              <span>{post.reading_time_minutes} min read</span>
-            )}
-            {post.author_name && <span>By {post.author_name}</span>}
+            <div className="order-2 [&>aside:first-child]:mt-2">
+              {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
+              {topBuyBox}
+
+              {/* Meta Information */}
+              <div className="mb-6 flex flex-wrap items-center gap-4 border-b pb-6 text-sm text-muted-foreground">
+                {post.published_at && (
+                  <time dateTime={post.published_at}>
+                    {new Date(post.published_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </time>
+                )}
+                {post.reading_time_minutes && (
+                  <span>{post.reading_time_minutes} min read</span>
+                )}
+                {post.author_name && <span>By {post.author_name}</span>}
+              </div>
+
+              {/* Last Updated */}
+              {post.updated_at && (
+                <LastUpdated
+                  date={post.updated_at}
+                  publishedDate={post.published_at}
+                  showRelative
+                  className="mb-6"
+                />
+              )}
+            </div>
           </div>
-
-          {/* Last Updated */}
-          {post.updated_at && (
-            <LastUpdated
-              date={post.updated_at}
-              publishedDate={post.published_at}
-              showRelative
-              className="mb-6"
-            />
-          )}
-
-          {/* Excerpt */}
-          {post.excerpt && (
-            <p className="mb-8 text-xl font-medium text-muted-foreground leading-relaxed">
-              {post.excerpt}
-            </p>
-          )}
 
           {/* Winner Callout */}
           {winner && (

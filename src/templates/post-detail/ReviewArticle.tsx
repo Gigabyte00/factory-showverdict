@@ -206,114 +206,118 @@ export default function ReviewArticle({
                 )}
 
                 {/* Title */}
-                <h1 className="mb-4 text-3xl font-bold md:text-4xl">
-                  {post.title}
-                </h1>
-
-                {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
-                {topBuyBox}
-
-                {/* Meta Information */}
-                <div className="mb-6 flex flex-wrap items-center gap-4 border-b pb-6 text-sm text-muted-foreground">
-                  {post.published_at && (
-                    <time dateTime={post.published_at}>
-                      {new Date(post.published_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </time>
+                {/* AMZ-2 snippet order (2026-10-24): the H1, then the dek, then the buy box and byline in the DOM — ChatGPT keeps the title plus ~200 characters
+                    from the H1. A flex column with CSS order keeps the visual order readers know (title, buy box, byline, dek). */}
+                <div className="flex flex-col">
+                  <h1 className="order-1 mb-4 text-3xl font-bold md:text-4xl">
+                    {post.title}
+                  </h1>
+                  {/* Excerpt */}
+                  {post.excerpt && !affiliateUrl && (
+                    <p className="order-3 mb-6 text-lg font-medium italic text-muted-foreground">
+                      {post.excerpt}
+                    </p>
                   )}
-                  {post.reading_time_minutes && (
-                    <span>{post.reading_time_minutes} min read</span>
-                  )}
-                  {post.author_name && <span>By {post.author_name}</span>}
-                  <div className="ml-auto flex items-center gap-2">
-                    <BookmarkButton
-                      variant="labeled"
-                      bookmark={{
-                        id: `post-${post.slug}`,
-                        type: 'post',
-                        title: post.title,
-                        url: `/blog/${post.slug}`,
-                        image: post.featured_image_url ?? undefined,
-                        excerpt: post.excerpt ?? undefined,
-                      }}
-                    />
-                    <ShareButtons
-                      url={`${site.domain ? `https://${site.domain}` : ''}/blog/${post.slug}`}
-                      title={post.title}
-                    />
+                  <div className="order-2 [&>aside:first-child]:mt-2">
+                    {/* AMZ-2 topbuybox (2026-10-11): directly under the title, per owner call -- not above it. */}
+                    {topBuyBox}
+
+                    {/* Meta Information */}
+                    <div className="mb-6 flex flex-wrap items-center gap-4 border-b pb-6 text-sm text-muted-foreground">
+                      {post.published_at && (
+                        <time dateTime={post.published_at}>
+                          {new Date(post.published_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </time>
+                      )}
+                      {post.reading_time_minutes && (
+                        <span>{post.reading_time_minutes} min read</span>
+                      )}
+                      {post.author_name && <span>By {post.author_name}</span>}
+                      <div className="ml-auto flex items-center gap-2">
+                        <BookmarkButton
+                          variant="labeled"
+                          bookmark={{
+                            id: `post-${post.slug}`,
+                            type: 'post',
+                            title: post.title,
+                            url: `/blog/${post.slug}`,
+                            image: post.featured_image_url ?? undefined,
+                            excerpt: post.excerpt ?? undefined,
+                          }}
+                        />
+                        <ShareButtons
+                          url={`${site.domain ? `https://${site.domain}` : ''}/blog/${post.slug}`}
+                          title={post.title}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Last Updated */}
+                    {post.updated_at && (
+                      <LastUpdated
+                        date={post.updated_at}
+                        publishedDate={post.published_at}
+                        showRelative
+                        className="mb-6"
+                      />
+                    )}
+
+                    {/* Revision log — opt-in via post.metadata.changelog */}
+                    {changelog && changelog.length > 0 && <Changelog entries={changelog} />}
+
+                    {/* Rating Card */}
+                    <Card className="mb-8 border-2 border-primary/20 bg-primary/5">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          {rating > 0 ? (
+                            <div>
+                              <div className="mb-2 flex items-center gap-1">
+                                {renderStars()}
+                              </div>
+                              <p className="text-2xl font-bold text-foreground">
+                                {rating.toFixed(1)} / {maxRating}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Overall Rating
+                              </p>
+                            </div>
+                          ) : <div />}
+                          {affiliateUrl && (
+                            <Button asChild size="lg">
+                              <Link
+                                href={affiliateUrl}
+                                target="_blank"
+                                rel="noopener nofollow"
+                              >
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                Check Price
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Product Callout - Above the fold */}
+                    {productName && affiliateUrl && (
+                      <ProductCallout
+                        name={productName}
+                        description={post.excerpt || undefined}
+                        image={post.featured_image_url || undefined}
+                        rating={rating || undefined}
+                        price={productPrice || undefined}
+                        highlights={pros.slice(0, 3)}
+                        href={affiliateUrl}
+                        badge={reviewData.badge || "Editor's Pick"}
+                        ctaText="Check Price"
+                      />
+                    )}
                   </div>
                 </div>
-
-                {/* Last Updated */}
-                {post.updated_at && (
-                  <LastUpdated
-                    date={post.updated_at}
-                    publishedDate={post.published_at}
-                    showRelative
-                    className="mb-6"
-                  />
-                )}
-
-                {/* Revision log — opt-in via post.metadata.changelog */}
-                {changelog && changelog.length > 0 && <Changelog entries={changelog} />}
-
-                {/* Rating Card */}
-                <Card className="mb-8 border-2 border-primary/20 bg-primary/5">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      {rating > 0 ? (
-                        <div>
-                          <div className="mb-2 flex items-center gap-1">
-                            {renderStars()}
-                          </div>
-                          <p className="text-2xl font-bold text-foreground">
-                            {rating.toFixed(1)} / {maxRating}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Overall Rating
-                          </p>
-                        </div>
-                      ) : <div />}
-                      {affiliateUrl && (
-                        <Button asChild size="lg">
-                          <Link
-                            href={affiliateUrl}
-                            target="_blank"
-                            rel="noopener nofollow"
-                          >
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            Check Price
-                          </Link>
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Product Callout - Above the fold */}
-                {productName && affiliateUrl && (
-                  <ProductCallout
-                    name={productName}
-                    description={post.excerpt || undefined}
-                    image={post.featured_image_url || undefined}
-                    rating={rating || undefined}
-                    price={productPrice || undefined}
-                    highlights={pros.slice(0, 3)}
-                    href={affiliateUrl}
-                    badge={reviewData.badge || "Editor's Pick"}
-                    ctaText="Check Price"
-                  />
-                )}
-
-                {/* Excerpt */}
-                {post.excerpt && !affiliateUrl && (
-                  <p className="mb-6 text-lg font-medium italic text-muted-foreground">
-                    {post.excerpt}
-                  </p>
-                )}
 
                 {/* Audience fit — "this is for you if / skip if" (opt-in via metadata) */}
                 {audienceFit && <AudienceFit data={audienceFit} />}

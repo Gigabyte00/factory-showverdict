@@ -512,7 +512,7 @@ export default function NewsletterSignup({ siteId, niche }: Props) {
           </h2>
 
           <p className="sv-sub">
-            Spoiler-free reviews and weekend watch picks from our screening room.
+            Spoiler-free reviews and weekend watch picks.
             <br />
             No fluff, no SPAM.
           </p>
@@ -522,7 +522,7 @@ export default function NewsletterSignup({ siteId, niche }: Props) {
               <span className="sv-prop-icon" aria-hidden="true">
                 <Tv />
               </span>
-              <span>Watched by our critics</span>
+              <span>Spoiler-free, every time</span>
             </li>
             <li className="sv-prop">
               <span className="sv-prop-icon" aria-hidden="true">

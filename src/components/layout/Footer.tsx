@@ -48,8 +48,8 @@ export default function Footer() {
             </Link>
 
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Independent television criticism. We watch the pilots, the
-              middles, and the finales — so your weekend doesn't go to waste.
+              Independent television guides: what to watch, where it streams,
+              and what's worth your weekend.
             </p>
 
             <div className="mt-6 flex items-center gap-2">
@@ -173,7 +173,7 @@ export default function Footer() {
               className="mt-3 text-xs"
               style={{ color: "#7a6648" }}
             >
-              Free. Unsubscribe in one click. Read by 42,000+ TV obsessives.
+              Free. Unsubscribe in one click.
             </p>
           </form>
         </div>

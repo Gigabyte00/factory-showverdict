@@ -130,8 +130,7 @@ export default function Footer() {
               className="mt-3 max-w-lg text-[15px] leading-relaxed"
               style={{ color: "#5a4a32" }}
             >
-              Spoiler-free reviews and weekend watch picks from our screening
-              room. No fluff, no SPAM.
+              Spoiler-free reviews and weekend watch picks. No fluff, no SPAM.
             </p>
           </div>
 

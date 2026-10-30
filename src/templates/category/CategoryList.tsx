@@ -167,15 +167,6 @@ export default function CategoryList({
                         )}
 
                         {/* Commission Info */}
-                        {offer.commission_type && offer.commission_value && (
-                          <div className="mb-6">
-                            <Badge variant="secondary" className="text-sm">
-                              {offer.commission_type === 'percentage'
-                                ? `${offer.commission_value}% commission`
-                                : `$${offer.commission_value} commission`}
-                            </Badge>
-                          </div>
-                        )}
 
                         <div className="grid md:grid-cols-2 gap-6">
                           {/* Pros */}
